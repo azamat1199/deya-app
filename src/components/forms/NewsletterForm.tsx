@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 
 import { useTranslation } from "@/lib/i18n/useTranslation";
@@ -71,7 +72,13 @@ export default function NewsletterForm() {
       {status === "success" && <p className="text-xs text-white">{t("form.newsletterSuccess")}</p>}
       {status === "error" && <p className="text-xs text-white">{t("form.error")}</p>}
 
-      <p className="text-xs leading-relaxed text-white/70">{t("footer.newsletterConsent")}</p>
+      <p className="text-xs leading-relaxed text-white/70">
+        {t("footer.newsletterConsent")}{" "}
+        <Link href={`/${locale}/privacy-policy`} className="underline hover:text-white">
+          {t("form.privacyPolicyLinkText")}
+        </Link>
+        .
+      </p>
     </form>
   );
 }

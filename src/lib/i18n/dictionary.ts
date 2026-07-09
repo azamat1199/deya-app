@@ -45,6 +45,8 @@ export interface Dictionary {
     workingHours: string;
     workingHoursValue: string;
     copyright: string;
+    designCredit: string;
+    devCredit: string;
   };
   form: {
     namePlaceholder: string;

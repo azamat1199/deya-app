@@ -12,4 +12,6 @@ export const IMAGES = {
   productCaptainMiller: "/images/product-captain-miller.jpg",
   productQuadro: "/images/product-quadro.jpg",
   exportTrucks: "/images/export-trucks.jpg",
+  historyChocolate: "/images/history-chocolate.jpg",
+  founderPortrait: "/images/founder-portrait.jpg",
 } as const;

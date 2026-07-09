@@ -36,7 +36,7 @@
     "addressValue": "Deya Confectionery Factory, LLC\nRepublic of Uzbekistan, 130100, Jizzakh",
     "newsletter": "Newsletter",
     "newsletterText": "Subscribe to news and special offers from DEYA",
-    "newsletterConsent": "By submitting your email address, you agree that DEYA may send you news and special offers. You understand that DEYA may use your information in accordance with its Privacy Policy.",
+    "newsletterConsent": "By submitting your email address, you agree that DEYA may send you news and special offers. You understand that DEYA may use your information in accordance with its",
     "contacts": "Contacts",
     "hotline": "Hotline",
     "documents": "Documents",
@@ -44,7 +44,9 @@
     "consent": "Personal Data Processing Consent",
     "workingHours": "Working Hours",
     "workingHoursValue": "Monday — Saturday\n9:00 AM – 6:00 PM",
-    "copyright": "© 2012-2025 DEYA.UZ | All rights reserved"
+    "copyright": "© 2012-2025 DEYA.UZ | All rights reserved",
+    "designCredit": "Design",
+    "devCredit": "Development"
   },
   "form": {
     "namePlaceholder": "Name",

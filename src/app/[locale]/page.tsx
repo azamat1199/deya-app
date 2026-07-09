@@ -59,7 +59,7 @@ export default async function HomePage({ params }: HomePageProps) {
         </ScrollReveal>
       </Section>
 
-      <Section bg="light" containerWidth="home">
+      <Section bg="cream" containerWidth="home">
         <ExportMap />
       </Section>
 

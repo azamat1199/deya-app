@@ -14,10 +14,16 @@ import { NAV_ITEMS } from "@/lib/nav";
 import LanguageSwitch from "./LanguageSwitch";
 import MobileMenu from "./MobileMenu";
 
+const HERO_ROUTES = ["", "/about"];
+
 export default function Header() {
   const { t, locale } = useTranslation();
   const pathname = usePathname();
-  const isHome = pathname === `/${locale}`;
+  // Routes whose first section is a full-bleed photo the header should
+  // float over (transparent) until the user scrolls past it.
+  const hasHeroBackground = HERO_ROUTES.some(
+    (route) => pathname === `/${locale}${route}`,
+  );
 
   const [scrolled, setScrolled] = useState(
     () => typeof window !== "undefined" && window.scrollY > 40,
@@ -26,7 +32,7 @@ export default function Header() {
   const closeMobileMenu = useCallback(() => setMobileOpen(false), []);
 
   useEffect(() => {
-    if (!isHome) return;
+    if (!hasHeroBackground) return;
 
     function onScroll() {
       setScrolled(window.scrollY > 40);
@@ -34,9 +40,9 @@ export default function Header() {
 
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [isHome]);
+  }, [hasHeroBackground]);
 
-  const transparent = isHome && !scrolled;
+  const transparent = hasHeroBackground && !scrolled;
 
   return (
     <>

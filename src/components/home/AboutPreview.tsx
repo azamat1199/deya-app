@@ -1,29 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
 
 import { ScrollReveal, Stat } from "@/components/ui";
 import { homeContent } from "@/content/home";
 import { stats } from "@/content/stats";
 import type { Locale } from "@/lib/i18n/config";
+import { withEmphasis } from "@/lib/withEmphasis";
 
 export interface AboutPreviewProps {
   locale: Locale;
-}
-
-function withEmphasis(text: string, highlights: readonly string[]): ReactNode {
-  if (highlights.length === 0) return text;
-
-  const pattern = new RegExp(`(${highlights.join("|")})`, "g");
-  return text.split(pattern).map((part, index) =>
-    highlights.includes(part) ? (
-      <strong key={index} className="font-semibold text-ink-900">
-        {part}
-      </strong>
-    ) : (
-      part
-    ),
-  );
 }
 
 export default function AboutPreview({ locale }: AboutPreviewProps) {
@@ -49,7 +34,7 @@ export default function AboutPreview({ locale }: AboutPreviewProps) {
           </h2>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-12 lg:gap-24">
             <p className="text-sm leading-relaxed text-ink-700 lg:text-base">
-              {withEmphasis(paragraphs[0], paragraphHighlights)}
+              {withEmphasis(paragraphs[0], paragraphHighlights, "font-semibold text-ink-900")}
             </p>
             <div className="space-y-6">
               <p className="text-sm leading-relaxed text-ink-700 lg:text-base">
