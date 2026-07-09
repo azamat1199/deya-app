@@ -1,0 +1,71 @@
+{
+  "nav": {
+    "about": "About Us",
+    "products": "Products",
+    "partners": "For Partners",
+    "careers": "Careers",
+    "news": "News",
+    "contacts": "Contacts"
+  },
+  "buttons": {
+    "viewCatalog": "View Catalog",
+    "toCatalog": "To Catalog",
+    "sendRequest": "Send Request",
+    "downloadCatalog": "Download Catalog",
+    "readMore": "Read More",
+    "send": "Send",
+    "showMoreNews": "Show More News",
+    "backToList": "Back",
+    "allNews": "All News",
+    "openInYandexMap": "Open in Yandex Maps",
+    "partnerForm": "Partner Application Form",
+    "becomePartner": "Become a Partner",
+    "allCatalog": "Full Catalog"
+  },
+  "categories": {
+    "croissants": "Croissants",
+    "waffles": "Waffles",
+    "waferCandies": "Wafer Candies",
+    "candies": "Candies",
+    "cookies": "Cookies"
+  },
+  "footer": {
+    "navigation": "Navigation",
+    "products": "Products",
+    "address": "Address",
+    "addressValue": "Deya Confectionery Factory, LLC\nRepublic of Uzbekistan, 130100, Jizzakh",
+    "newsletter": "Newsletter",
+    "newsletterText": "Subscribe to news and special offers from DEYA",
+    "newsletterConsent": "By submitting your email address, you agree that DEYA may send you news and special offers. You understand that DEYA may use your information in accordance with its Privacy Policy.",
+    "contacts": "Contacts",
+    "hotline": "Hotline",
+    "documents": "Documents",
+    "privacyPolicy": "Privacy Policy",
+    "consent": "Personal Data Processing Consent",
+    "workingHours": "Working Hours",
+    "workingHoursValue": "Monday — Saturday\n9:00 AM – 6:00 PM",
+    "copyright": "© 2012-2025 DEYA.UZ | All rights reserved"
+  },
+  "form": {
+    "namePlaceholder": "Name",
+    "emailPlaceholder": "Email address",
+    "phonePlaceholder": "+998-71-2346785",
+    "messagePlaceholder": "Message",
+    "consentPersonalDataPrefix": "I agree to the processing of personal data in accordance with the",
+    "privacyPolicyLinkText": "Privacy Policy",
+    "consentMarketing": "I agree to receive news and special offers from DEYA",
+    "emailInvalid": "Please enter a valid email",
+    "newsletterSuccess": "Thank you! You are now subscribed.",
+    "success": "Thank you! Your request has been sent.",
+    "error": "Something went wrong. Please try again."
+  },
+  "common": {
+    "phone": "+998 (55) 151 55 55",
+    "phoneRaw": "+998551515555",
+    "eng": "ENG",
+    "rus": "RUS"
+  },
+  "home": {
+    "placeholderTitle": "DEYA Confectionery Factory"
+  }
+}

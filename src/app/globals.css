@@ -2,25 +2,89 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1a1a1a;
+
+  /* Brand palette per style guide: primary red #E11A27. */
+  --color-brand-50: #fdecec;
+  --color-brand-100: #fbd2d3;
+  --color-brand-200: #f5a6a8;
+  --color-brand-300: #ee7a7d;
+  --color-brand-400: #e84d52;
+  --color-brand-500: #e11a27;
+  --color-brand-600: #be131f;
+  --color-brand-700: #970f19;
+  --color-brand-800: #710b13;
+  --color-brand-900: #4b070c;
+
+  --color-ink: #1a1a1a;
+  --color-ink-soft: #6b6b6b;
+  --color-light: #f4f4f4;
+  --color-line: #e5e5e5;
+  --color-cream: #fbf5ee;
+
+  /* Neutral scales used by the UI primitives (Button/FormField/Checkbox/etc). */
+  --color-ink-50: #f7f7f7;
+  --color-ink-100: #ececec;
+  --color-ink-200: #d9d9d9;
+  --color-ink-300: #bfbfbf;
+  --color-ink-500: #6b6b6b;
+  --color-ink-700: #3f3f3f;
+  --color-ink-900: #1a1a1a;
+
+  --color-line-100: #f0eeec;
+  --color-line-200: #e5e5e5;
+  --color-line-300: #d4d4d4;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-brand-50: var(--color-brand-50);
+  --color-brand-100: var(--color-brand-100);
+  --color-brand-200: var(--color-brand-200);
+  --color-brand-300: var(--color-brand-300);
+  --color-brand-400: var(--color-brand-400);
+  --color-brand-500: var(--color-brand-500);
+  --color-brand-600: var(--color-brand-600);
+  --color-brand-700: var(--color-brand-700);
+  --color-brand-800: var(--color-brand-800);
+  --color-brand-900: var(--color-brand-900);
+
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-light: var(--color-light);
+  --color-line: var(--color-line);
+  --color-cream: var(--color-cream);
+
+  --color-ink-50: var(--color-ink-50);
+  --color-ink-100: var(--color-ink-100);
+  --color-ink-200: var(--color-ink-200);
+  --color-ink-300: var(--color-ink-300);
+  --color-ink-500: var(--color-ink-500);
+  --color-ink-700: var(--color-ink-700);
+  --color-ink-900: var(--color-ink-900);
+
+  --color-line-100: var(--color-line-100);
+  --color-line-200: var(--color-line-200);
+  --color-line-300: var(--color-line-300);
+
+  --font-sans: var(--font-inter);
+
+  /* Figma breakpoints: mobile 360, tablet 768 (nav collapse), desktop 1200, wide 1600. */
+  --breakpoint-sm: 360px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1200px;
+  --breakpoint-xl: 1600px;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .container-page {
+    @apply mx-auto w-full max-w-[1600px] px-5 md:px-8 lg:px-10;
+  }
 }
