@@ -16,11 +16,15 @@
     "send": "Отправить",
     "showMoreNews": "Показать еще новости",
     "backToList": "Вернуться назад",
+    "backToHome": "Вернуться на главную",
     "allNews": "Все новости",
     "openInYandexMap": "Открыть в Яндекс карте",
     "partnerForm": "Форма для партнеров",
     "becomePartner": "Стать партнёром",
-    "allCatalog": "Весь каталог"
+    "allCatalog": "Весь каталог",
+    "showMoreProducts": "Показать еще продукцию",
+    "contactSales": "Связаться с отделом продаж",
+    "vacancies": "Вакансии"
   },
   "categories": {
     "croissants": "Круассаны",
@@ -53,7 +57,10 @@
     "emailPlaceholder": "Электронная почта",
     "phonePlaceholder": "+998-71-2346785",
     "messagePlaceholder": "Сообщение",
-    "consentPersonalDataPrefix": "Я согласен(-на) на обработку персональных данных в соответствии с",
+    "consentPersonalDataPrefix": "Я подтверждаю ознакомление и даю",
+    "consentLinkText": "Согласие на обработку моих персональных данных",
+    "consentMiddle": "в порядке и на условиях, указанных в",
+    "consentPrivacyLinkText": "Политике конфиденциальности",
     "privacyPolicyLinkText": "Политикой конфиденциальности",
     "consentMarketing": "Я согласен(-на) получать новости и специальные предложения от DEYA",
     "emailInvalid": "Введите корректный e-mail",

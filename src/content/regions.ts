@@ -1,12 +1,11 @@
 import type { ExportRegion } from "./types";
 
-// Coordinates approximate the reference diagram's asymmetric layout
-// (a connection network, not a symmetric radial map).
+// Exact node positions from Figma dev mode (viewBox 0 0 1400 480).
 export const exportRegions: ExportRegion[] = [
-  { name: "Центральная Азия", x: 680, y: 90 },
-  { name: "Закавказье", x: 344.5, y: 153.05 },
-  { name: "Восточная Азия", x: 800, y: 190 },
-  { name: "Америка", x: 42.5, y: 243.5 },
-  { name: "Южная Азия", x: 397.3, y: 390.8 },
-  { name: "Ближний Восток", x: 205.8, y: 372.6 },
+  { name: "Центральная Азия", x: 1043, y: 130, anchor: "start" },
+  { name: "Восточная Азия", x: 1187, y: 218, anchor: "start" },
+  { name: "Закавказье", x: 660, y: 165, anchor: "end" },
+  { name: "Америка", x: 255, y: 258, anchor: "end" },
+  { name: "Ближний Восток", x: 615, y: 397, anchor: "end" },
+  { name: "Южная Азия", x: 850, y: 393, anchor: "end" },
 ];

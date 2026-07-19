@@ -16,11 +16,15 @@
     "send": "Send",
     "showMoreNews": "Show More News",
     "backToList": "Back",
+    "backToHome": "Back to Home",
     "allNews": "All News",
     "openInYandexMap": "Open in Yandex Maps",
     "partnerForm": "Partner Application Form",
     "becomePartner": "Become a Partner",
-    "allCatalog": "Full Catalog"
+    "allCatalog": "Full Catalog",
+    "showMoreProducts": "Show More Products",
+    "contactSales": "Contact Sales Department",
+    "vacancies": "Vacancies"
   },
   "categories": {
     "croissants": "Croissants",
@@ -53,7 +57,10 @@
     "emailPlaceholder": "Email address",
     "phonePlaceholder": "+998-71-2346785",
     "messagePlaceholder": "Message",
-    "consentPersonalDataPrefix": "I agree to the processing of personal data in accordance with the",
+    "consentPersonalDataPrefix": "I confirm that I have read and give my",
+    "consentLinkText": "Consent to the Processing of My Personal Data",
+    "consentMiddle": "in accordance with the terms set out in the",
+    "consentPrivacyLinkText": "Privacy Policy",
     "privacyPolicyLinkText": "Privacy Policy",
     "consentMarketing": "I agree to receive news and special offers from DEYA",
     "emailInvalid": "Please enter a valid email",

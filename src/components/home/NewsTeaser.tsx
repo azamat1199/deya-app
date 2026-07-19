@@ -1,9 +1,11 @@
 import Link from "next/link";
 
-import { SectionHeading } from "@/components/ui";
+import { ScrollReveal, SectionHeading } from "@/components/ui";
 import { homeContent } from "@/content/home";
 import { newsPosts } from "@/content/news";
 import type { Locale } from "@/lib/i18n/config";
+import { formatPostDate } from "@/lib/formatDate";
+import { cn } from "@/lib/cn";
 
 export interface NewsTeaserProps {
   locale: Locale;
@@ -11,32 +13,47 @@ export interface NewsTeaserProps {
   readMoreLabel: string;
 }
 
-export default function NewsTeaser({ locale, allNewsLabel, readMoreLabel }: NewsTeaserProps) {
+export default function NewsTeaser({
+  locale,
+  allNewsLabel,
+  readMoreLabel,
+}: NewsTeaserProps) {
   return (
-    <div>
-      <SectionHeading
-        title={homeContent.newsTeaser.heading}
-        link={{ text: allNewsLabel, href: `/${locale}/blog` }}
-      />
-
-      <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        {newsPosts.map((post) => (
-          <div
-            key={post.slug}
-            className="border-line-100 px-0 pb-6 sm:px-6 sm:odd:border-r lg:border-r lg:px-8 lg:last:border-r-0"
-          >
-            <p className="text-xs text-ink-500">{post.date}</p>
-            <h3 className="mt-3 text-xl text-brand-700">{post.title}</h3>
-            <p className="mt-3 line-clamp-3 text-sm text-ink-500">{post.excerpt}</p>
-            <Link
-              href={`/${locale}/blog/${post.slug}`}
-              className="mt-8 inline-block text-xs font-medium tracking-wide text-ink-500 uppercase underline decoration-1 underline-offset-4 transition-colors hover:text-brand-600"
-            >
-              {readMoreLabel}
-            </Link>
-          </div>
-        ))}
-      </div>
+    <div className="pt-16 pb-12 lg:pt-32 lg:pb-16">
+      <ScrollReveal direction="up">
+        <SectionHeading
+          title={homeContent.newsTeaser.heading}
+          link={{ text: allNewsLabel, href: `/${locale}/blog` }}
+        />
+        <div className="mt-10 grid grid-cols-2 gap-y-10 lg:grid-cols-4 lg:gap-y-0">
+          {newsPosts.map((post, index) => (
+            <ScrollReveal key={post.slug} direction="up" delay={index * 0.1}>
+              <div
+                className={cn(
+                  "flex h-full flex-col border-line-100 px-4",
+                  "odd:border-r lg:border-r lg:px-6 lg:last:border-r-0",
+                )}
+              >
+                <p className="text-xs text-ink-500">
+                  {formatPostDate(post.date, locale)}
+                </p>
+                <h3 className="mt-3 line-clamp-2 text-xl leading-snug text-brand-600">
+                  {post.title}
+                </h3>
+                <p className="mt-3 line-clamp-3 text-sm text-ink-500">
+                  {post.excerpt}
+                </p>
+                <Link
+                  href={`/${locale}/blog/${post.slug}`}
+                  className="mt-auto inline-block pt-8 text-xs font-medium tracking-wide text-ink-900 uppercase underline decoration-1 underline-offset-4 transition-colors hover:text-brand-600"
+                >
+                  {readMoreLabel}
+                </Link>
+              </div>
+            </ScrollReveal>
+          ))}
+        </div>
+      </ScrollReveal>
     </div>
   );
 }

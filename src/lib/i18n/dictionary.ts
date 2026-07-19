@@ -16,11 +16,15 @@ export interface Dictionary {
     send: string;
     showMoreNews: string;
     backToList: string;
+    backToHome: string;
     allNews: string;
     openInYandexMap: string;
     partnerForm: string;
     becomePartner: string;
     allCatalog: string;
+    showMoreProducts: string;
+    contactSales: string;
+    vacancies: string;
   };
   categories: {
     croissants: string;
@@ -54,6 +58,9 @@ export interface Dictionary {
     phonePlaceholder: string;
     messagePlaceholder: string;
     consentPersonalDataPrefix: string;
+    consentLinkText: string;
+    consentMiddle: string;
+    consentPrivacyLinkText: string;
     privacyPolicyLinkText: string;
     consentMarketing: string;
     emailInvalid: string;

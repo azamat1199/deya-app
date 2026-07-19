@@ -20,6 +20,11 @@ export interface Category {
   image: string;
 }
 
+export interface ProductVariantOption {
+  label: string;
+  slug: string;
+}
+
 export interface Product {
   slug: string;
   categorySlug: string;
@@ -27,6 +32,12 @@ export interface Product {
   weight?: string;
   image: string;
   badge?: { text: string; variant: "new" | "hit" };
+  /** Detail-page-only fields — optional since most catalog SKUs don't have this yet. */
+  description?: string;
+  gallery?: string[];
+  flavorOptions?: ProductVariantOption[];
+  weightOptions?: ProductVariantOption[];
+  characteristics?: { label: string; value: string }[];
 }
 
 export interface NewsPost {
@@ -39,7 +50,9 @@ export interface NewsPost {
 
 export interface ExportRegion {
   name: string;
-  /** Position on the diagram, in the SVG's 900x450 coordinate space. */
+  /** Position on the diagram, in the SVG's 1400x480 coordinate space. */
   x: number;
   y: number;
+  /** Which side of the dot the label sits on. */
+  anchor: "start" | "end";
 }

@@ -41,7 +41,7 @@ export default async function HomePage({ params }: HomePageProps) {
         <AboutPreview locale={locale as Locale} />
       </Section>
 
-      <Section bg="light" containerWidth="home">
+      <Section bg="white" containerWidth="home">
         <ScrollReveal direction="fade">
           <CategoryGrid
             locale={locale as Locale}
@@ -50,14 +50,14 @@ export default async function HomePage({ params }: HomePageProps) {
         </ScrollReveal>
       </Section>
 
-      <Section bg="white" containerWidth="home">
-        <ScrollReveal>
-          <FeaturedProducts
-            locale={locale as Locale}
-            allCatalogLabel={dictionary.buttons.allCatalog}
-          />
-        </ScrollReveal>
-      </Section>
+      {/* <Section bg="white" containerWidth="home">
+        <ScrollReveal> */}
+      <FeaturedProducts
+        locale={locale as Locale}
+        allCatalogLabel={dictionary.buttons.allCatalog}
+      />
+      {/* </ScrollReveal>
+      </Section> */}
 
       <Section bg="cream" containerWidth="home">
         <ExportMap />

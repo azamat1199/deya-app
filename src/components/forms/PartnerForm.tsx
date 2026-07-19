@@ -87,11 +87,19 @@ export default function PartnerForm({ onSuccess }: PartnerFormProps) {
           <>
             {t("form.consentPersonalDataPrefix")}{" "}
             <Link
+              href={`/${locale}/consent`}
+              className="underline hover:text-brand-600"
+              onClick={(event) => event.stopPropagation()}
+            >
+              {t("form.consentLinkText")}
+            </Link>{" "}
+            {t("form.consentMiddle")}{" "}
+            <Link
               href={`/${locale}/privacy-policy`}
               className="underline hover:text-brand-600"
               onClick={(event) => event.stopPropagation()}
             >
-              {t("form.privacyPolicyLinkText")}
+              {t("form.consentPrivacyLinkText")}
             </Link>
           </>
         }
@@ -103,10 +111,21 @@ export default function PartnerForm({ onSuccess }: PartnerFormProps) {
         label={t("form.consentMarketing")}
       />
 
-      {status === "success" && <p className="text-sm text-brand-600">{t("form.success")}</p>}
-      {status === "error" && <p className="text-sm text-brand-600">{t("form.error")}</p>}
+      {status === "success" && (
+        <p className="text-sm text-brand-600">{t("form.success")}</p>
+      )}
+      {status === "error" && (
+        <p className="text-sm text-brand-600">{t("form.error")}</p>
+      )}
 
-      <Button type="submit" variant="primary" size="lg" fullWidth loading={isSubmitting}>
+      <Button
+        className="hover:cursor-pointer"
+        type="submit"
+        variant="primary"
+        size="lg"
+        fullWidth
+        loading={isSubmitting}
+      >
         {t("buttons.sendRequest")}
       </Button>
     </form>

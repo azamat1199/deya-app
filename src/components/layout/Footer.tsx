@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
-
 import { InstagramIcon, TelegramIcon } from "@/components/icons/SocialIcons";
 import NewsletterForm from "@/components/forms/NewsletterForm";
+import { AnimatedLink } from "@/components/ui";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { NAV_ITEMS, PRODUCT_CATEGORY_LINKS } from "@/lib/nav";
 
@@ -21,9 +20,12 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               {NAV_ITEMS.map((item) => (
                 <li key={item.key}>
-                  <Link href={`/${locale}${item.href}`} className="opacity-90 hover:opacity-100">
+                  <AnimatedLink
+                    href={`/${locale}${item.href}`}
+                    className="opacity-90 hover:opacity-100"
+                  >
                     {t(item.key)}
-                  </Link>
+                  </AnimatedLink>
                 </li>
               ))}
             </ul>
@@ -36,12 +38,12 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               {PRODUCT_CATEGORY_LINKS.map((category) => (
                 <li key={category.slug}>
-                  <Link
+                  <AnimatedLink
                     href={`/${locale}/catalog/${category.slug}`}
                     className="opacity-90 hover:opacity-100"
                   >
                     {t(category.labelKey)}
-                  </Link>
+                  </AnimatedLink>
                 </li>
               ))}
             </ul>
@@ -53,14 +55,17 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href={`/${locale}/privacy-policy`} className="opacity-90 hover:opacity-100">
+                <AnimatedLink
+                  href={`/${locale}/privacy-policy`}
+                  className="opacity-90 hover:opacity-100"
+                >
                   {t("footer.privacyPolicy")}
-                </Link>
+                </AnimatedLink>
               </li>
               <li>
-                <Link href={`/${locale}/consent`} className="opacity-90 hover:opacity-100">
+                <AnimatedLink href={`/${locale}/consent`} className="opacity-90 hover:opacity-100">
                   {t("footer.consent")}
-                </Link>
+                </AnimatedLink>
               </li>
             </ul>
           </div>

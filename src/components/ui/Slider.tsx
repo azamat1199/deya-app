@@ -34,6 +34,9 @@ export interface SliderProps<T> {
   autoplay?: boolean;
   autoplayInterval?: number;
   loop?: boolean;
+  /** "center" keeps a trailing partial group (e.g. 1 slide left over from a
+   * group of 2) centered instead of hugging the start edge. */
+  align?: "start" | "center";
   breakpoints?: Record<number, SliderBreakpoint>;
   className?: string;
   /** Replaces the default nav/pagination row entirely for custom layouts
@@ -85,16 +88,30 @@ export default function Slider<T>({
   autoplay = false,
   autoplayInterval = 5000,
   loop = false,
+  align = "start",
   breakpoints,
   className,
   renderControls,
 }: SliderProps<T>) {
-  const { slidesPerView: activeSlidesPerView, gap: activeGap } = useResponsiveSlideConfig(
-    { slidesPerView, gap },
-    breakpoints,
-  );
+  const { slidesPerView: activeSlidesPerView, gap: activeGap } =
+    useResponsiveSlideConfig({ slidesPerView, gap }, breakpoints);
 
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop, align: "start" });
+  // When every slide already fits in one view there's nothing to scroll,
+  // and embla's "center" alignment centers on individual slide scroll-snap
+  // points rather than the group as a whole — with no overflow that math
+  // shoves the whole track sideways. Only opt into "center" (and trim the
+  // scroll range) once there's actual overflow to scroll through; a fully
+  // visible set (or a short list) instead uses "start", which lays every
+  // slide flush from the beginning with no snap-centering side effects.
+  const hasOverflow = items.length > activeSlidesPerView;
+  const containScroll = hasOverflow ? "trimSnaps" : false;
+  const effectiveAlign = hasOverflow ? align : "start";
+
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop,
+    align: effectiveAlign,
+    containScroll,
+  });
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -103,15 +120,21 @@ export default function Slider<T>({
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
-  const scrollTo = useCallback((index: number) => emblaApi?.scrollTo(index), [emblaApi]);
+  const scrollTo = useCallback(
+    (index: number) => emblaApi?.scrollTo(index),
+    [emblaApi],
+  );
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
-    setCanScrollPrev(emblaApi.canScrollPrev());
-    setCanScrollNext(emblaApi.canScrollNext());
+    // When every slide already fits in one view there's no real scrolling
+    // to do — suppress embla's raw capability flags so a sub-pixel gap
+    // remainder doesn't leave a functionless arrow visible.
+    setCanScrollPrev(hasOverflow && emblaApi.canScrollPrev());
+    setCanScrollNext(hasOverflow && emblaApi.canScrollNext());
     setSelectedIndex(emblaApi.selectedScrollSnap());
     setScrollSnaps(emblaApi.scrollSnapList());
-  }, [emblaApi]);
+  }, [emblaApi, hasOverflow]);
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -128,8 +151,12 @@ export default function Slider<T>({
   }, [emblaApi, onSelect]);
 
   useEffect(() => {
-    emblaApi?.reInit();
-  }, [emblaApi, activeSlidesPerView, activeGap]);
+    // Pass the freshly computed options — without them, reInit() just
+    // re-measures using whatever options the instance was first created
+    // with (e.g. containScroll computed from the mobile-first initial
+    // slidesPerView), so a breakpoint change never actually applies.
+    emblaApi?.reInit({ loop, align: effectiveAlign, containScroll });
+  }, [emblaApi, activeSlidesPerView, activeGap, loop, effectiveAlign, containScroll]);
 
   useEffect(() => {
     if (!autoplay || !emblaApi) return;
@@ -160,7 +187,10 @@ export default function Slider<T>({
           isHovering.current = false;
         }}
       >
-        <div className="flex" style={{ marginLeft: -activeGap / 2, marginRight: -activeGap / 2 }}>
+        <div
+          className="flex"
+          style={{ marginLeft: -activeGap / 2, marginRight: -activeGap / 2 }}
+        >
           {items.map((item, index) => (
             <div
               key={index}
@@ -188,56 +218,58 @@ export default function Slider<T>({
             scrollTo,
           })
         : (showNavigation || showPagination) && (
-        <div className="mt-6 flex items-center justify-between">
-          {showPagination && paginationStyle === "dots" && (
-            <div className="flex items-center gap-2">
-              {scrollSnaps.map((_, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  aria-label={`Go to slide ${index + 1}`}
-                  onClick={() => scrollTo(index)}
-                  className={cn(
-                    "h-2 w-2 rounded-full transition-colors duration-200",
-                    index === selectedIndex ? "bg-brand-600" : "bg-ink-200 hover:bg-ink-300",
-                  )}
-                />
-              ))}
+            <div className="mt-6 flex items-center justify-between">
+              {showPagination && paginationStyle === "dots" && (
+                <div className="flex items-center gap-2">
+                  {scrollSnaps.map((_, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      aria-label={`Go to slide ${index + 1}`}
+                      onClick={() => scrollTo(index)}
+                      className={cn(
+                        "h-2 w-2 rounded-full transition-colors duration-200",
+                        index === selectedIndex
+                          ? "bg-brand-600"
+                          : "bg-ink-200 hover:bg-ink-300",
+                      )}
+                    />
+                  ))}
+                </div>
+              )}
+              {showPagination && paginationStyle === "progress" && (
+                <div className="flex items-center gap-3 text-sm font-medium text-ink-500">
+                  <span className="text-ink-900">
+                    {String(selectedIndex + 1).padStart(2, "0")}
+                  </span>
+                  <span className="h-px w-12 bg-line-300" aria-hidden="true" />
+                  <span>{String(scrollSnaps.length).padStart(2, "0")}</span>
+                </div>
+              )}
+              {showNavigation && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    aria-label="Previous slide"
+                    onClick={scrollPrev}
+                    disabled={!loop && !canScrollPrev}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-line-300 text-ink-900 transition-colors duration-200 hover:border-brand-600 hover:text-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Next slide"
+                    onClick={scrollNext}
+                    disabled={!loop && !canScrollNext}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-line-300 text-ink-900 transition-colors duration-200 hover:border-brand-600 hover:text-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              )}
             </div>
           )}
-
-          {showPagination && paginationStyle === "progress" && (
-            <div className="flex items-center gap-3 text-sm font-medium text-ink-500">
-              <span className="text-ink-900">{String(selectedIndex + 1).padStart(2, "0")}</span>
-              <span className="h-px w-12 bg-line-300" aria-hidden="true" />
-              <span>{String(scrollSnaps.length).padStart(2, "0")}</span>
-            </div>
-          )}
-
-          {showNavigation && (
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                aria-label="Previous slide"
-                onClick={scrollPrev}
-                disabled={!loop && !canScrollPrev}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-line-300 text-ink-900 transition-colors duration-200 hover:border-brand-600 hover:text-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <button
-                type="button"
-                aria-label="Next slide"
-                onClick={scrollNext}
-                disabled={!loop && !canScrollNext}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-line-300 text-ink-900 transition-colors duration-200 hover:border-brand-600 hover:text-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <ChevronRight size={18} />
-              </button>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

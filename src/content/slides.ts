@@ -1,8 +1,20 @@
 import { IMAGES } from "./images";
 import type { Slide } from "./types";
 
-// Placeholder copy — replace with the exact Figma hero copy once available.
+// Slide 1 copy/photo is real, taken verbatim from the Figma hero export.
+// Slide 2 reuses the croissants spotlight (real copy/photo already used
+// elsewhere on the site) — the Figma export only captured the hero in its
+// slide-1 state, so slide 2's exact design copy isn't available.
 export const slides: Slide[] = [
+  {
+    id: "factory",
+    title: "Кондитерская фабрика Deya",
+    description:
+      "Мы заново открываем историю вкуса и создаём сладости, которые любят в Узбекистане и за его пределами.",
+    ctaLabel: "Посмотреть каталог",
+    ctaHref: "/catalog",
+    image: IMAGES.heroFactory,
+  },
   {
     id: "croissants",
     badge: "НОВИНКА!",
@@ -12,23 +24,5 @@ export const slides: Slide[] = [
     ctaLabel: "Посмотреть каталог",
     ctaHref: "/catalog",
     image: IMAGES.croissantJam,
-  },
-  {
-    id: "waffles",
-    title: "Вафли Deya — хрустящее удовольствие",
-    description:
-      "Собственное производство полного цикла: от выбора ингредиентов до упаковки. Каждая вафля проходит строгий контроль качества.",
-    ctaLabel: "Посмотреть каталог",
-    ctaHref: "/catalog",
-    image: IMAGES.waferCandyMiller,
-  },
-  {
-    id: "candies",
-    title: "Конфеты Deya — сладкие моменты каждый день",
-    description:
-      "Широкий ассортимент вкусов для всей семьи. Узнаваемый стиль и качество, которому доверяют покупатели в 25+ странах.",
-    ctaLabel: "Посмотреть каталог",
-    ctaHref: "/catalog",
-    image: IMAGES.chocolateGlazer,
   },
 ];

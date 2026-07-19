@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 
 import { InstagramIcon, TelegramIcon } from "@/components/icons/SocialIcons";
+import { AnimatedLink } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { NAV_ITEMS } from "@/lib/nav";
@@ -14,7 +15,7 @@ import { NAV_ITEMS } from "@/lib/nav";
 import LanguageSwitch from "./LanguageSwitch";
 import MobileMenu from "./MobileMenu";
 
-const HERO_ROUTES = ["", "/about"];
+const HERO_ROUTES = ["", "/about", "/partners", "/careers"];
 
 export default function Header() {
   const { t, locale } = useTranslation();
@@ -25,9 +26,7 @@ export default function Header() {
     (route) => pathname === `/${locale}${route}`,
   );
 
-  const [scrolled, setScrolled] = useState(
-    () => typeof window !== "undefined" && window.scrollY > 40,
-  );
+  const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const closeMobileMenu = useCallback(() => setMobileOpen(false), []);
 
@@ -38,6 +37,7 @@ export default function Header() {
       setScrolled(window.scrollY > 40);
     }
 
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [hasHeroBackground]);
@@ -59,29 +59,32 @@ export default function Header() {
         )}
       >
         <div className="container-page flex h-16 items-center justify-between md:h-20">
-          <Image
-            src="/logo.svg"
-            alt="Deya"
-            width={102}
-            height={102}
-            className="h-full w-auto"
-            priority
-          />
+          <Link href={`/${locale}`} className="flex h-full items-center" aria-label="Deya — на главную">
+            <Image
+              src="/logo.svg"
+              alt="Deya"
+              width={102}
+              height={102}
+              className="h-full w-auto"
+              priority
+            />
+          </Link>
           <nav className="hidden items-center gap-3 whitespace-nowrap md:flex lg:gap-8">
             {NAV_ITEMS.map((item) => {
               const href = `/${locale}${item.href}`;
               const active = pathname === href;
               return (
-                <Link
+                <AnimatedLink
                   key={item.key}
                   href={href}
+                  activeUnderline={active}
                   className={cn(
-                    "text-xs font-medium uppercase tracking-wide transition-colors hover:text-brand-500 lg:text-sm",
+                    "text-xs font-medium uppercase tracking-wide transition-colors  lg:text-sm",
                     active && "text-brand-500",
                   )}
                 >
                   {t(item.key)}
-                </Link>
+                </AnimatedLink>
               );
             })}
           </nav>

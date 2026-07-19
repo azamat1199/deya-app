@@ -8,7 +8,11 @@ export interface SectionHeadingProps {
   className?: string;
 }
 
-export default function SectionHeading({ title, link, className }: SectionHeadingProps) {
+export default function SectionHeading({
+  title,
+  link,
+  className,
+}: SectionHeadingProps) {
   return (
     <div className={cn("flex items-end justify-between gap-4", className)}>
       <h2 className="text-2xl font-normal text-ink-900 md:text-3xl">{title}</h2>

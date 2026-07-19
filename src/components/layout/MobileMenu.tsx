@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Mail, Phone, X } from "lucide-react";
+import { X } from "lucide-react";
 
 import { InstagramIcon, TelegramIcon } from "@/components/icons/SocialIcons";
 import { cn } from "@/lib/cn";
@@ -53,7 +53,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
             role="dialog"
             aria-modal="true"
             aria-label="Mobile navigation"
-            className="relative flex h-full w-[85%] max-w-sm flex-col overflow-y-auto bg-white px-6 py-6"
+            className="relative flex h-full w-full flex-col overflow-y-auto bg-white px-6 py-6"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
@@ -90,24 +90,34 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
               })}
             </nav>
 
-            <div className="mt-auto space-y-4 border-t border-line pt-6">
+            <div className="mt-auto space-y-5 pt-6">
               <LanguageSwitch />
-              <a href="mailto:info@deya.uz" className="flex items-center gap-2 text-sm text-ink-soft">
-                <Mail size={16} /> info@deya.uz
+              <a href="mailto:info@deya.uz" className="block text-xl text-ink">
+                info@deya.uz
               </a>
-              <a
-                href={`tel:${t("common.phoneRaw")}`}
-                className="flex items-center gap-2 text-sm font-semibold text-ink"
-              >
-                <Phone size={16} /> {t("common.phone")}
-              </a>
-              <div className="flex gap-4 pt-2">
-                <a href="#" aria-label="Instagram" className="text-ink-soft hover:text-brand-500">
-                  <InstagramIcon width={20} height={20} />
+              <div className="flex items-center justify-between gap-4">
+                <a
+                  href={`tel:${t("common.phoneRaw")}`}
+                  className="rounded-md bg-brand-600 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+                >
+                  {t("common.phone")}
                 </a>
-                <a href="#" aria-label="Telegram" className="text-ink-soft hover:text-brand-500">
-                  <TelegramIcon width={20} height={20} />
-                </a>
+                <div className="flex gap-3">
+                  <a
+                    href="#"
+                    aria-label="Telegram"
+                    className="flex h-11 w-11 items-center justify-center rounded-md bg-brand-600 text-white transition-colors hover:bg-brand-700"
+                  >
+                    <TelegramIcon width={20} height={20} />
+                  </a>
+                  <a
+                    href="#"
+                    aria-label="Instagram"
+                    className="flex h-11 w-11 items-center justify-center rounded-md bg-brand-600 text-white transition-colors hover:bg-brand-700"
+                  >
+                    <InstagramIcon width={20} height={20} />
+                  </a>
+                </div>
               </div>
             </div>
           </motion.div>

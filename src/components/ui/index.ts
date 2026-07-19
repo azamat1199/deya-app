@@ -1,3 +1,6 @@
+export { default as AnimatedLink } from "./AnimatedLink";
+export type { AnimatedLinkProps } from "./AnimatedLink";
+
 export { default as Button } from "./Button";
 export type { ButtonProps, ButtonVariant, ButtonSize } from "./Button";
 

@@ -34,8 +34,10 @@ export default function Section({
   children,
 }: SectionProps) {
   return (
-    <section className={cn("py-16 lg:py-24", BG_CLASSES[bg], className)}>
-      <div className={CONTAINER_CLASSES[containerWidth]}>{children}</div>
+    <section className={cn("", BG_CLASSES[bg], className)}>
+      <div>
+        <div className={CONTAINER_CLASSES[containerWidth]}>{children}</div>
+      </div>
     </section>
   );
 }

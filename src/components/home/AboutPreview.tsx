@@ -23,7 +23,7 @@ export default function AboutPreview({ locale }: AboutPreviewProps) {
   } = homeContent.about;
 
   return (
-    <div>
+    <div className="py-[10px] lg:py-[10px]">
       <ScrollReveal direction="up">
         <div className="pt-16 pb-12 lg:pt-32 lg:pb-16">
           <p className="mb-4 text-xs font-normal tracking-[0.2em] text-ink-400 uppercase">
@@ -34,7 +34,11 @@ export default function AboutPreview({ locale }: AboutPreviewProps) {
           </h2>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-12 lg:gap-24">
             <p className="text-sm leading-relaxed text-ink-700 lg:text-base">
-              {withEmphasis(paragraphs[0], paragraphHighlights, "font-semibold text-ink-900")}
+              {withEmphasis(
+                paragraphs[0],
+                paragraphHighlights,
+                "font-semibold text-ink-900",
+              )}
             </p>
             <div className="space-y-6">
               <p className="text-sm leading-relaxed text-ink-700 lg:text-base">
@@ -61,6 +65,7 @@ export default function AboutPreview({ locale }: AboutPreviewProps) {
               sizes="100vw"
               className="object-fill"
             />
+
             <div className="absolute inset-x-0 top-0 z-10 h-[200px] bg-linear-to-b from-white via-white/80 to-transparent lg:h-[250px]" />
             <div className="absolute inset-x-0 top-0 z-20">
               <div className="mx-auto max-w-[1440px] px-5 md:px-10 lg:px-20">

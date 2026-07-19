@@ -14,7 +14,12 @@ export interface ModalProps {
   children: ReactNode;
 }
 
-export default function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export default function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+}: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -45,7 +50,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-6 md:p-8"
+            className="relative max-h-[90vh] w-full max-w-[715px] overflow-y-auto rounded-lg bg-white p-6 md:p-8"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
@@ -55,12 +60,16 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
               type="button"
               aria-label="Close"
               onClick={onClose}
-              className="absolute right-4 top-4 rounded-full p-1 text-ink-500 hover:bg-light hover:text-ink-900"
+              className="absolute right-4 top-4 rounded-full p-1 text-ink-500 hover:bg-light hover:text-[#DA1F26] hover:cursor-pointer"
             >
               <X size={22} />
             </button>
 
-            {title && <h2 className="pr-8 text-xl font-semibold text-ink-900">{title}</h2>}
+            {title && (
+              <h2 className="pr-8 text-xl font-semibold text-ink-900">
+                {title}
+              </h2>
+            )}
 
             <div className={title ? "mt-4" : undefined}>{children}</div>
           </motion.div>
