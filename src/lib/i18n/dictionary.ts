@@ -74,8 +74,39 @@ export interface Dictionary {
     eng: string;
     rus: string;
   };
+  about: {
+    history: {
+      title: string;
+      timelineLabel: string;
+      /** One paragraph per timeline year. */
+      years: {
+        y1994: string;
+        y1996: string;
+        y1998: string;
+        y2001: string;
+        y2003: string;
+        y2009: string;
+        y2014: string;
+        y2016: string;
+        y2021: string;
+        y2022: string;
+        y2026: string;
+      };
+    };
+  };
   home: {
     placeholderTitle: string;
+    newsTeaser: {
+      heading: string;
+      /** Shown instead of the grid when no posts are available. */
+      empty: string;
+    };
+    exportMap: {
+      /** Screen-reader description of the export-destinations diagram. */
+      mapLabel: string;
+      truckAlt: string;
+      modalTitle: string;
+    };
   };
 }
 

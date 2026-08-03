@@ -17,6 +17,18 @@ import MobileMenu from "./MobileMenu";
 
 const HERO_ROUTES = ["", "/about", "/partners", "/careers"];
 
+/**
+ * Routes that opt out of the bar's bottom rule. A page cannot hand a prop up to
+ * the layout that renders this header, so the opt-in is declared the same way
+ * HERO_ROUTES already is — by route shape. Product detail is
+ * `/{locale}/catalog/{category}/{product}`; the catalog root and the category
+ * listing are shorter and keep the rule.
+ */
+function isBorderlessRoute(pathname: string): boolean {
+  const segments = pathname.split("/").filter(Boolean);
+  return segments.length === 4 && segments[1] === "catalog";
+}
+
 export default function Header() {
   const { t, locale } = useTranslation();
   const pathname = usePathname();
@@ -43,29 +55,53 @@ export default function Header() {
   }, [hasHeroBackground]);
 
   const transparent = hasHeroBackground && !scrolled;
+  const borderless = isBorderlessRoute(pathname);
 
   return (
     <>
       <header
         className={cn(
           "inset-x-0 top-0 z-40 w-full transition-colors duration-300",
-          // Transparent (home hero, unscrolled): fixed overlay, takes no
-          // flow space so the hero renders full-bleed behind it. Solid
-          // (scrolled, or any inner page): sticky, back in normal flow so
-          // page content isn't hidden underneath.
+          // On hero routes the header stays `fixed` for the whole page and
+          // only swaps its background on scroll. Switching fixed→sticky mid
+          // scroll would put it back into flow and shove everything below it
+          // down by its own height — a visible jump, and it would also break
+          // the sticky hero on /about by inserting a box above it.
+          hasHeroBackground ? "fixed" : "sticky",
           transparent
-            ? "fixed bg-transparent text-white"
-            : "sticky bg-white text-ink shadow-sm",
+            ? "bg-transparent text-white"
+            : cn(
+                "bg-white text-ink",
+                // The rule under the bar is a shadow, not a border — dropping
+                // it takes no height with it, so nothing shifts by a pixel.
+                borderless ? "shadow-none" : "shadow-sm",
+              ),
         )}
       >
-        <div className="container-page flex h-16 items-center justify-between md:h-20">
-          <Link href={`/${locale}`} className="flex h-full items-center" aria-label="Deya — на главную">
+        {/* Height comes from --header-height (globals.css) so the hero copy's
+            top offset can clear the header without hardcoding a second copy
+            of the value. */}
+        <div className="container-page flex h-(--header-height) items-center justify-between">
+          {/* The link keeps the bar-height slot it always had — staying a flex
+              item of the row is what puts its left edge on the container's
+              content inset without repeating the gutter — while the block
+              itself is absolutely positioned inside it. So the overhang costs
+              no layout height (the bar stays h-(--header-height) and nothing
+              below it moves) and no layout width (the nav does not shift). */}
+          <Link
+            href={`/${locale}`}
+            className="relative block h-full w-(--header-height) shrink-0"
+            aria-label="Deya — на главную"
+          >
             <Image
               src="/logo.svg"
               alt="Deya"
               width={102}
               height={102}
-              className="h-full w-auto"
+              // max-w-none: preflight's `img { max-width: 100% }` would
+              // otherwise clamp the block back to the width of its slot and
+              // erase the overhang.
+              className="absolute top-0 left-0 size-(--logo-size) max-w-none"
               priority
             />
           </Link>

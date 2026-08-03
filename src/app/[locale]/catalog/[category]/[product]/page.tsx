@@ -16,10 +16,14 @@ type ProductPageProps = {
 };
 
 function findProduct(category: string, product: string) {
-  return catalogProducts.find((p) => p.categorySlug === category && p.slug === product);
+  return catalogProducts.find(
+    (p) => p.categorySlug === category && p.slug === product,
+  );
 }
 
-export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: ProductPageProps): Promise<Metadata> {
   const { locale, category, product } = await params;
   if (!isLocale(locale)) return {};
   const found = findProduct(category, product);
@@ -35,22 +39,35 @@ export default async function ProductPage({ params }: ProductPageProps) {
   if (!found) notFound();
 
   const dictionary = await getDictionary(locale as Locale);
-  const categoryLink = PRODUCT_CATEGORY_LINKS.find((link) => link.slug === category);
+  const categoryLink = PRODUCT_CATEGORY_LINKS.find(
+    (link) => link.slug === category,
+  );
   // labelKey is always "categories.<slug>" — pull the leaf key back out to index the dictionary.
-  const categoryKey = categoryLink?.labelKey.replace(
-    "categories.",
-    "",
-  ) as keyof typeof dictionary.categories | undefined;
-  const categoryLabel = categoryKey ? dictionary.categories[categoryKey] : category;
+  const categoryKey = categoryLink?.labelKey.replace("categories.", "") as
+    keyof typeof dictionary.categories | undefined;
+  const categoryLabel = categoryKey
+    ? dictionary.categories[categoryKey]
+    : category;
 
   return (
-    <Section bg="white" containerWidth="home">
+    // The logo block hangs below the header bar, and this page's first row is
+    // the breadcrumb — so the page starts below the block's lowest edge, not the
+    // bar's. --logo-overhang is derived from the logo's own size, so this can
+    // never drift; the 1.5rem is the breathing room on top of it.
+    <Section
+      bg="white"
+      containerWidth="home"
+      className="pt-[calc(var(--logo-overhang)_+_1.5rem)]"
+    >
       <nav className="mb-8 text-sm text-ink-500">
         <Link href={`/${locale}/catalog`} className="hover:text-ink-900">
           {dictionary.nav.products}
         </Link>
         <span className="mx-2">/</span>
-        <Link href={`/${locale}/catalog/${category}`} className="hover:text-ink-900">
+        <Link
+          href={`/${locale}/catalog/${category}`}
+          className="hover:text-ink-900"
+        >
           {categoryLabel}
         </Link>
         <span className="mx-2">/</span>
@@ -61,10 +78,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <ProductGallery product={found} />
 
         <div>
-          <h1 className="text-3xl font-normal text-ink-900 lg:text-4xl">{found.title}</h1>
+          <h1 className="text-3xl font-normal text-ink-900 lg:text-4xl">
+            {found.title}
+          </h1>
 
           {found.description && (
-            <p className="mt-6 leading-relaxed text-ink-700">{found.description}</p>
+            <p className="mt-6 leading-relaxed text-ink-700">
+              {found.description}
+            </p>
           )}
 
           {found.flavorOptions && found.flavorOptions.length > 0 && (

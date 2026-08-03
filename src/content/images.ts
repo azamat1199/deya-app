@@ -14,6 +14,12 @@ export const IMAGES = {
   productQuadro: "/images/product-quadro.jpg",
   exportTrucks: "/images/export-trucks.jpg",
   historyChocolate: "/images/history-chocolate.jpg",
+  // Year-specific archive photos supplied for the /about timeline. Only these
+  // four exist; the remaining years fall back to historyChocolate.
+  history1996: "/images/Photo_1996.png",
+  history1998: "/images/Photo_1998.png",
+  history2001: "/images/Photo_2001.png",
+  history2003: "/images/Photo2003.png",
   founderPortrait: "/images/founder-portrait.jpg",
   productFrust: "/images/product-frust.jpg",
   certificateSanitary: "/images/certificate-sanitary.jpg",

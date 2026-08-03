@@ -57,7 +57,7 @@ export default function AboutPreview({ locale }: AboutPreviewProps) {
 
       <ScrollReveal direction="fade">
         <div className="relative left-1/2 right-1/2 w-screen -mx-[50vw]">
-          <div className="relative h-[500px] overflow-hidden md:h-[600px] lg:h-[700px] xl:h-[800px]">
+          <div className="relative  overflow-hidden h-[500px] md:h-[600px] lg:h-[800px] xl:h-[800px]">
             <Image
               src={factoryImage}
               alt="Кондитерская фабрика Deya"

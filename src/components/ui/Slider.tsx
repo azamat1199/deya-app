@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import { useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/cn";
@@ -21,6 +22,9 @@ export interface SliderControlsState {
   scrollPrev: () => void;
   scrollNext: () => void;
   scrollTo: (index: number) => void;
+  /** True while autoplay is hovered, the tab is hidden, or reduced motion
+   * is on — consumers can use this to freeze a progress indicator. */
+  isAutoplayPaused: boolean;
 }
 
 export interface SliderProps<T> {
@@ -116,7 +120,10 @@ export default function Slider<T>({
   const [canScrollNext, setCanScrollNext] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
-  const isHovering = useRef(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const [isTabHidden, setIsTabHidden] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
+  const isAutoplayPaused = isHovering || isTabHidden || Boolean(prefersReducedMotion);
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
@@ -159,10 +166,21 @@ export default function Slider<T>({
   }, [emblaApi, activeSlidesPerView, activeGap, loop, effectiveAlign, containScroll]);
 
   useEffect(() => {
-    if (!autoplay || !emblaApi) return;
+    if (!autoplay) return;
+    function onVisibilityChange() {
+      setIsTabHidden(document.hidden);
+    }
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [autoplay]);
 
-    const id = window.setInterval(() => {
-      if (isHovering.current) return;
+  useEffect(() => {
+    if (!autoplay || !emblaApi || isAutoplayPaused) return;
+
+    // Re-running on every selectedIndex change (manual click or a previous
+    // auto-advance) restarts a full-length timer each time — this is what
+    // gives manual navigation a "reset the countdown" effect for free.
+    const id = window.setTimeout(() => {
       if (emblaApi.canScrollNext()) {
         emblaApi.scrollNext();
       } else if (loop) {
@@ -170,8 +188,8 @@ export default function Slider<T>({
       }
     }, autoplayInterval);
 
-    return () => window.clearInterval(id);
-  }, [autoplay, autoplayInterval, emblaApi, loop]);
+    return () => window.clearTimeout(id);
+  }, [autoplay, autoplayInterval, emblaApi, loop, isAutoplayPaused, selectedIndex]);
 
   const slideBasis = `calc((100% - ${activeGap * (activeSlidesPerView - 1)}px) / ${activeSlidesPerView})`;
 
@@ -180,12 +198,8 @@ export default function Slider<T>({
       <div
         className="overflow-hidden"
         ref={emblaRef}
-        onMouseEnter={() => {
-          isHovering.current = true;
-        }}
-        onMouseLeave={() => {
-          isHovering.current = false;
-        }}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
       >
         <div
           className="flex"
@@ -216,6 +230,7 @@ export default function Slider<T>({
             scrollPrev,
             scrollNext,
             scrollTo,
+            isAutoplayPaused,
           })
         : (showNavigation || showPagination) && (
             <div className="mt-6 flex items-center justify-between">

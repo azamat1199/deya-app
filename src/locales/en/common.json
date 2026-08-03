@@ -74,7 +74,35 @@
     "eng": "ENG",
     "rus": "RUS"
   },
+  "about": {
+    "history": {
+      "title": "The Deya story",
+      "timelineLabel": "Deya history timeline",
+      "years": {
+        "y1994": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+        "y1996": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+        "y1998": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+        "y2001": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+        "y2003": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+        "y2009": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+        "y2014": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+        "y2016": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+        "y2021": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+        "y2022": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+        "y2026": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality."
+      }
+    }
+  },
   "home": {
-    "placeholderTitle": "DEYA Confectionery Factory"
+    "placeholderTitle": "DEYA Confectionery Factory",
+    "newsTeaser": {
+      "heading": "News from DEYA",
+      "empty": "No news yet — please check back soon."
+    },
+    "exportMap": {
+      "mapLabel": "Map of Deya export destinations",
+      "truckAlt": "Deya logistics",
+      "modalTitle": "How to become a partner?"
+    }
   }
 }

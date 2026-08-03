@@ -21,12 +21,19 @@
   --color-light: #f4f4f4;
   --color-line: #e5e5e5;
   --color-cream: #fbf5ee;
+  /* The near-white cream used by the Home page bands (category grid,
+     featured products, export map). Distinct from --color-cream. */
+  --color-cream-50: #fffcf7;
+  /* Same colour at zero alpha, for gradient end-stops. `transparent` is
+     rgba(0,0,0,0), which fades through grey instead of out. */
+  --color-cream-50-0: #fffcf700;
 
   /* Neutral scales used by the UI primitives (Button/FormField/Checkbox/etc). */
   --color-ink-50: #f7f7f7;
   --color-ink-100: #ececec;
   --color-ink-200: #d9d9d9;
   --color-ink-300: #bfbfbf;
+  --color-ink-400: #8a8a8a;
   --color-ink-500: #6b6b6b;
   --color-ink-700: #3f3f3f;
   --color-ink-900: #1a1a1a;
@@ -34,6 +41,26 @@
   --color-line-100: #f0eeec;
   --color-line-200: #e5e5e5;
   --color-line-300: #d4d4d4;
+
+  /* Single source of truth for the fixed header's height — consumed by the
+     Header itself and by anything that has to clear it (e.g. the hero copy's
+     top offset), so the two can never drift apart. Matches h-16 / md:h-20. */
+  --header-height: 4rem;
+
+  /* The logo block is a square taller than the bar it sits in: ~78% of it is
+     inside the bar and ~22% hangs below, over whatever section follows. Derived
+     from --header-height rather than clamped independently, so the proportion
+     holds at both bar heights and the two can never drift (80px bar → 102px
+     block, the Figma desktop value). */
+  --logo-size: calc(var(--header-height) * 1.275);
+  /* How far the block drops past the bar. Derived from the size above rather
+     than written out, so a page reserving room for it can never fall out of
+     sync with the logo. */
+  --logo-overhang: calc(var(--logo-size) - var(--header-height));
+
+  /* 0.5px rule between content columns. Translucent black rather than a solid
+     tint so it reads correctly over both the white and cream section bands. */
+  --color-hairline: #00000059;
 }
 
 @theme inline {
@@ -56,11 +83,14 @@
   --color-light: var(--color-light);
   --color-line: var(--color-line);
   --color-cream: var(--color-cream);
+  --color-cream-50: var(--color-cream-50);
+  --color-cream-50-0: var(--color-cream-50-0);
 
   --color-ink-50: var(--color-ink-50);
   --color-ink-100: var(--color-ink-100);
   --color-ink-200: var(--color-ink-200);
   --color-ink-300: var(--color-ink-300);
+  --color-ink-400: var(--color-ink-400);
   --color-ink-500: var(--color-ink-500);
   --color-ink-700: var(--color-ink-700);
   --color-ink-900: var(--color-ink-900);
@@ -68,8 +98,12 @@
   --color-line-100: var(--color-line-100);
   --color-line-200: var(--color-line-200);
   --color-line-300: var(--color-line-300);
+  --color-hairline: var(--color-hairline);
 
-  --font-sans: var(--font-inter);
+  /* --font-roboto is defined by next/font on <html>. Deliberately NOT
+     redeclared in :root — that would shadow the self-hosted family with a
+     bare "Roboto" lookup and reintroduce the fallback flash. */
+  --font-sans: var(--font-roboto);
 
   /* Figma breakpoints: mobile 360, tablet 768 (nav collapse), desktop 1200, wide 1600. */
   --breakpoint-sm: 360px;
@@ -78,12 +112,31 @@
   --breakpoint-xl: 1600px;
 }
 
+@media (width >= 768px) {
+  :root {
+    --header-height: 5rem;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-sans);
+  font-optical-sizing: auto;
+  font-variation-settings: "wdth" 100;
 }
 
 @layer utilities {
+  /* Horizontally scrollable strips (e.g. the /about year timeline) that must
+     not show a scrollbar chrome over the photo behind them. */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
   .container-page {
     @apply mx-auto w-full max-w-[1600px] px-5 md:px-8 lg:px-10;
   }

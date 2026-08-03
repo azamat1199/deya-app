@@ -29,18 +29,27 @@ const FILTER_TABS: { slug: string; labelKey: TranslationKey }[] = [
 const PAGE_SIZE = 10;
 
 function resolveInitialSlug(initialCategory?: string) {
-  return FILTER_TABS.some((tab) => tab.slug === initialCategory) ? initialCategory! : "all";
+  return FILTER_TABS.some((tab) => tab.slug === initialCategory)
+    ? initialCategory!
+    : "all";
 }
 
-export default function ProductGrid({ locale, initialCategory }: ProductGridProps) {
+export default function ProductGrid({
+  locale,
+  initialCategory,
+}: ProductGridProps) {
   const { t } = useTranslation();
   const router = useRouter();
-  const [activeSlug, setActiveSlug] = useState(() => resolveInitialSlug(initialCategory));
+  const [activeSlug, setActiveSlug] = useState(() =>
+    resolveInitialSlug(initialCategory),
+  );
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const filtered = useMemo(() => {
     if (activeSlug === "all") return catalogProducts;
-    return catalogProducts.filter((product) => product.categorySlug === activeSlug);
+    return catalogProducts.filter(
+      (product) => product.categorySlug === activeSlug,
+    );
   }, [activeSlug]);
 
   const visibleProducts = filtered.slice(0, visibleCount);
@@ -64,7 +73,7 @@ export default function ProductGrid({ locale, initialCategory }: ProductGridProp
               type="button"
               onClick={() => handleFilterChange(tab.slug)}
               className={cn(
-                "text-sm transition-colors",
+                "text-sm transition-colors cursor-pointer",
                 activeSlug === tab.slug
                   ? "font-medium text-ink-900 underline underline-offset-4"
                   : "text-ink-500 hover:text-ink-900",
