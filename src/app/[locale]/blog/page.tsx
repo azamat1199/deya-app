@@ -11,7 +11,9 @@ type BlogPageProps = {
   params: Promise<{ locale: string }>;
 };
 
-export async function generateMetadata({ params }: BlogPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: BlogPageProps): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const dictionary = await getDictionary(locale);
@@ -23,10 +25,16 @@ export default async function BlogPage({ params }: BlogPageProps) {
   if (!isLocale(locale)) notFound();
 
   return (
-    <Section bg="white" containerWidth="home">
-      <h1 className="text-center text-3xl font-normal text-ink-900 lg:text-4xl">
-        {blogContent.heading}
-      </h1>
+    // containerWidth="page" is the `.container-page` utility the Header itself
+    // uses, so the first card's left edge and the last card's right edge land
+    // on exactly the same x as the logo block and the phone button. "home" is a
+    // different container (max-w-1440, lg:px-20) and was inset 40px further in.
+    <Section bg="white" containerWidth="page">
+      <div className="flex justify-center">
+        <h1 className="mt-14 text-3xl font-normal text-ink-900 lg:text-4xl">
+          {blogContent.heading}
+        </h1>
+      </div>
       <div className="mt-10 lg:mt-14">
         <BlogGrid locale={locale} />
       </div>

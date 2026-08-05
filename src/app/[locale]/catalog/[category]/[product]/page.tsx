@@ -158,7 +158,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </div>
       </div>
 
-      <div className="mt-12 flex flex-col gap-4 md:flex-row">
+      {/* Already a sibling of the two-column grid rather than a child of either
+          column, so it spans the full block width — it was only left-aligned.
+          justify-center is inert on the mobile column (auto height) and centres
+          the pair on the block's midpoint from md up. */}
+      <div className="mt-12 flex flex-col gap-4 md:flex-row md:justify-center">
         <ContactSalesButton className="w-full md:w-auto" />
         <a
           href="#"

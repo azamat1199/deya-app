@@ -123,7 +123,8 @@ export default function Slider<T>({
   const [isHovering, setIsHovering] = useState(false);
   const [isTabHidden, setIsTabHidden] = useState(false);
   const prefersReducedMotion = useReducedMotion();
-  const isAutoplayPaused = isHovering || isTabHidden || Boolean(prefersReducedMotion);
+  const isAutoplayPaused =
+    isHovering || isTabHidden || Boolean(prefersReducedMotion);
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
@@ -163,7 +164,14 @@ export default function Slider<T>({
     // with (e.g. containScroll computed from the mobile-first initial
     // slidesPerView), so a breakpoint change never actually applies.
     emblaApi?.reInit({ loop, align: effectiveAlign, containScroll });
-  }, [emblaApi, activeSlidesPerView, activeGap, loop, effectiveAlign, containScroll]);
+  }, [
+    emblaApi,
+    activeSlidesPerView,
+    activeGap,
+    loop,
+    effectiveAlign,
+    containScroll,
+  ]);
 
   useEffect(() => {
     if (!autoplay) return;
@@ -171,7 +179,8 @@ export default function Slider<T>({
       setIsTabHidden(document.hidden);
     }
     document.addEventListener("visibilitychange", onVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", onVisibilityChange);
   }, [autoplay]);
 
   useEffect(() => {
@@ -189,8 +198,22 @@ export default function Slider<T>({
     }, autoplayInterval);
 
     return () => window.clearTimeout(id);
-  }, [autoplay, autoplayInterval, emblaApi, loop, isAutoplayPaused, selectedIndex]);
+  }, [
+    autoplay,
+    autoplayInterval,
+    emblaApi,
+    loop,
+    isAutoplayPaused,
+    selectedIndex,
+  ]);
 
+  // NOTE: this under-shoots. The track below already carries -gap/2 margins on
+  // both sides, so its content box is one gap WIDER than the viewport, and each
+  // slide re-adds gap/2 of padding per side — meaning the row of n slides ends
+  // gap*(n-1) short of the right edge. The correct expression is
+  // `calc(100% / n)`. Left as-is deliberately: changing it moves the cards on
+  // /partners (CertificatesSection runs 2 and 3 per view) as well as the
+  // recommended row, and that is a call for the design owner to make.
   const slideBasis = `calc((100% - ${activeGap * (activeSlidesPerView - 1)}px) / ${activeSlidesPerView})`;
 
   return (

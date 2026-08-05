@@ -40,12 +40,27 @@ export interface Product {
   characteristics?: { label: string; value: string }[];
 }
 
+/**
+ * A section of a post body. Extend this union — and add one matching case to
+ * the renderer registry in components/blog/BlogBlocks.tsx — to introduce a new
+ * section type. Nothing else needs to change; the detail page maps over the
+ * array and an unrecognised type renders nothing.
+ */
+export type BlogBlock =
+  | { type: "paragraph"; text: string }
+  | { type: "heading"; level: 2 | 3; text: string }
+  | { type: "image"; src: string; alt: string };
+
 export interface NewsPost {
   slug: string;
   date: string;
   title: string;
   excerpt: string;
+  /** Listing/teaser thumbnail. Deliberately still named `cover` — the grid,
+   *  the card and the home page's teaser all read it. */
   cover: string;
+  /** Detail-page body. */
+  blocks: BlogBlock[];
 }
 
 export interface MapPoint {

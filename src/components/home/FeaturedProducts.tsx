@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 
-import { Badge, ScrollReveal } from "@/components/ui";
+import ProductCard from "@/components/products/ProductCard";
+import { ScrollReveal } from "@/components/ui";
 import { featuredProducts } from "@/content/products";
 import type { Locale } from "@/lib/i18n/config";
 
@@ -25,30 +25,12 @@ export default function FeaturedProducts({
                 direction="up"
                 delay={index * 0.08}
               >
-                <Link
+                <ProductCard
                   href={`/${locale}/catalog/${product.categorySlug}/${product.slug}`}
-                  className="group block"
-                >
-                  <div className="relative aspect-3/4 w-full bg-white shadow-[0px_0px_20px_0px_#0000001A]">
-                    {product.badge && (
-                      <Badge
-                        text={product.badge.text}
-                        variant={product.badge.variant}
-                        className="absolute top-5 left-1/2 z-10 -translate-x-1/2"
-                      />
-                    )}
-                    <Image
-                      src={product.image}
-                      alt={product.title}
-                      fill
-                      sizes="(min-width: 1200px) 25vw, (min-width: 768px) 50vw, 100vw"
-                      className="object-contain p-12 transition-transform duration-600 ease-out motion-reduce:transition-none [@media(hover:hover)]:group-hover:scale-[1.04] lg:p-16"
-                    />
-                  </div>
-                  <h3 className="mt-5 line-clamp-2 text-center text-sm leading-snug text-ink-900 lg:text-base">
-                    {product.title}
-                  </h3>
-                </Link>
+                  image={product.image}
+                  title={product.title}
+                  badge={product.badge}
+                />
               </ScrollReveal>
             ))}
           </div>

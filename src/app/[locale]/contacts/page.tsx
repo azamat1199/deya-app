@@ -12,7 +12,9 @@ type ContactsPageProps = {
   params: Promise<{ locale: string }>;
 };
 
-export async function generateMetadata({ params }: ContactsPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: ContactsPageProps): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const dictionary = await getDictionary(locale);
@@ -24,12 +26,23 @@ export default async function ContactsPage({ params }: ContactsPageProps) {
   if (!isLocale(locale)) notFound();
 
   return (
-    <Section bg="white" containerWidth="home">
-      <h1 className="max-w-xl text-3xl font-normal text-ink-900 lg:text-4xl">
+    // The logo block hangs past the header bar, so the page starts below the
+    // block, not the bar. Only the overhang is added here: this route's header
+    // is sticky, i.e. in flow, so its own height is already consumed above
+    // <main> — adding --header-height too would double-count it. The 4rem is
+    // the clear space from the logo's bottom edge down to the heading.
+    <Section
+      bg="white"
+      containerWidth="home"
+      className="pt-[calc(var(--logo-overhang)_+_4rem)]"
+    >
+      {/* 24ch is what breaks it after "нами" — a width, not a <br>, so it
+          re-breaks if the type scale ever moves. */}
+      <h1 className="max-w-[24ch] text-3xl font-normal text-ink-900 lg:text-4xl">
         {contactsContent.heading}
       </h1>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-2">
+      <div className="mt-10 mb-10 grid gap-8 lg:grid-cols-2">
         <ContactInfo />
         <ContactForm />
       </div>

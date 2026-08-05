@@ -12,11 +12,6 @@ export interface CategoryGridProps {
 const GRADIENT =
   "linear-gradient(180deg, #FFFCF7 30.77%, rgba(255, 252, 247, 0.00) 77.4%)";
 
-// Single source for the gutter — it is a grid gap, so it applies between cards
-// only and leaves the row's outer edges (the full-bleed 0 → 100vw) untouched.
-// The same value is the row gutter once the row wraps.
-const CARD_GUTTER = "gap-[10px]";
-
 export default function CategoryGrid({
   locale,
   toCatalogLabel,
@@ -26,13 +21,7 @@ export default function CategoryGrid({
       className="relative left-1/2 right-1/2 w-screen -mx-[50vw]"
       style={{ background: GRADIENT }}
     >
-      {/* All four in one row from lg, so the three 10px gutters come out of the
-          cards' widths (7.5px each) and the row spans exactly what it did
-          before. Below that it wraps to 2×2 and then to a single column, with
-          the same gutter in both axes. */}
-      <div
-        className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 ${CARD_GUTTER}`}
-      >
+      <div className="grid grid-cols-1 gap-[10px] md:grid-cols-2">
         {homeCategories.map((category) => (
           <Link
             key={category.slug}
@@ -44,7 +33,7 @@ export default function CategoryGrid({
               src={category.image}
               alt={category.title}
               fill
-              sizes="(min-width: 1200px) 25vw, (min-width: 768px) 50vw, 100vw"
+              sizes="(min-width: 768px) 50vw, 100vw"
               className="object-cover transition-transform duration-600 ease-out motion-reduce:transition-none [@media(hover:hover)]:group-hover:scale-[1.04]"
             />
 

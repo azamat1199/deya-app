@@ -108,6 +108,10 @@ export interface Dictionary {
       modalTitle: string;
     };
   };
+  blog: {
+    /** Heading of the related-posts section on a post's detail page. */
+    otherArticles: string;
+  };
 }
 
 type DotPaths<T, Prefix extends string = ""> = {

@@ -3,7 +3,10 @@
     "allow": [
       "Bash(npx tsc *)",
       "Bash(echo \"EXIT:$?\")",
-      "mcp__figma-dev-node-mcp-server__get_screenshot"
+      "mcp__figma-dev-node-mcp-server__get_screenshot",
+      "Bash(npx prettier *)",
+      "Bash(npx eslint *)",
+      "Bash(node banner.mjs)"
     ]
   }
 }

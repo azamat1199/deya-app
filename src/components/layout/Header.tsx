@@ -17,16 +17,23 @@ import MobileMenu from "./MobileMenu";
 
 const HERO_ROUTES = ["", "/about", "/partners", "/careers"];
 
+/** Whole sections that opt out of the bar's bottom rule, at any depth. */
+const BORDERLESS_SECTIONS = ["contacts", "blog"];
+
 /**
  * Routes that opt out of the bar's bottom rule. A page cannot hand a prop up to
  * the layout that renders this header, so the opt-in is declared the same way
- * HERO_ROUTES already is — by route shape. Product detail is
- * `/{locale}/catalog/{category}/{product}`; the catalog root and the category
- * listing are shorter and keep the rule.
+ * HERO_ROUTES already is — by route shape.
+ *
+ * Product detail is `/{locale}/catalog/{category}/{product}` specifically: the
+ * catalog root and the category listing are shorter and keep the rule. Contacts
+ * and blog opt out wholesale, detail routes included.
  */
 function isBorderlessRoute(pathname: string): boolean {
   const segments = pathname.split("/").filter(Boolean);
-  return segments.length === 4 && segments[1] === "catalog";
+  const section = segments[1];
+  if (BORDERLESS_SECTIONS.includes(section)) return true;
+  return segments.length === 4 && section === "catalog";
 }
 
 export default function Header() {
