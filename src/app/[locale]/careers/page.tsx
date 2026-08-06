@@ -36,7 +36,7 @@ export default async function CareersPage({ params }: CareersPageProps) {
       <Section bg="white" containerWidth="home">
         <CareersCulture />
       </Section>
-      <Section bg="light" containerWidth="home">
+      <Section bg="white" containerWidth="home">
         <CareersBrands />
       </Section>
       <Section bg="white" containerWidth="home">

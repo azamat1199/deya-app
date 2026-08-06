@@ -29,15 +29,44 @@ const RELATED_COUNT = 4;
 // container's 20px gutter so the first and last slides rest on it rather than
 // flush against the viewport edge.
 const TRACK_MOBILE = cn(
-  "max-md:flex max-md:snap-x max-md:snap-mandatory max-md:overflow-x-auto",
-  "max-md:scroll-p-5 max-md:scrollbar-none",
+  "max-md:flex max-md:items-stretch max-md:snap-x max-md:snap-mandatory",
+  "max-md:overflow-x-auto max-md:overscroll-x-contain max-md:scrollbar-none",
   "max-md:[-webkit-overflow-scrolling:touch]",
+  // The gutter is a gap on the track, never padding on a slide: padding would
+  // make the snap point and the visual edge disagree, which is what leaves a
+  // slide resting half-scrolled.
+  "max-md:gap-6",
+  // `overflow-x: auto` computes `overflow-y: auto` too, so the track clips at
+  // its padding box — and both bottom-row labels underline at a 6px offset,
+  // which lands ~2px BELOW their own boxes. Without this the rules are painted
+  // and then clipped away: text-decoration still computes as `underline`, so
+  // only the rendered pixels show it missing. Vertical padding only; it cannot
+  // affect the horizontal snap points.
+  "max-md:pb-2",
 );
 
 // One-up slides, and no hairlines: a single-column carousel has no column
 // boundaries to divide.
-const SLIDE_MOBILE =
-  "max-md:w-full max-md:shrink-0 max-md:basis-full max-md:snap-center max-md:border-t-0 max-md:py-0";
+// flex: 0 0 100% — grow-0 and shrink-0 both matter: without shrink-0 the slides
+// squeeze to fit and two show at once. snap-start (not center) so the rest
+// position is the container's own left edge, and snap-always so a fast flick
+// cannot skip past a slide and stop between two. min-w-0 keeps a long title
+// from blowing the slide wider than the track.
+const SLIDE_MOBILE = cn(
+  "max-md:relative max-md:h-full max-md:w-full max-md:min-w-0",
+  "max-md:shrink-0 max-md:grow-0 max-md:basis-full",
+  "max-md:snap-start max-md:[scroll-snap-stop:always]",
+  "max-md:border-t-0 max-md:py-0",
+);
+
+// "ВСЕ НОВОСТИ" lives inside each slide so it scrolls out with its card, but
+// OUTSIDE that card's <Link> — an <a> cannot contain an <a>. Anchoring it to the
+// slide's bottom-right is what puts it on the read-more's line without a tuned
+// offset: the track stretches every slide to the same height and NewsListCard
+// pins its read-more to the bottom with mt-auto, so the card's last line and
+// this link share a bottom edge, and both are text-xs.
+const ALL_NEWS_IN_SLIDE =
+  "max-md:absolute max-md:right-0 max-md:bottom-0 md:hidden";
 
 export default function OtherArticles({
   locale,
@@ -151,21 +180,14 @@ export default function OtherArticles({
               locale={locale}
               readMoreLabel={readMoreLabel}
             />
+            <Link
+              href={allNewsHref}
+              className={cn(ALL_NEWS_IN_SLIDE, ALL_NEWS_LINK_CLASSES)}
+            >
+              {allNewsLabel}
+            </Link>
           </div>
         ))}
-      </div>
-
-      {/* Mobile only. -1lh lifts this onto the card's own read-more line: that
-          label is the card's last line and lives inside the card's <Link>, so
-          the two cannot share a flex row without nesting an <a>. One line
-          height, not a tuned pixel value, so it tracks the type scale. */}
-      <div className="flex justify-end text-xs md:hidden">
-        <Link
-          href={allNewsHref}
-          className={cn("-mt-[1lh]", ALL_NEWS_LINK_CLASSES)}
-        >
-          {allNewsLabel}
-        </Link>
       </div>
 
       {/* Dot count is derived from the slides actually rendered. */}

@@ -53,7 +53,7 @@ export const NEWS_LIST_GRID_CLASSES =
 
 /** Shared by the section headers that sit above a NewsListCard grid. */
 export const ALL_NEWS_LINK_CLASSES =
-  "text-xs font-medium tracking-[0.08em] text-ink-900 uppercase underline decoration-1 underline-offset-6 transition-colors duration-150 hover:text-brand-600 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-600 motion-reduce:transition-none";
+  "text-xs font-medium tracking-[0.08em] text-ink-900 uppercase underline decoration-1 underline-offset-4 transition-colors duration-150 hover:text-brand-600 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-600 motion-reduce:transition-none";
 
 /**
  * The imageless news card: date, red title, three-line excerpt and a read-more
@@ -99,7 +99,7 @@ export default function NewsListCard({
             so all four align on one baseline however long the titles run. */}
         <span
           aria-hidden="true"
-          className="mt-auto inline-block pt-8 text-xs font-medium tracking-[0.08em] text-ink-900 uppercase underline decoration-1 underline-offset-6 transition-[text-decoration-thickness] duration-150 group-hover:decoration-2 motion-reduce:transition-none"
+          className="mt-auto inline-block pt-8 text-xs font-medium tracking-[0.08em] text-ink-900 uppercase underline decoration-1 underline-offset-4 transition-[text-decoration-thickness] duration-150 group-hover:decoration-2 motion-reduce:transition-none"
         >
           {readMoreLabel}
         </span>

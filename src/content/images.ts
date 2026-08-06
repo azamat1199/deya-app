@@ -26,4 +26,5 @@ export const IMAGES = {
   certificateHalal: "/images/certificate-halal.jpg",
   certificateIso22000: "/images/certificate-iso22000.jpg",
   placeholder: "/images/product-ketler.jpg",
+  photoMan: "/images/Photo_man.png",
 } as const;
