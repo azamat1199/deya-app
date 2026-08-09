@@ -64,7 +64,11 @@ export default function Stat({ value, numericValue, label, className }: StatProp
         {display}
         {suffix}
       </p>
-      <p className="mt-2 text-sm text-ink-500">{label}</p>
+      {/* The number-to-caption distance is this margin, not a gap on the
+          wrapper — the number itself carries no margin-bottom. Overriding it
+          here rather than adding mb to the number keeps a single margin in
+          play, so the 10px is not the result of two margins collapsing. */}
+      <p className="mt-2 text-sm text-ink-500 max-md:mt-[10px]">{label}</p>
     </div>
   );
 }

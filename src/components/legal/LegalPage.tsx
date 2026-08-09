@@ -25,7 +25,11 @@ function renderTextWithLinks(text: string): ReactNode[] {
     }
     if (/^[\w.-]+@[\w.-]+\.\w+$/.test(part)) {
       return (
-        <a key={index} href={`mailto:${part}`} className="text-brand-600 hover:underline">
+        <a
+          key={index}
+          href={`mailto:${part}`}
+          className="text-brand-600 hover:underline"
+        >
           {part}
         </a>
       );
@@ -40,7 +44,10 @@ function LegalBlocks({ blocks }: { blocks: LegalBlock[] }) {
       {blocks.map((block, index) => {
         if (block.type === "paragraph") {
           return (
-            <p key={index} className="mb-4 text-sm leading-relaxed text-ink-600">
+            <p
+              key={index}
+              className="mb-4 text-sm leading-relaxed text-ink-600"
+            >
               {renderTextWithLinks(block.text)}
             </p>
           );
@@ -50,7 +57,10 @@ function LegalBlocks({ blocks }: { blocks: LegalBlock[] }) {
           return (
             <ul key={index} className="mb-4">
               {block.items.map((item, itemIndex) => (
-                <li key={itemIndex} className="mb-1 text-sm leading-relaxed text-ink-600">
+                <li
+                  key={itemIndex}
+                  className="mb-1 text-sm leading-relaxed text-ink-600"
+                >
                   — {renderTextWithLinks(item)}
                 </li>
               ))}
@@ -60,7 +70,9 @@ function LegalBlocks({ blocks }: { blocks: LegalBlock[] }) {
 
         return (
           <div key={index}>
-            <h2 className="mt-6 mb-2 text-sm font-semibold text-ink-900">{block.heading}</h2>
+            <h2 className="mt-6 mb-2 text-sm font-semibold text-ink-900">
+              {block.heading}
+            </h2>
             <LegalBlocks blocks={block.blocks} />
           </div>
         );
@@ -75,16 +87,42 @@ export interface LegalPageProps {
   backLabel: string;
 }
 
-export default function LegalPage({ content, locale, backLabel }: LegalPageProps) {
+export default function LegalPage({
+  content,
+  locale,
+  backLabel,
+}: LegalPageProps) {
   return (
     <section className="bg-white pt-8 pb-20 lg:pt-12 lg:pb-32">
       <div className="mx-auto w-full max-w-[1080px] px-5 md:px-8 lg:px-10">
         <div className="max-w-180">
+          {/* The leading mark used to be a literal em dash in the markup, which
+              is why it read as a rule rather than an arrow. lucide-react is
+              already a project dependency (Slider, CertificatesSection), and
+              ArrowLeft is the long-tailed form — ChevronLeft would give the
+              head only. size-[1.1em] tracks the 12px type automatically and
+              stroke inherits currentColor, so the arrow can never drift from
+              the label's colour on hover or focus. */}
           <Link
             href={`/${locale}`}
-            className="mb-8 inline-block text-xs font-medium tracking-wide text-ink-400 uppercase transition-colors hover:text-brand-600 lg:mb-12"
+            className="mb-8 inline-flex items-center gap-3 text-xs font-medium tracking-wide text-ink-400 uppercase transition-colors hover:text-brand-600 lg:mb-12"
           >
-            — {backLabel}
+            <svg
+              width="14"
+              height="8"
+              viewBox="0 0 22 10"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M21 5H1" />
+              <path d="M5.5 1 1 5l4.5 4" />
+            </svg>
+            {backLabel}
           </Link>
 
           <ScrollReveal direction="fade">

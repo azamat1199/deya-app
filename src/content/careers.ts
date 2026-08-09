@@ -155,7 +155,7 @@ export const careersContent = {
       {
         title: "Что означает название Deya?",
         description:
-          "История нашего названия — это история семьи, традиций и любви к качественному кондитерскому делу, которую мы бережно храним и развиваем.",
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec eget nunc vitae justo vulputate tincidunt. Proin nec erat id erat bibendum iaculis. Suspendisse potenti. Sed vehicula mauris nec dolor convallis, nec gravida nibh malesuada. Aliquam erat volutpat. ",
         image: IMAGES.historyChocolate,
       },
       {

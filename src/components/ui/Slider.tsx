@@ -234,8 +234,8 @@ export default function Slider<T>({
               className="min-w-0 shrink-0 grow-0"
               style={{
                 flexBasis: slideBasis,
-                paddingLeft: activeGap / 2,
-                paddingRight: activeGap / 2,
+                // paddingLeft: activeGap / 2,
+                // paddingRight: activeGap / 2,
               }}
             >
               {renderSlide(item, index)}
@@ -256,7 +256,7 @@ export default function Slider<T>({
             isAutoplayPaused,
           })
         : (showNavigation || showPagination) && (
-            <div className="mt-6 flex items-center justify-between">
+            <div className="mt-6 flex items-center justify-center">
               {showPagination && paginationStyle === "dots" && (
                 <div className="flex items-center gap-2">
                   {scrollSnaps.map((_, index) => (

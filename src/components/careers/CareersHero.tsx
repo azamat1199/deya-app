@@ -10,7 +10,7 @@ export interface CareersHeroProps {
 export default function CareersHero({ vacanciesLabel }: CareersHeroProps) {
   return (
     <div className="relative w-full overflow-hidden bg-ink-900">
-      <div className="relative h-125 w-full max-md:h-svh max-md:supports-[height:100dvh]:h-dvh md:h-150 lg:h-175 xl:h-197.5">
+      <div className="relative h-125 w-full max-md:h-dvh md:h-150 lg:h-175 xl:h-197.5">
         <Image
           src={careersContent.image}
           alt={careersContent.heading}

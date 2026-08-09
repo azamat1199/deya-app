@@ -63,7 +63,7 @@ export default function Footer() {
                 </AnimatedLink>
               </li>
               <li>
-                <AnimatedLink href={`/${locale}/consent`} className="opacity-90 hover:opacity-100">
+                <AnimatedLink href={`/${locale}/personal-data-consent`} className="opacity-90 hover:opacity-100">
                   {t("footer.consent")}
                 </AnimatedLink>
               </li>

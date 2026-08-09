@@ -397,7 +397,14 @@ export default function ExportMap() {
             <Button
               variant="white"
               size="md"
-              className="absolute bottom-4 left-4 z-20 shadow-md lg:bottom-12 lg:left-16 lg:px-10 lg:py-4 cursor-pointer"
+              // Stretched between two insets rather than given w-full: the
+              // button is absolutely positioned inside a full-bleed frame, so
+              // w-full would resolve to the frame's whole width and run past
+              // the right edge. With width auto and both left and right set,
+              // the used width is frame - 20 - 20, which puts its edges on the
+              // logo and the burger. 5 is the same step .container-page uses
+              // for px-5, so the two move together.
+              className="absolute bottom-4 left-4 z-20 shadow-md max-md:right-5 max-md:left-5 max-md:w-auto lg:bottom-12 lg:left-16 lg:px-10 lg:py-4 cursor-pointer"
               onClick={() => setIsPartnerFormOpen(true)}
             >
               {t("buttons.becomePartner")}

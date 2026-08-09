@@ -6,7 +6,9 @@
       "mcp__figma-dev-node-mcp-server__get_screenshot",
       "Bash(npx prettier *)",
       "Bash(npx eslint *)",
-      "Bash(node banner.mjs)"
+      "Bash(node banner.mjs)",
+      "Bash(curl -s -o /dev/null --max-time 20 http://localhost:3000/ru/personal-data-consent)",
+      "Bash(curl -s -o /dev/null --max-time 20 http://localhost:3000/ru/contacts)"
     ]
   }
 }

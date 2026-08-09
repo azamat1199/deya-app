@@ -105,7 +105,7 @@ export default function ContactForm() {
             <>
               {contactsContent.form.consentPrefix}{" "}
               <Link
-                href={`/${locale}/consent`}
+                href={`/${locale}/personal-data-consent`}
                 className="underline hover:text-brand-600"
                 onClick={(event) => event.stopPropagation()}
               >

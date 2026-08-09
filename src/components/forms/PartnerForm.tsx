@@ -87,7 +87,7 @@ export default function PartnerForm({ onSuccess }: PartnerFormProps) {
           <>
             {t("form.consentPersonalDataPrefix")}{" "}
             <Link
-              href={`/${locale}/consent`}
+              href={`/${locale}/personal-data-consent`}
               className="underline hover:text-brand-600"
               onClick={(event) => event.stopPropagation()}
             >

@@ -7,7 +7,9 @@ import { careersContent } from "@/content/careers";
 
 function TileBackground({ image }: { image: string | null }) {
   if (!image) {
-    return <div className="absolute inset-0 bg-linear-to-br from-brand-500 to-brand-700" />;
+    return (
+      <div className="absolute inset-0 bg-linear-to-br from-brand-500 to-brand-700" />
+    );
   }
 
   return (
@@ -30,13 +32,15 @@ export default function CareersAbout() {
           slidesPerView={1}
           showPagination
           renderSlide={(tile) => (
-            <div className="relative flex aspect-2/1 items-end overflow-hidden rounded-lg">
+            <div className="relative flex aspect-[32/47] w-full items-stretch overflow-hidden ">
               <TileBackground image={tile.image} />
-              <div className="absolute inset-y-0 right-0 w-1 bg-brand-600" />
-
-              <div className="relative z-10 flex w-full flex-col gap-3 px-5 pt-8 pb-6">
-                <h3 className="text-xl font-normal text-white">{tile.title}</h3>
-                <p className="text-xs leading-relaxed text-white/80">{tile.description}</p>
+              <div className="relative z-10 flex h-full w-full flex-col justify-between gap-3 px-5 pt-8 pb-6">
+                <h3 className="w-full text-center text-xl font-normal text-white max-md:text-center max-md:text-[24px] max-md:leading-[1.1] max-md:font-light max-md:tracking-[-0.03em]">
+                  {tile.title}
+                </h3>
+                <p className="text-xs leading-relaxed text-white/80 max-md:text-center max-md:text-[13px] max-md:leading-[1.35] max-md:font-normal max-md:tracking-normal">
+                  {tile.description}
+                </p>
               </div>
             </div>
           )}
@@ -49,12 +53,14 @@ export default function CareersAbout() {
           {tiles.map((tile) => (
             <div
               key={tile.title}
-              className="relative flex aspect-2/1 items-end overflow-hidden bg-brand-600 lg:aspect-[2.1/1]"
+              className="relative flex aspect-2/1 items-end overflow-hidden bg-brand-600 lg:aspect-auto lg:h-[370px] lg:items-stretch xl:h-[clamp(370px,23.125vw,520px)]"
             >
               <TileBackground image={tile.image} />
 
-              <div className="relative z-10 flex w-full flex-col items-center gap-4 px-6 pb-8 text-center">
-                <h3 className="text-xl font-normal text-white lg:text-2xl">{tile.title}</h3>
+              <div className="relative z-10 flex w-full flex-col items-center gap-4 px-6 pb-8 text-center lg:h-full lg:justify-between lg:pt-8">
+                <h3 className="text-xl font-normal text-white lg:text-2xl pt-7 max-md:pt-5">
+                  {tile.title}
+                </h3>
                 <p className="max-w-sm text-xs leading-relaxed text-white/80 lg:text-sm">
                   {tile.description}
                 </p>

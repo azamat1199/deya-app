@@ -21,13 +21,13 @@ export default function CategoryGrid({
       className="relative left-1/2 right-1/2 w-screen -mx-[50vw]"
       style={{ background: GRADIENT }}
     >
-      <div className="grid grid-cols-1 gap-[10px] md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-[10px] max-md:grid-cols-2 md:grid-cols-2">
         {homeCategories.map((category) => (
           <Link
             key={category.slug}
             href={`/${locale}/catalog?category=${category.slug}`}
             aria-label={`Перейти в каталог: ${category.title}`}
-            className="group relative aspect-4/3 overflow-hidden lg:aspect-square"
+            className="group relative aspect-4/3 overflow-hidden max-md:aspect-square lg:aspect-square"
           >
             <Image
               src={category.image}
@@ -39,11 +39,16 @@ export default function CategoryGrid({
 
             <div className="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-black/45 via-black/10 to-transparent transition-colors duration-600 ease-out [@media(hover:hover)]:group-hover:from-black/60" />
 
-            <div className="absolute inset-x-0 bottom-8 z-10 flex flex-col items-center px-4 text-center lg:bottom-10">
+            {/* The two hover effects above are gated behind
+                [@media(hover:hover)], so a touch device never enters that
+                state: the scrim, title and link all render in their resting,
+                fully visible form. Nothing here is revealed by interaction, so
+                there is no hover treatment to port down. */}
+            <div className="absolute inset-x-0 bottom-8 z-10 flex flex-col items-center px-4 text-center max-md:bottom-6 max-md:px-2.5 lg:bottom-10">
               <h3 className="text-xl font-normal text-white drop-shadow-sm md:text-2xl lg:text-3xl">
                 {category.title}
               </h3>
-              <span className="mt-2 text-xs text-white/90 underline decoration-1 underline-offset-4">
+              <span className="mt-2 text-xs text-white/90 underline decoration-1 underline-offset-4 max-md:mt-1.5">
                 {toCatalogLabel}
               </span>
             </div>
