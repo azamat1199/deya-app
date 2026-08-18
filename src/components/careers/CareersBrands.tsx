@@ -3,8 +3,64 @@ import Link from "next/link";
 
 import { careersContent, type BrandItem } from "@/content/careers";
 import { cn } from "@/lib/cn";
+import { getCompanies, type Company } from "@/lib/companies";
 
 const RED_RUN = "подходящую вам должность";
+
+/**
+ * What the markup below reads, whichever source filled it. Both the live
+ * companies and the hand-authored fallback normalise to this.
+ */
+interface BrandCard {
+  key: string | number;
+  name: string;
+  image: string;
+  description: BrandItem["description"];
+  /** Empty string means this card renders without its vacancies link. */
+  href: string;
+}
+
+/**
+ * The hand-authored brands, kept as the fallback rather than deleted. Used
+ * whenever the request fails, times out, or yields nothing usable — this is a
+ * public marketing page, so stale copy beats an empty row.
+ */
+const STATIC_BRANDS: BrandCard[] = careersContent.brands.items.map((item) => ({
+  key: item.name,
+  name: item.name,
+  image: item.image,
+  description: item.description,
+  href: item.href,
+}));
+
+/**
+ * The API sends one flat string where BrandCopy renders paragraphs of inline
+ * runs. Blank lines become paragraph breaks — the most structure recoverable
+ * from plain text. Bold runs cannot survive the round trip: the static content
+ * marks them up per segment and the payload carries no equivalent, so live copy
+ * renders unemphasised.
+ */
+function toDescription(text: string): BrandItem["description"] {
+  const paragraphs = text
+    .split(/\r?\n\s*\r?\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+
+  if (paragraphs.length === 0) return undefined;
+  return paragraphs.map((paragraph) => [{ text: paragraph }]);
+}
+
+function toBrandCard(company: Company): BrandCard {
+  return {
+    key: company.id,
+    name: company.name,
+    // Empty images fall through to the static artwork at the same position,
+    // then to the bare `bg-light` frame past the static count.
+    image: company.image || (STATIC_BRANDS[0]?.image ?? ""),
+    description: toDescription(company.description),
+    href: company.vacancies_url.trim(),
+  };
+}
 
 // The row bleeds to both viewport edges from md up; below that it keeps the
 // container's gutter. `-mx-[50vw]` against `left-1/2` is the project's existing
@@ -80,8 +136,33 @@ function BrandCopy({
   );
 }
 
-export default function CareersBrands() {
-  const { heading, viewVacanciesLabel, items } = careersContent.brands;
+export default async function CareersBrands() {
+  const { heading, viewVacanciesLabel } = careersContent.brands;
+
+  // An async server component, not a client fetch: nothing here uses hooks, so
+  // awaiting on the server keeps the payload out of the client bundle and
+  // resolves the fallback before anything paints. Rendering it from the page
+  // needs no change — a server component can await a server child.
+  let companies: Company[] = [];
+  let fetchError: unknown = null;
+  try {
+    companies = await getCompanies();
+  } catch (error) {
+    fetchError = error;
+  }
+
+  const usingApi = companies.length > 0;
+  const items = usingApi ? companies.map(toBrandCard) : STATIC_BRANDS;
+
+  // Never silent again: whenever the static content stands in, say why.
+  if (!usingApi) {
+    console.error(
+      "[CareersBrands] falling back to static content —",
+      fetchError instanceof Error
+        ? fetchError.message
+        : "request returned an empty or wholly malformed array",
+    );
+  }
   // text-wrap: balance alone still pulled "и" up onto line 1 — it optimises for
   // even line widths, and "…Deya и" / "найдите…" is the more even split. A
   // no-break space welds "и" to "найдите" so that split is unavailable, which
@@ -91,6 +172,7 @@ export default function CareersBrands() {
     .replace("и найдите", "и\u00A0найдите")
     .split(RED_RUN);
 
+  console.log(items);
   return (
     <div className="py-10 lg:py-24">
       {/* One <h2>: the break onto two lines comes from the max-width, and the
@@ -103,10 +185,7 @@ export default function CareersBrands() {
 
       <div className={ROW}>
         {items.map((brand) => (
-          <div
-            key={brand.name}
-            className="group flex flex-col max-md:pb-[30px]"
-          >
+          <div key={brand.key} className="group flex flex-col max-md:pb-[30px]">
             {/* Full-bleed below md. -mx-10 cancels exactly the two measured
                 sources of horizontal padding above it — the single measured
                 source of horizontal padding above it — the Section container's
@@ -149,12 +228,21 @@ export default function CareersBrands() {
                 </div>
               )}
 
-              <Link
-                href={brand.href}
-                className="mt-[30px] max-md:mt-auto max-md:pt-5 font-normal text-ink-900 text-[clamp(10px,0.78vw,12px)] tracking-[0.04em] uppercase underline decoration-1 underline-offset-4 transition-colors hover:text-brand-600"
-              >
-                {viewVacanciesLabel.toUpperCase()}
-              </Link>
+              {/* Omitted entirely when vacancies_url is empty — never a dead
+                  href="". target/rel are added only for an off-site absolute
+                  URL, so the static fallback's in-page "#" keeps behaving as it
+                  does today instead of opening a second tab onto itself. */}
+              {brand.href && (
+                <Link
+                  href={brand.href}
+                  {...(/^https?:\/\//i.test(brand.href)
+                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
+                  className="mt-[30px] max-md:mt-auto max-md:pt-5 font-normal text-ink-900 text-[clamp(10px,0.78vw,12px)] tracking-[0.04em] uppercase underline decoration-1 underline-offset-4 transition-colors hover:text-brand-600"
+                >
+                  {viewVacanciesLabel.toUpperCase()}
+                </Link>
+              )}
             </div>
           </div>
         ))}

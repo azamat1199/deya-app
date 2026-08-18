@@ -1,9 +1,58 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 
 import { Slider } from "@/components/ui";
 import { careersContent } from "@/content/careers";
+
+/**
+ * GET /api/v1/career-values/ answers with a BARE ARRAY, not the
+ * { count, next, results } envelope DRF list views usually return — so the
+ * body is used directly and nothing unwraps .results.
+ */
+interface CareerValue {
+  id: number;
+  title: string;
+  text: string;
+  image: string;
+}
+
+/** The shape both sources normalise to, so the JSX below reads one thing. */
+interface AboutTile {
+  id: string | number;
+  title: string;
+  description: string;
+  image: string | null;
+}
+
+// Trailing slash is load-bearing: Django's APPEND_SLASH answers the slashless
+// form with a 301, confirmed against the live host. Do not trim it.
+const CAREER_VALUES_PATH = "/api/v1/career-values/";
+
+/**
+ * The hand-authored tiles, kept as the fallback rather than deleted. This is
+ * also the initial state, so the server render and first paint show real copy
+ * and the section can never appear blank while the request is in flight.
+ */
+const STATIC_TILES: AboutTile[] = careersContent.about.tiles.map((tile) => ({
+  id: tile.title,
+  title: tile.title,
+  description: tile.description,
+  image: tile.image,
+}));
+
+function isCareerValue(value: unknown): value is CareerValue {
+  if (typeof value !== "object" || value === null) return false;
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate.id === "number" &&
+    typeof candidate.title === "string" &&
+    candidate.title.trim() !== "" &&
+    typeof candidate.text === "string" &&
+    typeof candidate.image === "string"
+  );
+}
 
 function TileBackground({ image }: { image: string | null }) {
   if (!image) {
@@ -21,14 +70,62 @@ function TileBackground({ image }: { image: string | null }) {
 }
 
 export default function CareersAbout() {
-  const { tiles } = careersContent.about;
+  // Starts on the static content, so a failure, a timeout, an empty array or
+  // malformed items all resolve by simply never replacing it.
+  const [tiles, setTiles] = useState<AboutTile[]>([]);
+
+  useEffect(() => {
+    // Host comes from the environment, never from this file. With the variable
+    // unset there is nothing to call, so the static fallback stands.
+    const base = process.env.NEXT_PUBLIC_API_URL;
+    if (!base) return;
+
+    const controller = new AbortController();
+
+    fetch(`${base.replace(/\/+$/, "")}${CAREER_VALUES_PATH}`, {
+      signal: controller.signal,
+      headers: { Accept: "application/json" },
+    })
+      .then((response) =>
+        response.ok
+          ? (response.json() as Promise<unknown>)
+          : Promise.reject(new Error(String(response.status))),
+      )
+      .then((body) => {
+        if (!Array.isArray(body)) return;
+
+        const values = body.filter(isCareerValue);
+        // An empty or wholly malformed payload is treated as no answer at all:
+        // stale copy beats an empty grid on a public marketing page.
+        if (values.length === 0) return;
+
+        setTiles(
+          values.map((value, index) => ({
+            id: value.id,
+            title: value.title,
+            description: value.text,
+            // NOT value.image. next/image rejects any host missing from
+            // images.remotePatterns, and editing next.config.ts is out of
+            // scope, so a remote URL here would throw at render. The tile
+            // keeps the static artwork at the same position until that entry
+            // exists; past the static count there is none, and TileBackground
+            // falls through to its brand gradient.
+            image: STATIC_TILES[index]?.image ?? null,
+          })),
+        );
+      })
+      // Network error, abort, non-2xx, invalid JSON — all keep the fallback.
+      .catch(() => {});
+
+    return () => controller.abort();
+  }, []);
 
   return (
     <>
       {/* Phone: single-card swipeable carousel with dot pagination. */}
       <div className="container-page py-10 md:hidden">
         <Slider
-          items={[...tiles]}
+          items={tiles}
           slidesPerView={1}
           showPagination
           renderSlide={(tile) => (
@@ -52,7 +149,7 @@ export default function CareersAbout() {
         <div className="grid grid-cols-2 gap-0.5">
           {tiles.map((tile) => (
             <div
-              key={tile.title}
+              key={tile.id}
               className="relative flex aspect-2/1 items-end overflow-hidden bg-brand-600 lg:aspect-auto lg:h-[370px] lg:items-stretch xl:h-[clamp(370px,23.125vw,520px)]"
             >
               <TileBackground image={tile.image} />
