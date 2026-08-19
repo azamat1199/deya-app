@@ -17,13 +17,6 @@ export interface CertificatesGridProps {
   items: CertificateCard[];
 }
 
-/**
- * The client half of the section: it owns the slider and the i18n hook.
- * CertificatesSection stays a server component so it can await the fetch and
- * use `next: { revalidate: 300 }` — a client component can do neither. The
- * array arrives here as a prop, and nothing in this file reads the static
- * content, so there is no path by which mock data can reappear.
- */
 export default function CertificatesGrid({ items }: CertificatesGridProps) {
   const { t } = useTranslation();
 

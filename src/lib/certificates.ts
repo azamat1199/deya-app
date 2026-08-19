@@ -1,3 +1,5 @@
+import { apiOrigin, mediaUrl } from "@/lib/api";
+
 /**
  * GET /api/v1/certificates/
  *
@@ -17,25 +19,6 @@ export interface Certificate {
  * base.
  */
 const CERTIFICATES_PATH = "/api/v1/certificates/";
-
-/** Throws rather than defaulting to a relative base — a relative base silently
- *  sends requests to whatever host the app is deployed on. */
-function apiOrigin(): string {
-  const base = process.env.NEXT_PUBLIC_API_URL;
-  if (!base?.trim()) {
-    throw new Error("NEXT_PUBLIC_API_URL is not set");
-  }
-  return base.trim().replace(/\/+$/, "");
-}
-
-/** Absolute URLs pass through; a server-relative `/media/...` path is resolved
- *  against the API origin here, so no component hardcodes the host. */
-function absoluteUrl(value: string, origin: string): string {
-  const trimmed = value.trim();
-  if (!trimmed) return "";
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  return `${origin}${trimmed.startsWith("/") ? trimmed : `/${trimmed}`}`;
-}
 
 function isCertificate(value: unknown): value is Certificate {
   if (typeof value !== "object" || value === null) return false;
@@ -74,9 +57,12 @@ export async function getCertificates(): Promise<Certificate[]> {
     throw new Error(`GET ${url} did not return an array`);
   }
 
+  // `file` gets the same treatment as `image`: it is not fed to next/image, but
+  // an http:// href on an https:// page is still mixed content once anything
+  // fetches it.
   return body.filter(isCertificate).map((certificate) => ({
     ...certificate,
-    image: absoluteUrl(certificate.image, origin),
-    file: absoluteUrl(certificate.file, origin),
+    image: mediaUrl(certificate.image, origin),
+    file: mediaUrl(certificate.file, origin),
   }));
 }

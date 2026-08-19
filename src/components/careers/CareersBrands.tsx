@@ -155,12 +155,18 @@ export default async function CareersBrands() {
   const items = usingApi ? companies.map(toBrandCard) : STATIC_BRANDS;
 
   // Never silent again: whenever the static content stands in, say why.
+  // `cause` is logged as its own argument rather than interpolated: Node's
+  // fetch reports every network-level failure as the bare string "fetch
+  // failed" and hides the real reason (ENOTFOUND, ECONNREFUSED, a TLS error)
+  // in error.cause, which String() would flatten to "Error".
   if (!usingApi) {
     console.error(
       "[CareersBrands] falling back to static content —",
       fetchError instanceof Error
         ? fetchError.message
         : "request returned an empty or wholly malformed array",
+      "| cause:",
+      fetchError instanceof Error ? (fetchError.cause ?? "(none)") : "(none)",
     );
   }
   // text-wrap: balance alone still pulled "и" up onto line 1 — it optimises for

@@ -5,6 +5,7 @@ import Image from "next/image";
 
 import { Slider } from "@/components/ui";
 import { careersContent } from "@/content/careers";
+import { mediaUrl, normaliseOrigin } from "@/lib/api";
 
 /**
  * GET /api/v1/career-values/ answers with a BARE ARRAY, not the
@@ -79,10 +80,11 @@ export default function CareersAbout() {
     // unset there is nothing to call, so the static fallback stands.
     const base = process.env.NEXT_PUBLIC_API_URL;
     if (!base) return;
+    const origin = normaliseOrigin(base);
 
     const controller = new AbortController();
 
-    fetch(`${base.replace(/\/+$/, "")}${CAREER_VALUES_PATH}`, {
+    fetch(`${origin}${CAREER_VALUES_PATH}`, {
       signal: controller.signal,
       headers: { Accept: "application/json" },
     })
@@ -104,18 +106,30 @@ export default function CareersAbout() {
             id: value.id,
             title: value.title,
             description: value.text,
-            // NOT value.image. next/image rejects any host missing from
-            // images.remotePatterns, and editing next.config.ts is out of
-            // scope, so a remote URL here would throw at render. The tile
-            // keeps the static artwork at the same position until that entry
-            // exists; past the static count there is none, and TileBackground
-            // falls through to its brand gradient.
-            image: STATIC_TILES[index]?.image ?? null,
+            // The payload's absolute URLs arrive over http://; mediaUrl
+            // upgrades them to https:// so next/image accepts them and the
+            // browser does not block them as mixed content. An empty image
+            // borrows the static artwork at the same position, and past the
+            // static count TileBackground falls through to its brand gradient.
+            image: mediaUrl(value.image, origin) || STATIC_TILES[index]?.image || null,
           })),
         );
       })
-      // Network error, abort, non-2xx, invalid JSON — all keep the fallback.
-      .catch(() => {});
+      // Network error, non-2xx, invalid JSON — all keep the fallback, but none
+      // of them stay silent any more. `cause` is a separate argument because
+      // Node/undici reports network-level failures as the bare string "fetch
+      // failed" and hides the real reason (ENOTFOUND, ECONNREFUSED, a TLS
+      // error) in error.cause.
+      .catch((error: unknown) => {
+        // An abort is this effect cleaning up on unmount, not a failure.
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        console.error(
+          "[CareersAbout] falling back to static content —",
+          error instanceof Error ? error.message : String(error),
+          "| cause:",
+          error instanceof Error ? (error.cause ?? "(none)") : "(none)",
+        );
+      });
 
     return () => controller.abort();
   }, []);

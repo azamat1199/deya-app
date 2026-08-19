@@ -112,6 +112,10 @@ export interface Dictionary {
     /** Heading of the related-posts section on a post's detail page. */
     otherArticles: string;
   };
+  catalog: {
+    /** Shown instead of the grid when the selected category has no products. */
+    empty: string;
+  };
 }
 
 type DotPaths<T, Prefix extends string = ""> = {

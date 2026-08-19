@@ -1,3 +1,5 @@
+import { apiOrigin, mediaUrl } from "@/lib/api";
+
 /**
  * GET /api/v1/companies/
  *
@@ -20,29 +22,6 @@ export interface Company {
  * `/api/v1` prefix lives here in the path, never in the base.
  */
 const COMPANIES_PATH = "/api/v1/companies/";
-
-/** Throws rather than defaulting to a relative base — a relative base silently
- *  sends requests to whatever host the app is deployed on. */
-function apiOrigin(): string {
-  const base = process.env.NEXT_PUBLIC_API_URL;
-  if (!base?.trim()) {
-    throw new Error("NEXT_PUBLIC_API_URL is not set");
-  }
-  return base.trim().replace(/\/+$/, "");
-}
-
-/**
- * Absolute URLs pass through unchanged; a server-relative path such as
- * `/media/companies/foo.jpg` is resolved against the API origin here, so no
- * component ever hardcodes the host. An empty value stays empty and the caller
- * falls back to its own artwork.
- */
-function absoluteImageUrl(image: string, origin: string): string {
-  const value = image.trim();
-  if (!value) return "";
-  if (/^https?:\/\//i.test(value)) return value;
-  return `${origin}${value.startsWith("/") ? value : `/${value}`}`;
-}
 
 function isCompany(value: unknown): value is Company {
   if (typeof value !== "object" || value === null) return false;
@@ -83,10 +62,10 @@ export async function getCompanies(): Promise<Company[]> {
     throw new Error(`GET ${url} did not return an array`);
   }
 
-  return body
-    .filter(isCompany)
-    .map((company) => ({
-      ...company,
-      image: absoluteImageUrl(company.image, origin),
-    }));
+  // mediaUrl, not a bare passthrough: the payload's absolute URLs arrive over
+  // http:// and the component must never see one.
+  return body.filter(isCompany).map((company) => ({
+    ...company,
+    image: mediaUrl(company.image, origin),
+  }));
 }

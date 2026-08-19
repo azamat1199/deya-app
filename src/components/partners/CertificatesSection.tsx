@@ -46,13 +46,20 @@ export default async function CertificatesSection() {
   const usingApi = fetched.length > 0;
   const items = usingApi ? fetched.map(toCertificateCard) : STATIC_CERTIFICATES;
 
-  // Never silent: whenever the static content stands in, say why.
+  // Never silent: whenever the static content stands in, say why. Stays
+  // console.warn deliberately — console.error trips the Next dev error overlay
+  // on every page load, and this outage is a known, expected condition.
+  // `cause` is a separate argument because Node's fetch reports network-level
+  // failures as the bare string "fetch failed" and hides the real reason
+  // (ENOTFOUND, ECONNREFUSED, a TLS error) in error.cause.
   if (!usingApi) {
     console.warn(
       "[CertificatesSection] falling back to static content —",
       fetchError instanceof Error
         ? fetchError.message
         : "request returned an empty or wholly malformed array",
+      "| cause:",
+      fetchError instanceof Error ? (fetchError.cause ?? "(none)") : "(none)",
     );
   }
 
