@@ -8,9 +8,17 @@ import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export interface ContactSalesButtonProps {
   className?: string;
+  /**
+   * Id of the product whose page this button sits on. Optional: without it the
+   * lead is still sent as "sales", just with no `product` field in the body.
+   */
+  productId?: number;
 }
 
-export default function ContactSalesButton({ className }: ContactSalesButtonProps) {
+export default function ContactSalesButton({
+  className,
+  productId,
+}: ContactSalesButtonProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -21,7 +29,9 @@ export default function ContactSalesButton({ className }: ContactSalesButtonProp
       </Button>
 
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title={t("buttons.contactSales")}>
-        <PartnerForm onSuccess={() => setIsOpen(false)} />
+        {/* Same shared form, submitted as a sales lead rather than a partner
+            one, carrying this page's product id when it has one. */}
+        <PartnerForm type="sales" productId={productId} />
       </Modal>
     </>
   );

@@ -39,6 +39,41 @@ export interface Product {
   main_image: ProductImage | null;
 }
 
+/** One weight the product is sold in. `value` is a decimal string ("1.00"). */
+export interface ProductWeight {
+  id: number;
+  value: string;
+  unit: string;
+}
+
+/**
+ * GET /api/v1/products/{slug}/
+ *
+ * NOT a strict superset of the list shape: the detail view drops `main_image`
+ * and answers with a full `images` array instead, and adds description, code,
+ * box_weight, shelf_life_months, weights and variants. The shared sub-types
+ * (Category, ProductFlavor, ProductImage) are reused rather than redeclared.
+ */
+export interface ProductDetail {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  /** Article/SKU code, e.g. "B-214". */
+  code: string;
+  /** Decimal string in kilograms, e.g. "1.500". */
+  box_weight: string;
+  shelf_life_months: number | null;
+  category: Category;
+  flavor: ProductFlavor | null;
+  badge: string | null;
+  is_featured: boolean;
+  images: ProductImage[];
+  weights: ProductWeight[];
+  /** Sibling products offered as alternative variants. */
+  variants: Product[];
+}
+
 /** Trailing slash is load-bearing: Django's APPEND_SLASH 301s the slashless
  *  form. The `/api/v1` prefix lives here, never in the base. */
 const PRODUCTS_PATH = "/api/v1/products/";
@@ -170,4 +205,99 @@ export async function getProducts(): Promise<Product[]> {
   }
 
   return collected;
+}
+
+function isWeight(value: unknown): value is ProductWeight {
+  if (typeof value !== "object" || value === null) return false;
+  const candidate = value as Record<string, unknown>;
+  return typeof candidate.value === "string" && typeof candidate.unit === "string";
+}
+
+/**
+ * The API's badge is a bare string ("new"); Badge takes text plus a variant.
+ * Lives here rather than in a component so the card grid and the detail page
+ * can share one mapping instead of keeping their own copies.
+ */
+export function badgeLabel(
+  badge: string | null,
+): { text: string; variant: "new" | "hit" } | undefined {
+  if (!badge) return undefined;
+  const known: Record<string, { text: string; variant: "new" | "hit" }> = {
+    new: { text: "Новинка", variant: "new" },
+    hit: { text: "Хит продаж", variant: "hit" },
+  };
+  return known[badge.toLowerCase()] ?? { text: badge, variant: "new" };
+}
+
+/**
+ * A single product by slug.
+ *
+ * A 404 returns null — a URL naming a product that does not exist is a normal
+ * outcome, not an error, and the caller turns it into a real Next 404. Any
+ * other non-2xx still throws: a backend fault must not be indistinguishable
+ * from "no such product", which would silently 404 the whole catalog during an
+ * outage.
+ */
+export async function getProduct(slug: string): Promise<ProductDetail | null> {
+  const trimmed = slug.trim();
+  if (!trimmed) return null;
+
+  const origin = apiOrigin();
+  const url = `${origin}${PRODUCTS_PATH}${encodeURIComponent(trimmed)}/`;
+
+  const response = await fetch(url, {
+    headers: { Accept: "application/json" },
+    // EXPLICIT, never the default.
+    next: { revalidate: 300 },
+  });
+
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed with ${response.status}`);
+  }
+
+  const body: unknown = await response.json();
+  if (typeof body !== "object" || body === null) {
+    throw new Error(`GET ${url} did not return an object`);
+  }
+
+  const raw = body as Record<string, unknown>;
+  if (
+    typeof raw.id !== "number" ||
+    typeof raw.name !== "string" ||
+    !raw.name.trim() ||
+    typeof raw.slug !== "string" ||
+    !isCategory(raw.category)
+  ) {
+    throw new Error(`GET ${url} returned an unusable product shape`);
+  }
+
+  const images = Array.isArray(raw.images)
+    ? raw.images.filter(isProductImage).map((image) => ({
+        ...image,
+        image: mediaUrl(image.image, origin),
+      }))
+    : [];
+
+  return {
+    id: raw.id,
+    name: raw.name,
+    slug: raw.slug,
+    description: typeof raw.description === "string" ? raw.description : "",
+    code: typeof raw.code === "string" ? raw.code : "",
+    box_weight: typeof raw.box_weight === "string" ? raw.box_weight : "",
+    shelf_life_months:
+      typeof raw.shelf_life_months === "number" ? raw.shelf_life_months : null,
+    category: { ...raw.category, image: mediaUrl(raw.category.image, origin) },
+    flavor: isFlavor(raw.flavor) ? raw.flavor : null,
+    badge:
+      typeof raw.badge === "string" && raw.badge.trim() ? raw.badge.trim() : null,
+    is_featured: raw.is_featured === true,
+    // Sorted so the gallery order is the backend's, not the payload's.
+    images: images.sort((a, b) => a.sort_order - b.sort_order || a.id - b.id),
+    weights: Array.isArray(raw.weights) ? raw.weights.filter(isWeight) : [],
+    variants: Array.isArray(raw.variants)
+      ? raw.variants.filter(isProduct).map((row) => toProduct(row, origin))
+      : [],
+  };
 }

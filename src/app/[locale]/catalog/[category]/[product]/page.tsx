@@ -6,48 +6,161 @@ import ContactSalesButton from "@/components/catalog/ContactSalesButton";
 import ProductGallery from "@/components/catalog/ProductGallery";
 import RecommendedProducts from "@/components/catalog/RecommendedProducts";
 import { Section } from "@/components/ui";
-import { catalogProducts } from "@/content/catalog";
+import type { Product, ProductVariantOption } from "@/content/types";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
-import { PRODUCT_CATEGORY_LINKS } from "@/lib/nav";
+import {
+  badgeLabel,
+  getProduct,
+  type ProductDetail,
+  type ProductWeight,
+} from "@/lib/products";
 
 type ProductPageProps = {
   params: Promise<{ locale: string; category: string; product: string }>;
 };
 
-function findProduct(category: string, product: string) {
-  return catalogProducts.find(
-    (p) => p.categorySlug === category && p.slug === product,
-  );
+const UNIT_LABELS: Record<string, string> = { kg: "кг", g: "г" };
+
+/** "1.500" -> "1,5". The payload sends decimal strings with trailing zeros. */
+function formatDecimal(value: string): string {
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed)) return value;
+  return parsed.toLocaleString("ru-RU", { maximumFractionDigits: 3 });
+}
+
+function formatWeight(weight: ProductWeight): string {
+  const unit = UNIT_LABELS[weight.unit.toLowerCase()] ?? weight.unit;
+  return `${formatDecimal(weight.value)} ${unit}`;
+}
+
+function pluralMonths(count: number): string {
+  const mod100 = count % 100;
+  const mod10 = count % 10;
+  if (mod100 >= 11 && mod100 <= 14) return "месяцев";
+  if (mod10 === 1) return "месяц";
+  if (mod10 >= 2 && mod10 <= 4) return "месяца";
+  return "месяцев";
+}
+
+/**
+ * The product's own flavour first, then each sibling variant. The existing
+ * markup marks the option whose slug equals the product's as active, so the
+ * first entry reads as selected without any extra state.
+ */
+function toFlavorOptions(detail: ProductDetail): ProductVariantOption[] {
+  const options: ProductVariantOption[] = [];
+  if (detail.flavor) {
+    options.push({ label: detail.flavor.name, slug: detail.slug });
+  }
+  for (const variant of detail.variants) {
+    options.push({
+      label: variant.flavor?.name ?? variant.name,
+      slug: variant.slug,
+    });
+  }
+  return options;
+}
+
+/**
+ * `weights` carries values but no per-weight product to navigate to, so every
+ * option points back at this same product and therefore renders as the active
+ * chip. The values are real; only the link target is absent from the payload.
+ */
+function toWeightOptions(detail: ProductDetail): ProductVariantOption[] {
+  return detail.weights.map((weight) => ({
+    label: formatWeight(weight),
+    slug: detail.slug,
+  }));
+}
+
+/** Row labels stay the Russian copy the page already shipped; only the values
+ *  are live. A field the payload omits drops its row rather than showing blank. */
+function toCharacteristics(detail: ProductDetail) {
+  const rows: { label: string; value: string }[] = [];
+  if (detail.box_weight) {
+    rows.push({
+      label: "Вес ящика",
+      value: `${formatDecimal(detail.box_weight)} кг`,
+    });
+  }
+  if (detail.shelf_life_months !== null) {
+    rows.push({
+      label: "Срок хранения",
+      value: `${detail.shelf_life_months} ${pluralMonths(detail.shelf_life_months)}`,
+    });
+  }
+  if (detail.code) {
+    rows.push({ label: "Код товара", value: detail.code });
+  }
+  return rows;
+}
+
+/**
+ * Maps the detail payload onto the shape the existing markup already reads, so
+ * not a line of the layout below has to change. Optional fields stay `undefined`
+ * when the API has nothing for them, which is exactly what the conditional
+ * blocks already test — no invented values, no deleted markup.
+ */
+function toDisplayProduct(detail: ProductDetail): Product {
+  const gallery = detail.images.map((image) => image.image).filter(Boolean);
+  const flavorOptions = toFlavorOptions(detail);
+  const weightOptions = toWeightOptions(detail);
+  const characteristics = toCharacteristics(detail);
+
+  return {
+    slug: detail.slug,
+    categorySlug: detail.category.slug,
+    title: detail.name,
+    image: gallery[0] ?? "",
+    badge: badgeLabel(detail.badge),
+    description: detail.description || undefined,
+    gallery: gallery.length > 0 ? gallery : undefined,
+    flavorOptions: flavorOptions.length > 0 ? flavorOptions : undefined,
+    weightOptions: weightOptions.length > 0 ? weightOptions : undefined,
+    characteristics: characteristics.length > 0 ? characteristics : undefined,
+  };
 }
 
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
-  const { locale, category, product } = await params;
+  const { locale, product } = await params;
   if (!isLocale(locale)) return {};
-  const found = findProduct(category, product);
-  if (!found) return {};
-  return { title: `${found.title} — DEYA` };
+
+  // Never throws: metadata generation must not be able to fail the response.
+  // The fetch is deduped against the one in the page body for this request.
+  let detail: ProductDetail | null = null;
+  try {
+    detail = await getProduct(product);
+  } catch {
+    detail = null;
+  }
+
+  if (!detail) return { title: "Товар не найден — DEYA" };
+
+  return {
+    title: `${detail.name} — DEYA`,
+    ...(detail.description
+      ? { description: detail.description.slice(0, 300) }
+      : {}),
+  };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { locale, category, product } = await params;
   if (!isLocale(locale)) notFound();
 
-  const found = findProduct(category, product);
-  if (!found) notFound();
+  // A missing product is a real 404, never a stand-in: a fake product living at
+  // a real URL is worse than no page. Deliberately NOT wrapped in a fallback —
+  // this is the one integration on the site where falling back would be wrong.
+  const detail = await getProduct(product);
+  if (!detail) notFound();
+
+  const found = toDisplayProduct(detail);
 
   const dictionary = await getDictionary(locale as Locale);
-  const categoryLink = PRODUCT_CATEGORY_LINKS.find(
-    (link) => link.slug === category,
-  );
-  // labelKey is always "categories.<slug>" — pull the leaf key back out to index the dictionary.
-  const categoryKey = categoryLink?.labelKey.replace("categories.", "") as
-    keyof typeof dictionary.categories | undefined;
-  const categoryLabel = categoryKey
-    ? dictionary.categories[categoryKey]
-    : category;
+  const categoryLabel = detail.category.name;
 
   return (
     // The logo block hangs below the header bar, and this page's first row is
@@ -124,7 +237,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   const isActive = option.slug === found.slug;
                   return (
                     <Link
-                      key={option.slug}
+                      // Every weight points at this same product, so the slug
+                      // alone is not unique across the list — the label is.
+                      key={`${option.slug}-${option.label}`}
                       href={`/${locale}/catalog/${category}/${option.slug}`}
                       className={
                         isActive
@@ -163,7 +278,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           justify-center is inert on the mobile column (auto height) and centres
           the pair on the block's midpoint from md up. */}
       <div className="mt-12 flex flex-col gap-4 md:flex-row md:justify-center">
-        <ContactSalesButton className="w-full md:w-auto" />
+        <ContactSalesButton className="w-full md:w-auto" productId={detail.id} />
         <a
           href="#"
           className="inline-flex w-full items-center justify-center rounded-md border border-brand-600 px-8 py-4 text-sm font-semibold tracking-wide text-brand-600 uppercase transition-colors hover:bg-brand-50 md:w-auto"

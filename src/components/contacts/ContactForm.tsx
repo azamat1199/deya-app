@@ -2,13 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 
 import { Button, Checkbox } from "@/components/ui";
 import { contactsContent } from "@/content/contacts";
 import { cn } from "@/lib/cn";
 import { useTranslation } from "@/lib/i18n/useTranslation";
-import { submitForm } from "@/lib/submitForm";
+import {
+  API_FIELD_TO_FORM,
+  isValidEmail,
+  isValidPhone,
+  normalisePhone,
+  submitLead,
+} from "@/lib/leads";
 
 type ContactFormValues = {
   name: string;
@@ -28,17 +34,71 @@ const EMAIL_INVALID_MESSAGE = "Введите корректный e-mail";
 export default function ContactForm() {
   const { t, locale } = useTranslation();
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
     reset,
+    setError,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<ContactFormValues>();
 
+  // Legal consent gates submission, so the button is disabled until the box is
+  // ticked. useWatch rather than watch() — the latter returns a fresh function
+  // each render and makes React Compiler skip memoising the component.
+  const consentGiven = Boolean(
+    useWatch({ control, name: "consentPersonalData" }),
+  );
+
   const onSubmit = handleSubmit(async (values) => {
-    const result = await submitForm({ formName: "contact", locale, ...values });
-    setStatus(result.ok ? "success" : "error");
-    if (result.ok) reset();
+    setFormError(null);
+
+    // Validated BEFORE the request. Reported through the same `errors` props
+    // the markup already renders, so no new error UI appears.
+    const email = values.email.trim();
+    if (!isValidEmail(email)) {
+      setError("email", { message: EMAIL_INVALID_MESSAGE });
+      return;
+    }
+
+    const phone = normalisePhone(values.phone ?? "");
+    if (!isValidPhone(phone)) {
+      setError("phone", { message: t("form.phoneInvalid") });
+      return;
+    }
+
+    // Same shared module as the partner and sales forms; only `type` differs.
+    // `product` is never sent from here — it belongs to the product page.
+    const result = await submitLead({
+      type: "contact",
+      name: values.name.trim(),
+      email,
+      phone,
+      message: (values.message ?? "").trim(),
+      consent_personal_data: Boolean(values.consentPersonalData),
+      consent_marketing: Boolean(values.consentMarketing),
+    });
+
+    if (result.ok) {
+      setStatus("success");
+      // Cleared only on success, so a failure never costs the user their typing.
+      reset();
+      return;
+    }
+
+    setStatus("error");
+
+    let matched = false;
+    for (const [apiField, message] of Object.entries(result.fieldErrors)) {
+      const formField = API_FIELD_TO_FORM[apiField];
+      if (formField) {
+        setError(formField, { message });
+        matched = true;
+      }
+    }
+
+    setFormError(result.detail ?? (matched ? null : t("form.error")));
   });
 
   return (
@@ -131,9 +191,11 @@ export default function ContactForm() {
       </div>
 
       {status === "success" && <p className="mt-4 text-sm text-brand-600">{t("form.success")}</p>}
-      {status === "error" && <p className="mt-4 text-sm text-brand-600">{t("form.error")}</p>}
+      {status === "error" && formError && <p className="mt-4 text-sm text-brand-600">{formError}</p>}
 
-      <Button type="submit" variant="primary" size="lg" fullWidth loading={isSubmitting} className="mt-6">
+      {/* disabled until consent is given, and while a request is in flight —
+          which is also what stops a second click firing a second POST. */}
+      <Button type="submit" variant="primary" size="lg" fullWidth loading={isSubmitting} disabled={!consentGiven || isSubmitting} className="mt-6">
         {t("buttons.sendRequest")}
       </Button>
     </form>

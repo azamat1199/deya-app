@@ -64,6 +64,8 @@ export interface Dictionary {
     privacyPolicyLinkText: string;
     consentMarketing: string;
     emailInvalid: string;
+    /** Shown when the number is not +998 followed by the expected 9 digits. */
+    phoneInvalid: string;
     newsletterSuccess: string;
     success: string;
     error: string;
