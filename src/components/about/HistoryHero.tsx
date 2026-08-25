@@ -16,8 +16,8 @@ import {
   useScroll,
 } from "framer-motion";
 
-import { historySlides } from "@/content/history";
 import { cn } from "@/lib/cn";
+import type { TranslationKey } from "@/lib/i18n/dictionary";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 
 const FADE_EASE = [0.4, 0, 0.2, 1] as const;
@@ -30,15 +30,39 @@ const RULE_BELOW_BASELINE_PX = 22;
 const PANEL_ID = "history-panel";
 const tabId = (year: string) => `history-year-${year}`;
 
-const LAST_INDEX = historySlides.length - 1;
+/**
+ * One entry as the timeline renders it, whichever source filled it.
+ *
+ * `paragraph` carries the live description; `paragraphKey` is the static
+ * fallback's i18n key, resolved with t() below. Exactly one of the two is set,
+ * so live copy stays server-translated while the fallback stays localised.
+ */
+export interface HistorySlideItem {
+  /** React key — the API id, or the year on the static fallback. Never an index. */
+  key: string | number;
+  /** The label and the tab's DOM id. A string because the markup builds ids from it. */
+  year: string;
+  image: string;
+  paragraph?: string;
+  paragraphKey?: TranslationKey;
+}
+
+export interface HistoryHeroProps {
+  /**
+   * REQUIRED and deliberately without a default: a default would silently mask
+   * a missing prop and let the static timeline render while the fetch logs
+   * looked healthy, which is how earlier integrations regressed unnoticed.
+   */
+  slides: HistorySlideItem[];
+}
 
 /**
  * Which years render large. The selected one, plus 2026 — the timeline's open
  * end keeps its emphasis whether or not it is the year on screen. 1994 has no
  * such standing: it is large only while selected.
  */
-const isEmphasised = (index: number, activeIndex: number) =>
-  index === activeIndex || index === LAST_INDEX;
+const isEmphasised = (index: number, activeIndex: number, lastIndex: number) =>
+  index === activeIndex || index === lastIndex;
 
 // ---------------------------------------------------------------------------
 // Mobile-only (< 768px). Everything below this line is inert at >= md: the JS
@@ -51,20 +75,25 @@ const isEmphasised = (index: number, activeIndex: number) =>
 const MOBILE_QUERY = "(max-width: 767.98px)";
 /** Extra viewport-heights of scroll per year, past the pinned first screen. */
 const MOBILE_STEP_SVH = 40;
-const MOBILE_TRACK_SVH = 100 + LAST_INDEX * MOBILE_STEP_SVH;
+/** Derived per render now that the entry count comes from the API. */
+const mobileTrackSvh = (lastIndex: number) =>
+  100 + lastIndex * MOBILE_STEP_SVH;
 /** Escape hatch: a smooth scroll the user interrupts never reaches its target. */
 const PROGRAMMATIC_SCROLL_TIMEOUT_MS = 1500;
 
 const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
-export default function HistoryHero() {
+export default function HistoryHero({ slides }: HistoryHeroProps) {
   const { t } = useTranslation();
   const prefersReducedMotion = useReducedMotion();
   const instant = Boolean(prefersReducedMotion);
 
   const [activeIndex, setActiveIndex] = useState(0);
-  const active = historySlides[activeIndex];
+  const active = slides[activeIndex];
+  // Was a module-level constant off the static array; the entry count is live
+  // now, so it is derived per render.
+  const lastIndex = slides.length - 1;
 
   const trackRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -110,7 +139,7 @@ export default function HistoryHero() {
 
     function measure() {
       const first = tabRefs.current[0];
-      const last = tabRefs.current[historySlides.length - 1];
+      const last = tabRefs.current[slides.length - 1];
       const yearEl = first?.querySelector<HTMLElement>("[data-year]");
       if (!row || !first || !last || !yearEl) return;
 
@@ -191,8 +220,8 @@ export default function HistoryHero() {
   useMotionValueEvent(scrollYProgress, "change", (progress) => {
     if (!isMobileRef.current) return;
     const next = Math.min(
-      LAST_INDEX,
-      Math.max(0, Math.round(progress * LAST_INDEX)),
+      lastIndex,
+      Math.max(0, Math.round(progress * lastIndex)),
     );
     if (pendingIndexRef.current !== null) {
       if (next !== pendingIndexRef.current) return;
@@ -221,12 +250,14 @@ export default function HistoryHero() {
       }, PROGRAMMATIC_SCROLL_TIMEOUT_MS);
 
       window.scrollTo({
-        top: rect.top + window.scrollY + (index / LAST_INDEX) * span,
+        top: rect.top + window.scrollY + (index / lastIndex) * span,
         behavior: instant ? "auto" : "smooth",
       });
       return true;
     },
-    [instant],
+    // lastIndex is derived from the live entry count, so it belongs here — it
+    // was a module constant before the timeline became API-driven.
+    [instant, lastIndex],
   );
 
   const selectIndex = useCallback(
@@ -243,7 +274,7 @@ export default function HistoryHero() {
   // which desynced focus from selection after the first keypress.
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
-      const last = LAST_INDEX;
+      const last = lastIndex;
       // Up/Down move only while the timeline is the vertical mobile rail. On
       // the horizontal desktop tablist ARIA reserves them for the page, so they
       // are left alone there.
@@ -267,7 +298,7 @@ export default function HistoryHero() {
       selectIndex(next);
       tabRefs.current[next]?.focus();
     },
-    [activeIndex, selectIndex],
+    [activeIndex, selectIndex, lastIndex],
   );
 
   return (
@@ -277,7 +308,7 @@ export default function HistoryHero() {
     <div
       ref={trackRef}
       className="max-md:h-(--track-h)"
-      style={{ "--track-h": `${MOBILE_TRACK_SVH}svh` } as React.CSSProperties}
+      style={{ "--track-h": `${mobileTrackSvh(lastIndex)}svh` } as React.CSSProperties}
     >
       <div className="max-md:sticky max-md:top-0 max-md:h-svh max-md:supports-[height:100dvh]:h-dvh">
         <section className="relative w-full overflow-hidden bg-ink-900 text-white h-svh supports-[height:100dvh]:h-dvh">
@@ -287,7 +318,7 @@ export default function HistoryHero() {
           <div className="absolute inset-0 grid">
             <AnimatePresence mode="sync" initial={false}>
               <motion.div
-                key={active.year}
+                key={active.key}
                 className="[grid-area:1/1]"
                 initial={instant ? false : { opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -318,11 +349,11 @@ export default function HistoryHero() {
             className="pointer-events-none absolute h-px w-px overflow-hidden opacity-0"
           >
             {[activeIndex - 1, activeIndex + 1]
-              .filter((i) => i >= 0 && i < historySlides.length)
+              .filter((i) => i >= 0 && i < slides.length)
               .map((i) => (
                 <Image
-                  key={historySlides[i].year}
-                  src={historySlides[i].image}
+                  key={slides[i].key}
+                  src={slides[i].image}
                   alt=""
                   width={1}
                   height={1}
@@ -420,10 +451,10 @@ export default function HistoryHero() {
                   padding) sit inset from its ends. */}
                     <div className="absolute inset-x-0 h-px -translate-y-1/2 bg-[rgba(255,255,255,0.28)]" />
                     {metrics.centres.map((centre, index) => {
-                      const isLarge = isEmphasised(index, activeIndex);
+                      const isLarge = isEmphasised(index, activeIndex, lastIndex);
                       return (
                         <span
-                          key={historySlides[index].year}
+                          key={slides[index].key}
                           className={cn(
                             "absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-white transition-all duration-700 ease-in-out motion-reduce:transition-none",
                             isLarge ? "h-2.25 w-2.25" : "h-1.25 w-1.25",
@@ -434,12 +465,12 @@ export default function HistoryHero() {
                     })}
                   </div>
 
-                  {historySlides.map((slide, index) => {
+                  {slides.map((slide, index) => {
                     const isActive = index === activeIndex;
-                    const isLarge = isEmphasised(index, activeIndex);
+                    const isLarge = isEmphasised(index, activeIndex, lastIndex);
                     return (
                       <button
-                        key={slide.year}
+                        key={slide.key}
                         ref={(el) => {
                           tabRefs.current[index] = el;
                         }}
@@ -545,7 +576,7 @@ export default function HistoryHero() {
                 <div className="grid w-full shrink-0 min-[1024px]:w-[41%]">
                   <AnimatePresence mode="sync" initial={false}>
                     <motion.p
-                      key={active.year}
+                      key={active.key}
                       className="[grid-area:1/1] font-normal tracking-[-0.03em] text-white/90 text-[clamp(16px,1.39vw,20px)] leading-[1.25]"
                       initial={instant ? false : { opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -555,7 +586,8 @@ export default function HistoryHero() {
                         ease: FADE_EASE,
                       }}
                     >
-                      {t(active.paragraphKey)}
+                      {active.paragraph ??
+                        (active.paragraphKey ? t(active.paragraphKey) : "")}
                     </motion.p>
                   </AnimatePresence>
                 </div>
