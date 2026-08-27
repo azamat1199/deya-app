@@ -1,11 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { homeCategories } from "@/content/categories";
 import type { Locale } from "@/lib/i18n/config";
+
+/** One banner card, whichever source filled it. */
+export interface CategoryBannerItem {
+  /** React key — the API id, or the slug on the static fallback. Never an index. */
+  id: string | number;
+  title: string;
+  image: string;
+  /** Still consumed by the existing card link below, so it is not dead weight. */
+  slug: string;
+}
 
 export interface CategoryBannerProps {
   locale: Locale;
+  /**
+   * The first four live categories, already sliced and sorted by the page.
+   * REQUIRED and deliberately without a default: a default would silently mask
+   * a missing prop and let the mock render while the fetch logs looked healthy.
+   */
+  categories: CategoryBannerItem[];
 }
 
 // The one place the gutter is defined. A grid gap sits between tracks only, so
@@ -26,15 +41,21 @@ const CARD_GUTTER = "gap-[10px]";
 // but it re-resolves as the bar animates, and that is a visible reflow.
 const CARD_HEIGHT = "max-md:h-[calc((100svh_-_var(--header-height)_-_10px)/2)]";
 
-export default function CategoryBanner({ locale }: CategoryBannerProps) {
+export default function CategoryBanner({
+  locale,
+  categories,
+}: CategoryBannerProps) {
   return (
     <div className="relative left-1/2 right-1/2 w-screen mx-[-50vw]">
       <div
         className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 ${CARD_GUTTER}`}
       >
-        {homeCategories.map((category) => (
+        {categories.map((category) => (
+          // Links left exactly as they were: this component already navigated
+          // to the filtered catalog before the integration, so removing them
+          // would be a behaviour change, not an integration.
           <Link
-            key={category.slug}
+            key={category.id}
             href={`/${locale}/catalog?category=${category.slug}`}
             className={`group relative flex h-105 items-end justify-center overflow-hidden pb-12 md:h-125 lg:h-150 ${CARD_HEIGHT}`}
           >

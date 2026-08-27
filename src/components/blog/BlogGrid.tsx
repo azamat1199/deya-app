@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui";
-import { newsPosts } from "@/content/news";
+import type { NewsPost } from "@/content/types";
 import type { Locale } from "@/lib/i18n/config";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 
@@ -11,11 +11,30 @@ import BlogCard from "./BlogCard";
 
 export interface BlogGridProps {
   locale: Locale;
+  /**
+   * Posts to render, already fetched, normalised and sorted by the page.
+   * REQUIRED and deliberately without a default: a default would silently mask
+   * a missing prop and let mock articles render while the fetch logs looked
+   * healthy.
+   */
+  posts: BlogGridPost[];
+  /** Shown instead of the grid when there are no posts at all. */
+  emptyLabel: string;
+}
+
+/** A card's data plus the stable key it is rendered with (the API id). */
+export interface BlogGridPost {
+  key: string | number;
+  post: NewsPost;
 }
 
 const POSTS_PER_PAGE = 8;
 
-export default function BlogGrid({ locale }: BlogGridProps) {
+export default function BlogGrid({
+  locale,
+  posts,
+  emptyLabel,
+}: BlogGridProps) {
   const { t } = useTranslation();
   const [visibleCount, setVisibleCount] = useState(POSTS_PER_PAGE);
 
@@ -24,8 +43,8 @@ export default function BlogGrid({ locale }: BlogGridProps) {
   // click and the commit that renders it.
   const pendingFocusRef = useRef<number | null>(null);
 
-  const visiblePosts = newsPosts.slice(0, visibleCount);
-  const hasMore = visibleCount < newsPosts.length;
+  const visiblePosts = posts.slice(0, visibleCount);
+  const hasMore = visibleCount < posts.length;
 
   function showMore() {
     pendingFocusRef.current = visibleCount;
@@ -43,6 +62,11 @@ export default function BlogGrid({ locale }: BlogGridProps) {
       ?.focus();
   }, [visibleCount]);
 
+  // An honest empty state — never mock articles.
+  if (posts.length === 0) {
+    return <p className="text-sm text-ink-500">{emptyLabel}</p>;
+  }
+
   return (
     <div>
       {/* aria-live sits on the grid itself rather than wrapping only the new
@@ -55,11 +79,11 @@ export default function BlogGrid({ locale }: BlogGridProps) {
         aria-live="polite"
         className="grid grid-cols-1 gap-x-6 gap-y-12 md:grid-cols-2 lg:grid-cols-4 mb-14"
       >
-        {visiblePosts.map((post) => (
+        {visiblePosts.map((item) => (
           <BlogCard
-            key={post.slug}
-            post={post}
-            href={`/${locale}/blog/${post.slug}`}
+            key={item.key}
+            post={item.post}
+            href={`/${locale}/blog/${item.post.slug}`}
             readMoreLabel={t("buttons.readMore")}
             locale={locale}
           />

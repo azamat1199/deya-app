@@ -1,0 +1,115 @@
+{
+  "nav": {
+    "about": "Fabrika haqida",
+    "products": "Mahsulotlar",
+    "partners": "Hamkorlar uchun",
+    "careers": "Karyera",
+    "news": "Yangiliklar",
+    "contacts": "Kontaktlar"
+  },
+  "buttons": {
+    "viewCatalog": "Katalogni ko‘rish",
+    "toCatalog": "Katalogga",
+    "sendRequest": "So‘rov yuborish",
+    "downloadCatalog": "Katalogni yuklab olish",
+    "readMore": "Batafsil o‘qish",
+    "send": "Yuborish",
+    "showMoreNews": "Ko‘proq yangilik ko‘rsatish",
+    "backToList": "Orqaga qaytish",
+    "backToHome": "Bosh sahifaga qaytish",
+    "allNews": "Barcha yangiliklar",
+    "openInYandexMap": "Yandex xaritada ochish",
+    "partnerForm": "Hamkorlar uchun shakl",
+    "becomePartner": "Hamkor bo‘lish",
+    "allCatalog": "Butun katalog",
+    "showMoreProducts": "Ko‘proq mahsulot ko‘rsatish",
+    "contactSales": "Savdo bo‘limi bilan bog‘lanish",
+    "vacancies": "Vakansiyalar"
+  },
+  "categories": {
+    "croissants": "Kruassanlar",
+    "waffles": "Vaflilar",
+    "waferCandies": "Vaflili konfetlar",
+    "candies": "Konfetlar",
+    "cookies": "Pechene"
+  },
+  "footer": {
+    "navigation": "Navigatsiya",
+    "products": "Mahsulotlar",
+    "address": "Manzil",
+    "addressValue": "Deya qandolat fabrikasi, MChJ\nO‘zbekiston Respublikasi, 130100, Jizzax sh.",
+    "newsletter": "Yangiliklar xabarnomasi",
+    "newsletterText": "DEYA yangiliklari va maxsus takliflariga obuna bo‘ling",
+    "newsletterConsent": "Elektron pochta manzilingizni yuborish orqali siz DEYA sizga yangiliklar va maxsus takliflar yuborishiga rozilik bildirasiz. Siz DEYA ma’lumotlaringizdan o‘zining",
+    "contacts": "Kontaktlar",
+    "hotline": "Ishonch telefoni",
+    "documents": "Hujjatlar",
+    "privacyPolicy": "Maxfiylik siyosati",
+    "consent": "Shaxsiy ma’lumotlarni qayta ishlashga rozilik",
+    "workingHours": "Ish vaqti",
+    "workingHoursValue": "Dushanba — Shanba\n9:00 dan 18:00 gacha",
+    "copyright": "© 2012-2025 DEYA.UZ | Barcha huquqlar himoyalangan",
+    "designCredit": "Dizayn ishlab chiqish",
+    "devCredit": "Sayt ishlab chiqish by Deya"
+  },
+  "form": {
+    "namePlaceholder": "Ism",
+    "emailPlaceholder": "Elektron pochta",
+    "phonePlaceholder": "+998-71-2346785",
+    "messagePlaceholder": "Xabar",
+    "consentPersonalDataPrefix": "Men tanishib chiqqanimni tasdiqlayman va quyidagini beraman:",
+    "consentLinkText": "Shaxsiy ma’lumotlarimni qayta ishlashga rozilik",
+    "consentMiddle": "— quyidagida ko‘rsatilgan tartib va shartlarga muvofiq:",
+    "consentPrivacyLinkText": "Maxfiylik siyosati",
+    "privacyPolicyLinkText": "Maxfiylik siyosati",
+    "consentMarketing": "Men DEYA’dan yangiliklar va maxsus takliflar olishga roziman",
+    "emailInvalid": "To‘g‘ri e-mail kiriting",
+    "newsletterSuccess": "Rahmat! Siz xabarnomaga obuna bo‘ldingiz.",
+    "success": "Rahmat! Arizangiz yuborildi.",
+    "error": "Nimadir xato ketdi. Qayta urinib ko‘ring.",
+    "phoneInvalid": "Tanlangan davlat uchun to‘g‘ri telefon raqamini kiriting"
+  },
+  "common": {
+    "phone": "+998 (55) 151 55 55",
+    "phoneRaw": "+998551515555",
+    "eng": "ENG",
+    "rus": "RUS"
+  },
+  "about": {
+    "history": {
+      "title": "Deya tarixi",
+      "timelineLabel": "Deya tarixi xronologiyasi",
+      "years": {
+        "y1994": "Hammasi kichik pech va orzudan boshlangan.\nBugun Deya — O‘zbekiston qandolat sanoatining yetakchilaridan biri, uning ta’mi dunyoning ko‘p mamlakatlarida tanilgan va sevib iste’mol qilinadi.\n30 yil ichida biz 12 m²dan xalqaro brendgacha yo‘l bosdik va eng muhimini — qalbni, iliqlikni va sifatga sadoqatni saqlab qoldik.",
+        "y1996": "Hammasi kichik pech va orzudan boshlangan.\nBugun Deya — O‘zbekiston qandolat sanoatining yetakchilaridan biri, uning ta’mi dunyoning ko‘p mamlakatlarida tanilgan va sevib iste’mol qilinadi.\n30 yil ichida biz 12 m²dan xalqaro brendgacha yo‘l bosdik va eng muhimini — qalbni, iliqlikni va sifatga sadoqatni saqlab qoldik.",
+        "y1998": "Hammasi kichik pech va orzudan boshlangan.\nBugun Deya — O‘zbekiston qandolat sanoatining yetakchilaridan biri, uning ta’mi dunyoning ko‘p mamlakatlarida tanilgan va sevib iste’mol qilinadi.\n30 yil ichida biz 12 m²dan xalqaro brendgacha yo‘l bosdik va eng muhimini — qalbni, iliqlikni va sifatga sadoqatni saqlab qoldik.",
+        "y2001": "Hammasi kichik pech va orzudan boshlangan.\nBugun Deya — O‘zbekiston qandolat sanoatining yetakchilaridan biri, uning ta’mi dunyoning ko‘p mamlakatlarida tanilgan va sevib iste’mol qilinadi.\n30 yil ichida biz 12 m²dan xalqaro brendgacha yo‘l bosdik va eng muhimini — qalbni, iliqlikni va sifatga sadoqatni saqlab qoldik.",
+        "y2003": "Hammasi kichik pech va orzudan boshlangan.\nBugun Deya — O‘zbekiston qandolat sanoatining yetakchilaridan biri, uning ta’mi dunyoning ko‘p mamlakatlarida tanilgan va sevib iste’mol qilinadi.\n30 yil ichida biz 12 m²dan xalqaro brendgacha yo‘l bosdik va eng muhimini — qalbni, iliqlikni va sifatga sadoqatni saqlab qoldik.",
+        "y2009": "Hammasi kichik pech va orzudan boshlangan.\nBugun Deya — O‘zbekiston qandolat sanoatining yetakchilaridan biri, uning ta’mi dunyoning ko‘p mamlakatlarida tanilgan va sevib iste’mol qilinadi.\n30 yil ichida biz 12 m²dan xalqaro brendgacha yo‘l bosdik va eng muhimini — qalbni, iliqlikni va sifatga sadoqatni saqlab qoldik.",
+        "y2014": "Hammasi kichik pech va orzudan boshlangan.\nBugun Deya — O‘zbekiston qandolat sanoatining yetakchilaridan biri, uning ta’mi dunyoning ko‘p mamlakatlarida tanilgan va sevib iste’mol qilinadi.\n30 yil ichida biz 12 m²dan xalqaro brendgacha yo‘l bosdik va eng muhimini — qalbni, iliqlikni va sifatga sadoqatni saqlab qoldik.",
+        "y2016": "Hammasi kichik pech va orzudan boshlangan.\nBugun Deya — O‘zbekiston qandolat sanoatining yetakchilaridan biri, uning ta’mi dunyoning ko‘p mamlakatlarida tanilgan va sevib iste’mol qilinadi.\n30 yil ichida biz 12 m²dan xalqaro brendgacha yo‘l bosdik va eng muhimini — qalbni, iliqlikni va sifatga sadoqatni saqlab qoldik.",
+        "y2021": "Hammasi kichik pech va orzudan boshlangan.\nBugun Deya — O‘zbekiston qandolat sanoatining yetakchilaridan biri, uning ta’mi dunyoning ko‘p mamlakatlarida tanilgan va sevib iste’mol qilinadi.\n30 yil ichida biz 12 m²dan xalqaro brendgacha yo‘l bosdik va eng muhimini — qalbni, iliqlikni va sifatga sadoqatni saqlab qoldik.",
+        "y2022": "Hammasi kichik pech va orzudan boshlangan.\nBugun Deya — O‘zbekiston qandolat sanoatining yetakchilaridan biri, uning ta’mi dunyoning ko‘p mamlakatlarida tanilgan va sevib iste’mol qilinadi.\n30 yil ichida biz 12 m²dan xalqaro brendgacha yo‘l bosdik va eng muhimini — qalbni, iliqlikni va sifatga sadoqatni saqlab qoldik.",
+        "y2026": "Hammasi kichik pech va orzudan boshlangan.\nBugun Deya — O‘zbekiston qandolat sanoatining yetakchilaridan biri, uning ta’mi dunyoning ko‘p mamlakatlarida tanilgan va sevib iste’mol qilinadi.\n30 yil ichida biz 12 m²dan xalqaro brendgacha yo‘l bosdik va eng muhimini — qalbni, iliqlikni va sifatga sadoqatni saqlab qoldik."
+      }
+    }
+  },
+  "home": {
+    "placeholderTitle": "DEYA qandolat fabrikasi",
+    "newsTeaser": {
+      "heading": "DEYA hayotidan yangiliklar",
+      "empty": "Hozircha yangiliklar yo‘q — birozdan keyin kiring."
+    },
+    "exportMap": {
+      "mapLabel": "Deya eksport yo‘nalishlari xaritasi",
+      "truckAlt": "Deya logistikasi",
+      "modalTitle": "Qanday hamkor bo‘lish mumkin?"
+    }
+  },
+  "blog": {
+    "otherArticles": "Boshqa maqolalar"
+  },
+  "catalog": {
+    "empty": "Bu toifada hozircha mahsulot yo‘q."
+  }
+}

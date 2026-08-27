@@ -28,6 +28,8 @@ export interface ProductGridProps {
    */
   categories: Category[];
   products: ApiProduct[];
+  /** Normalised https URL to the catalog PDF, or "" when none is uploaded. */
+  catalogFile: string;
 }
 
 /** "All" keeps its existing translated label; every other tab is a live
@@ -132,6 +134,7 @@ export default function ProductGrid({
   initialCategory,
   categories,
   products,
+  catalogFile,
 }: ProductGridProps) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -238,12 +241,17 @@ export default function ProductGrid({
           ))}
         </div>
 
-        <a
-          href="#"
-          className="text-sm font-medium tracking-wide text-brand-600 uppercase underline decoration-1 underline-offset-4 hover:text-brand-700 max-md:order-first"
-        >
-          {t("buttons.downloadCatalog")}
-        </a>
+        {/* Hidden when no catalog is uploaded — never href="" or "#". */}
+        {catalogFile && (
+          <a
+            href={catalogFile}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium tracking-wide text-brand-600 uppercase underline decoration-1 underline-offset-4 hover:text-brand-700 max-md:order-first"
+          >
+            {t("buttons.downloadCatalog")}
+          </a>
+        )}
       </div>
 
       {/* 36px from the filter row down to the grid below md: the wrapper's own

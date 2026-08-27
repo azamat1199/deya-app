@@ -15,9 +15,14 @@ export interface CertificateCard {
 
 export interface CertificatesGridProps {
   items: CertificateCard[];
+  /** Normalised https URL to the catalog PDF, or "" when none is uploaded. */
+  catalogFile: string;
 }
 
-export default function CertificatesGrid({ items }: CertificatesGridProps) {
+export default function CertificatesGrid({
+  items,
+  catalogFile,
+}: CertificatesGridProps) {
   const { t } = useTranslation();
 
   // TEMPORARY diagnostic — remove once the backend is stable.
@@ -99,14 +104,19 @@ export default function CertificatesGrid({ items }: CertificatesGridProps) {
             onto the root — no edit to the shared component. font-sans IS the
             Roboto utility here: globals.css maps --font-sans to --font-roboto
             and deliberately exposes no bare font-roboto class. */}
-        <Button
-          variant="primary"
-          size="lg"
-          href="#"
-          className="max-md:w-full max-md:font-sans max-md:font-medium max-md:text-[12px] max-md:leading-[1.2] max-md:tracking-normal max-md:text-center max-md:uppercase"
-        >
-          {t("buttons.downloadCatalog")}
-        </Button>
+        {/* Hidden when no catalog is uploaded — never href="" or "#".
+            NOTE: Button exposes no target/rel props, so this one opens in the
+            same tab; adding them would mean editing the shared Button. */}
+        {catalogFile && (
+          <Button
+            variant="primary"
+            size="lg"
+            href={catalogFile}
+            className="max-md:w-full max-md:font-sans max-md:font-medium max-md:text-[12px] max-md:leading-[1.2] max-md:tracking-normal max-md:text-center max-md:uppercase"
+          >
+            {t("buttons.downloadCatalog")}
+          </Button>
+        )}
       </div>
     </>
   );

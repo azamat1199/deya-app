@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import PartnerForm from "@/components/forms/PartnerForm";
 import { Button, Modal } from "@/components/ui";
@@ -21,6 +21,17 @@ export default function ContactSalesButton({
 }: ContactSalesButtonProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+
+  // This button only ever appears on a product page, so a missing id is a wiring
+  // bug rather than a valid state. The lead still sends — just without the
+  // `product` key — but it never does so silently.
+  useEffect(() => {
+    if (productId === undefined) {
+      console.error(
+        "[ContactSalesButton] rendered with no productId. This button only appears on a product page, so the sales lead will be submitted without a `product` field — check that the page passes detail.id.",
+      );
+    }
+  }, [productId]);
 
   return (
     <>

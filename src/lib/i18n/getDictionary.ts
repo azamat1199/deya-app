@@ -4,6 +4,7 @@ import type { Locale } from "./config";
 import type { Dictionary } from "./dictionary";
 
 const dictionaries: Record<Locale, () => Promise<Dictionary>> = {
+  uz: () => import("@/locales/uz/common.json").then((mod) => mod.default as Dictionary),
   ru: () => import("@/locales/ru/common.json").then((mod) => mod.default as Dictionary),
   en: () => import("@/locales/en/common.json").then((mod) => mod.default as Dictionary),
 };

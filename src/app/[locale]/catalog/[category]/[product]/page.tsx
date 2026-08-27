@@ -4,14 +4,20 @@ import { notFound } from "next/navigation";
 
 import ContactSalesButton from "@/components/catalog/ContactSalesButton";
 import ProductGallery from "@/components/catalog/ProductGallery";
-import RecommendedProducts from "@/components/catalog/RecommendedProducts";
+import RecommendedProducts, {
+  type RecommendedItem,
+} from "@/components/catalog/RecommendedProducts";
 import { Section } from "@/components/ui";
+import { IMAGES } from "@/content/images";
 import type { Product, ProductVariantOption } from "@/content/types";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
+import { getSettings } from "@/lib/settings";
 import {
   badgeLabel,
   getProduct,
+  getRelatedProducts,
+  type Product as ApiProduct,
   type ProductDetail,
   type ProductWeight,
 } from "@/lib/products";
@@ -21,6 +27,27 @@ type ProductPageProps = {
 };
 
 const UNIT_LABELS: Record<string, string> = { kg: "кг", g: "г" };
+
+/** The design shows four recommendations; a longer list is cut to that. */
+const RECOMMENDED_LIMIT = 4;
+
+/**
+ * A related product as the recommendation row renders it. The title is the
+ * PRODUCT name, never category.name, and the href reuses the card's existing
+ * two-segment pattern with the API's own slugs.
+ */
+function toRecommendedItem(
+  related: ApiProduct,
+  locale: string,
+): RecommendedItem {
+  return {
+    key: related.id,
+    title: related.name,
+    image: related.main_image?.image ?? "",
+    href: `/${locale}/catalog/${related.category.slug}/${related.slug}`,
+    badge: badgeLabel(related.badge),
+  };
+}
 
 /** "1.500" -> "1,5". The payload sends decimal strings with trailing zeros. */
 function formatDecimal(value: string): string {
@@ -103,7 +130,13 @@ function toCharacteristics(detail: ProductDetail) {
  * blocks already test — no invented values, no deleted markup.
  */
 function toDisplayProduct(detail: ProductDetail): Product {
+  // filter(Boolean) drops any empty URL here, in the DATA LAYER, so an empty
+  // string can never reach next/image. When the payload carries no usable
+  // image at all — /products/glazer/ returns `images: []` — the existing
+  // static placeholder stands in, so the gallery still renders rather than
+  // being handed src="".
   const gallery = detail.images.map((image) => image.image).filter(Boolean);
+  const primary = gallery[0] ?? IMAGES.placeholder;
   const flavorOptions = toFlavorOptions(detail);
   const weightOptions = toWeightOptions(detail);
   const characteristics = toCharacteristics(detail);
@@ -112,7 +145,7 @@ function toDisplayProduct(detail: ProductDetail): Product {
     slug: detail.slug,
     categorySlug: detail.category.slug,
     title: detail.name,
-    image: gallery[0] ?? "",
+    image: primary,
     badge: badgeLabel(detail.badge),
     description: detail.description || undefined,
     gallery: gallery.length > 0 ? gallery : undefined,
@@ -159,8 +192,36 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const found = toDisplayProduct(detail);
 
+  // Related products, keyed off THIS page's route param — never derived from
+  // anything else. Fetched here because RecommendedProducts is "use client" and
+  // `next: { revalidate: 300 }` is server-fetch semantics only.
+  //
+  // A failure is NOT filled in with mock products: showing unrelated items as
+  // "recommended" is worse than showing none, so the section is hidden either
+  // way and the reason is logged.
+  let related: ApiProduct[] = [];
+  try {
+    related = await getRelatedProducts(product);
+  } catch (error) {
+    console.error(
+      `[ProductPage] related products for "${product}" failed, hiding the recommendation section —`,
+      error instanceof Error ? error.message : String(error),
+      "| cause:",
+      error instanceof Error ? (error.cause ?? "(none)") : "(none)",
+    );
+  }
+
+  const recommended = related
+    .slice(0, RECOMMENDED_LIMIT)
+    .map((item) => toRecommendedItem(item, locale));
+
   const dictionary = await getDictionary(locale as Locale);
   const categoryLabel = detail.category.name;
+
+  // Memoised by Next against the same call in the locale layout, so this is
+  // still one network request per render.
+  const settings = await getSettings(locale);
+  const catalogFile = settings?.catalog_file ?? "";
 
   return (
     // The logo block hangs below the header bar, and this page's first row is
@@ -279,18 +340,28 @@ export default async function ProductPage({ params }: ProductPageProps) {
           the pair on the block's midpoint from md up. */}
       <div className="mt-12 flex flex-col gap-4 md:flex-row md:justify-center">
         <ContactSalesButton className="w-full md:w-auto" productId={detail.id} />
+        {/* Hidden when no catalog is uploaded — never href="" or "#". */}
+        {catalogFile && (
         <a
-          href="#"
+          href={catalogFile}
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex w-full items-center justify-center rounded-md border border-brand-600 px-8 py-4 text-sm font-semibold tracking-wide text-brand-600 uppercase transition-colors hover:bg-brand-50 md:w-auto"
         >
           {dictionary.buttons.downloadCatalog}
         </a>
+        )}
       </div>
 
-      <RecommendedProducts
-        locale={locale as Locale}
-        allCatalogLabel={dictionary.buttons.allCatalog}
-      />
+      {/* Hidden entirely when there is nothing related: a heading with an
+          empty row under it reads as broken. */}
+      {recommended.length > 0 && (
+        <RecommendedProducts
+          locale={locale as Locale}
+          allCatalogLabel={dictionary.buttons.allCatalog}
+          items={recommended}
+        />
+      )}
     </Section>
   );
 }

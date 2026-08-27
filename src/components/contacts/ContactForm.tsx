@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useForm, useWatch } from "react-hook-form";
 
-import { Button, Checkbox } from "@/components/ui";
+import { Button, Checkbox, PhoneInput } from "@/components/ui";
 import { contactsContent } from "@/content/contacts";
 import { cn } from "@/lib/cn";
 import { useTranslation } from "@/lib/i18n/useTranslation";
@@ -35,6 +35,16 @@ export default function ContactForm() {
   const { t, locale } = useTranslation();
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [formError, setFormError] = useState<string | null>(null);
+  // Phone lives outside react-hook-form: PhoneInput owns both representations
+  // (spaced display, E.164 for the API) plus its country selection.
+  const [phoneDisplay, setPhoneDisplay] = useState("");
+  const [phoneE164, setPhoneE164] = useState("");
+  const [phoneValid, setPhoneValid] = useState(false);
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  // The phone field is not registered with react-hook-form any more, so a DRF
+  // error naming `phone` would have nowhere to land. It is held here and passed
+  // straight to PhoneInput's own error slot.
+  const [phoneApiError, setPhoneApiError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -53,6 +63,7 @@ export default function ContactForm() {
 
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
+    setPhoneApiError(null);
 
     // Validated BEFORE the request. Reported through the same `errors` props
     // the markup already renders, so no new error UI appears.
@@ -62,9 +73,11 @@ export default function ContactForm() {
       return;
     }
 
-    const phone = normalisePhone(values.phone ?? "");
+    // PhoneInput already produced E.164; normalisePhone is the last guard that
+    // no space, dash or bracket can reach the API.
+    const phone = normalisePhone(phoneE164);
     if (!isValidPhone(phone)) {
-      setError("phone", { message: t("form.phoneInvalid") });
+      setPhoneTouched(true);
       return;
     }
 
@@ -84,6 +97,11 @@ export default function ContactForm() {
       setStatus("success");
       // Cleared only on success, so a failure never costs the user their typing.
       reset();
+      setPhoneDisplay("");
+      setPhoneE164("");
+      setPhoneValid(false);
+      setPhoneTouched(false);
+      setPhoneApiError(null);
       return;
     }
 
@@ -92,7 +110,10 @@ export default function ContactForm() {
     let matched = false;
     for (const [apiField, message] of Object.entries(result.fieldErrors)) {
       const formField = API_FIELD_TO_FORM[apiField];
-      if (formField) {
+      if (formField === "phone") {
+        setPhoneApiError(message);
+        matched = true;
+      } else if (formField) {
         setError(formField, { message });
         matched = true;
       }
@@ -128,24 +149,31 @@ export default function ContactForm() {
           {errors.email && <p className="mt-1.5 text-sm text-brand-600">{errors.email.message}</p>}
         </div>
 
-        <div>
-          <div
-            className={cn(
-              "flex items-center rounded-md bg-white transition-colors focus-within:ring-1 focus-within:ring-ink-900",
-              errors.phone && INPUT_ERROR_CLASSES,
-            )}
-          >
-            <span className="shrink-0 py-3.5 pl-4 text-sm text-ink-700">🇺🇿 +998</span>
-            <input
-              type="tel"
-              {...register("phone", { required: REQUIRED_MESSAGE })}
-              placeholder={t("form.phonePlaceholder")}
-              aria-invalid={Boolean(errors.phone)}
-              className="w-full bg-transparent py-3.5 pr-4 pl-2 text-sm text-ink-900 outline-none placeholder:text-ink-500"
-            />
-          </div>
-          {errors.phone && <p className="mt-1.5 text-sm text-brand-600">{errors.phone.message}</p>}
-        </div>
+        {/* Same row, background and input classes as before; only the fixed
+            "🇺🇿 +998" span became a combobox trigger. */}
+        <PhoneInput
+          locale={locale}
+          value={phoneDisplay}
+          onChange={({ display, e164, isValid }) => {
+            setPhoneDisplay(display);
+            setPhoneE164(e164);
+            setPhoneValid(isValid);
+          }}
+          onBlur={() => setPhoneTouched(true)}
+          ariaInvalid={phoneTouched && !phoneValid}
+          error={
+            phoneApiError ??
+            (phoneTouched && !phoneValid && phoneDisplay
+              ? t("form.phoneInvalid")
+              : undefined)
+          }
+          rowClassName={cn(
+            "flex items-center rounded-md bg-white transition-colors focus-within:ring-1 focus-within:ring-ink-900",
+            phoneTouched && !phoneValid && phoneDisplay && INPUT_ERROR_CLASSES,
+          )}
+          prefixClassName="shrink-0 py-3.5 pl-4 text-sm text-ink-700"
+          inputClassName="w-full bg-transparent py-3.5 pr-4 pl-2 text-sm text-ink-900 outline-none placeholder:text-ink-500"
+        />
 
         <textarea
           rows={3}
@@ -195,7 +223,7 @@ export default function ContactForm() {
 
       {/* disabled until consent is given, and while a request is in flight —
           which is also what stops a second click firing a second POST. */}
-      <Button type="submit" variant="primary" size="lg" fullWidth loading={isSubmitting} disabled={!consentGiven || isSubmitting} className="mt-6">
+      <Button type="submit" variant="primary" size="lg" fullWidth loading={isSubmitting} disabled={!consentGiven || !phoneValid || isSubmitting} className="mt-6">
         {t("buttons.sendRequest")}
       </Button>
     </form>

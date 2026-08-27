@@ -207,6 +207,43 @@ export async function getProducts(): Promise<Product[]> {
   return collected;
 }
 
+/**
+ * GET /api/v1/products/{slug}/related/
+ *
+ * Confirmed against the live host: a BARE ARRAY, not the paginated envelope
+ * /api/v1/products/ uses and not a single object. The items are the LIST shape
+ * — `main_image` plus nested category/flavor — so `Product` and its validator
+ * are reused rather than redeclared.
+ *
+ * An empty array is a normal answer, not an error: the caller hides its section
+ * instead of substituting unrelated products.
+ */
+export async function getRelatedProducts(slug: string): Promise<Product[]> {
+  const trimmed = slug.trim();
+  if (!trimmed) return [];
+
+  const origin = apiOrigin();
+  const url = `${origin}${PRODUCTS_PATH}${encodeURIComponent(trimmed)}/related/`;
+
+  const response = await fetch(url, {
+    headers: { Accept: "application/json" },
+    // EXPLICIT, never the default.
+    next: { revalidate: 300 },
+  });
+
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed with ${response.status}`);
+  }
+
+  const body: unknown = await response.json();
+  if (!Array.isArray(body)) {
+    throw new Error(`GET ${url} did not return an array`);
+  }
+
+  // Order is the backend's — this endpoint carries no sort field.
+  return body.filter(isProduct).map((row) => toProduct(row, origin));
+}
+
 function isWeight(value: unknown): value is ProductWeight {
   if (typeof value !== "object" || value === null) return false;
   const candidate = value as Record<string, unknown>;

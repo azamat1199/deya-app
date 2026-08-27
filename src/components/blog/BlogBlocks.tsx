@@ -3,8 +3,12 @@ import Image from "next/image";
 
 import type { BlogBlock } from "@/content/types";
 
+/** A renderable block plus the stable key it is rendered with — the API block
+ *  id, never an array index. */
+export type KeyedBlogBlock = BlogBlock & { key: string };
+
 export interface BlogBlocksProps {
-  blocks: BlogBlock[];
+  blocks: KeyedBlogBlock[];
 }
 
 /**
@@ -83,7 +87,7 @@ export default function BlogBlocks({ blocks }: BlogBlocksProps) {
         // Keyed Fragment, not a wrapper element: the sections are siblings in
         // one column and an extra box would break the margin rhythm above.
         return (
-          <Fragment key={index}>
+          <Fragment key={block.key}>
             {renderBlock(
               block,
               index === 0

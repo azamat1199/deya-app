@@ -1,13 +1,32 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import CategoryBanner from "@/components/catalog/CategoryBanner";
+import CategoryBanner, {
+  type CategoryBannerItem,
+} from "@/components/catalog/CategoryBanner";
+import { homeCategories } from "@/content/categories";
 import ProductGrid from "@/components/catalog/ProductGrid";
 import { Section } from "@/components/ui";
 import { getCategories, type Category } from "@/lib/categories";
 import { getProducts, type Product as ApiProduct } from "@/lib/products";
+import { getSettings } from "@/lib/settings";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
+
+/** The banner shows four cards; the backend decides WHICH four via sort_order. */
+const BANNER_LIMIT = 4;
+
+/**
+ * The hand-authored banner cards, kept only as the fallback. Every entry gets an
+ * `id` so the React keys can never come out undefined — the slug serves, being
+ * unique and stable and not an array index.
+ */
+const STATIC_BANNER: CategoryBannerItem[] = homeCategories.map((category) => ({
+  id: category.slug,
+  title: category.title,
+  image: category.image,
+  slug: category.slug,
+}));
 
 type CatalogPageProps = {
   params: Promise<{ locale: string }>;
@@ -71,9 +90,39 @@ export default async function CatalogPage({
     );
   }
 
+  const usingCategories = categories.length > 0;
+
+  // Memoised by Next against the same call in the locale layout — still one
+  // network request per render.
+  const settings = await getSettings(locale);
+  const catalogFile = settings?.catalog_file ?? "";
+
+  // Derived from the SAME fetch above — the banner adds no second request.
+  // getCategories() already sorts by sort_order ascending, so the first four
+  // are the four the backend chose; no selection logic lives here. A short list
+  // renders short: no padding, and no fall back to the mock just for being
+  // under four.
+  const bannerCategories: CategoryBannerItem[] = usingCategories
+    ? categories.slice(0, BANNER_LIMIT).map((category) => ({
+        id: category.id,
+        title: category.name,
+        image: category.image || (STATIC_BANNER[0]?.image ?? ""),
+        slug: category.slug,
+      }))
+    : STATIC_BANNER.slice(0, BANNER_LIMIT);
+
+  if (!usingCategories) {
+    console.error(
+      "[CatalogPage] CategoryBanner falling back to static content — the categories request produced no usable rows (the underlying error and its cause are logged above)",
+    );
+  }
+
   return (
     <>
-      <CategoryBanner locale={locale as Locale} />
+      <CategoryBanner
+        locale={locale as Locale}
+        categories={bannerCategories}
+      />
       <div className=" py-24">
         <Section bg="white" containerWidth="home">
           <ProductGrid
@@ -81,6 +130,7 @@ export default async function CatalogPage({
             initialCategory={category}
             categories={categories}
             products={products}
+            catalogFile={catalogFile}
           />
         </Section>
       </div>

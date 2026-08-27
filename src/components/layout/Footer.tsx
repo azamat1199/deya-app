@@ -5,9 +5,32 @@ import NewsletterForm from "@/components/forms/NewsletterForm";
 import { AnimatedLink } from "@/components/ui";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { NAV_ITEMS, PRODUCT_CATEGORY_LINKS } from "@/lib/nav";
+import { formatForDisplay } from "@/lib/phone";
+import { telHref, type Settings } from "@/lib/settings";
 
-export default function Footer() {
+export interface FooterProps {
+  /**
+   * Live site settings, fetched once in the locale layout. `null` means the
+   * request failed or returned nothing usable, and every value below falls back
+   * to the static copy it shipped with — a stale footer beats a blank one.
+   */
+  settings: Settings | null;
+}
+
+export default function Footer({ settings }: FooterProps) {
   const { t, locale } = useTranslation();
+
+  // Each value falls back to its existing static source individually, so one
+  // empty API field cannot blank a whole column.
+  const email = settings?.email || "info@deya.uz";
+  const hotlineRaw = settings?.hotline || settings?.phone || "";
+  // Spaced for display; the href below stays digits-only E.164.
+  const hotline = hotlineRaw ? formatForDisplay(hotlineRaw) : t("common.phone");
+  const hotlineHref = telHref(hotlineRaw) || `tel:${t("common.phoneRaw")}`;
+  const address = settings?.address || t("footer.addressValue");
+  const workHours = settings?.work_hours || t("footer.workingHoursValue");
+  const telegramUrl = settings?.telegram_url ?? "";
+  const instagramUrl = settings?.instagram_url ?? "";
 
   return (
     <footer className="bg-brand-600 text-white">
@@ -75,34 +98,46 @@ export default function Footer() {
               {t("footer.contacts")}
             </h3>
             <div className="space-y-2 text-sm">
-              <p className="opacity-90">
-                <a href="mailto:info@deya.uz" className="hover:underline">
-                  info@deya.uz
-                </a>
-              </p>
-              <p className="opacity-90">
-                {t("footer.hotline")}:{" "}
-                <a href={`tel:${t("common.phoneRaw")}`} className="hover:underline">
-                  {t("common.phone")}
-                </a>
-              </p>
+              {email && (
+                <p className="opacity-90">
+                  <a href={`mailto:${email}`} className="hover:underline">
+                    {email}
+                  </a>
+                </p>
+              )}
+              {hotline && hotlineHref && (
+                <p className="opacity-90">
+                  {t("footer.hotline")}:{" "}
+                  <a href={hotlineHref} className="hover:underline">
+                    {hotline}
+                  </a>
+                </p>
+              )}
             </div>
 
             <div className="mt-6 flex gap-3">
-              <a
-                href="#"
-                aria-label="Telegram"
-                className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-brand-600 transition-opacity hover:opacity-90"
-              >
-                <TelegramIcon width={18} height={18} />
-              </a>
-              <a
-                href="#"
-                aria-label="Instagram"
-                className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-brand-600 transition-opacity hover:opacity-90"
-              >
-                <InstagramIcon width={18} height={18} />
-              </a>
+              {telegramUrl && (
+                <a
+                  href={telegramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Telegram"
+                  className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-brand-600 transition-opacity hover:opacity-90"
+                >
+                  <TelegramIcon width={18} height={18} />
+                </a>
+              )}
+              {instagramUrl && (
+                <a
+                  href={instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                  className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-brand-600 transition-opacity hover:opacity-90"
+                >
+                  <InstagramIcon width={18} height={18} />
+                </a>
+              )}
             </div>
           </div>
 
@@ -110,16 +145,14 @@ export default function Footer() {
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide opacity-80">
               {t("footer.address")}
             </h3>
-            <p className="text-sm whitespace-pre-line opacity-90">{t("footer.addressValue")}</p>
+            <p className="text-sm whitespace-pre-line opacity-90">{address}</p>
           </div>
 
           <div className="order-6 col-span-2 lg:order-7 lg:col-span-1">
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide opacity-80">
               {t("footer.workingHours")}
             </h3>
-            <p className="text-sm whitespace-pre-line opacity-90">
-              {t("footer.workingHoursValue")}
-            </p>
+            <p className="text-sm whitespace-pre-line opacity-90">{workHours}</p>
           </div>
 
           <div className="order-7 col-span-2 lg:order-4 lg:col-span-1">

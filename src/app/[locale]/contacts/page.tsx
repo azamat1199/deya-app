@@ -7,6 +7,7 @@ import { Section } from "@/components/ui";
 import { contactsContent } from "@/content/contacts";
 import { isLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
+import { getSettings } from "@/lib/settings";
 
 type ContactsPageProps = {
   params: Promise<{ locale: string }>;
@@ -24,6 +25,12 @@ export async function generateMetadata({
 export default async function ContactsPage({ params }: ContactsPageProps) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
+
+  // No second network call: the locale layout already fetches this for the
+  // footer, and Next memoises identical fetches within one render. getSettings
+  // logs its own failure with the cause and returns null, which ContactInfo
+  // reads as "use the static values".
+  const settings = await getSettings(locale);
 
   return (
     // The logo block hangs past the header bar, so the page starts below the
@@ -48,7 +55,7 @@ export default async function ContactsPage({ params }: ContactsPageProps) {
       </h1>
 
       <div className="mt-10 mb-10 grid gap-8 lg:grid-cols-2">
-        <ContactInfo />
+        <ContactInfo settings={settings} />
         <ContactForm />
       </div>
     </Section>

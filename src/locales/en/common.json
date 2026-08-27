@@ -67,7 +67,7 @@
     "newsletterSuccess": "Thank you! You are now subscribed.",
     "success": "Thank you! Your request has been sent.",
     "error": "Something went wrong. Please try again.",
-    "phoneInvalid": "Enter a valid number: +998 followed by 9 digits"
+    "phoneInvalid": "Enter a valid phone number for the selected country"
   },
   "common": {
     "phone": "+998 (55) 151 55 55",

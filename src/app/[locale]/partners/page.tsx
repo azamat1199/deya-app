@@ -28,7 +28,7 @@ export default async function PartnersPage({ params }: PartnersPageProps) {
       <PartnersHero />
       <Section bg="white" containerWidth="home">
         <PartnersLogos />
-        <CertificatesSection />
+        <CertificatesSection locale={locale} />
       </Section>
     </>
   );

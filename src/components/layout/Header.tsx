@@ -11,6 +11,8 @@ import { AnimatedLink } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { NAV_ITEMS } from "@/lib/nav";
+import { formatForDisplay } from "@/lib/phone";
+import { telHref, type Settings } from "@/lib/settings";
 
 import LanguageSwitch from "./LanguageSwitch";
 import MobileMenu from "./MobileMenu";
@@ -36,8 +38,25 @@ function isBorderlessRoute(pathname: string): boolean {
   return segments.length === 4 && section === "catalog";
 }
 
-export default function Header() {
+export interface HeaderProps {
+  /**
+   * Live site settings, from the locale layout's single fetch. `null` means the
+   * request failed, and each value below falls back to the static copy it
+   * shipped with — the header must never lose its contact button.
+   */
+  settings: Settings | null;
+}
+
+export default function Header({ settings }: HeaderProps) {
   const { t, locale } = useTranslation();
+
+  // Spaced for display, digits-only E.164 for the href — reusing the same
+  // formatter the phone input work introduced rather than hand-writing it.
+  const hotlineRaw = settings?.hotline || settings?.phone || "";
+  const hotlineText = hotlineRaw ? formatForDisplay(hotlineRaw) : t("common.phone");
+  const hotlineHref = telHref(hotlineRaw) || `tel:${t("common.phoneRaw")}`;
+  const telegramUrl = settings?.telegram_url ?? "";
+  const instagramUrl = settings?.instagram_url ?? "";
   const pathname = usePathname();
   // Routes whose first section is a full-bleed photo the header should
   // float over (transparent) until the user scrolls past it.
@@ -134,28 +153,38 @@ export default function Header() {
           <div className="hidden items-center gap-4 whitespace-nowrap md:flex lg:gap-5">
             <LanguageSwitch variant="dropdown" />
             <div className="hidden items-center gap-3 lg:flex">
-              <a
-                href="#"
-                aria-label="Telegram"
-                className="transition-opacity hover:opacity-70"
-              >
-                <TelegramIcon width={18} height={18} />
-              </a>
-              <a
-                href="#"
-                aria-label="Instagram"
-                className="transition-opacity hover:opacity-70"
-              >
-                <InstagramIcon width={18} height={18} />
-              </a>
+              {telegramUrl && (
+                <a
+                  href={telegramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Telegram"
+                  className="transition-opacity hover:opacity-70"
+                >
+                  <TelegramIcon width={18} height={18} />
+                </a>
+              )}
+              {instagramUrl && (
+                <a
+                  href={instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                  className="transition-opacity hover:opacity-70"
+                >
+                  <InstagramIcon width={18} height={18} />
+                </a>
+              )}
             </div>
 
-            <a
-              href={`tel:${t("common.phoneRaw")}`}
-              className="hidden rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-700 lg:inline-flex lg:items-center"
-            >
-              {t("common.phone")}
-            </a>
+            {hotlineText && hotlineHref && (
+              <a
+                href={hotlineHref}
+                className="hidden rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-700 lg:inline-flex lg:items-center"
+              >
+                {hotlineText}
+              </a>
+            )}
           </div>
           <button
             type="button"

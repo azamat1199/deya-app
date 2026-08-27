@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
-import { recommendedProducts } from "@/content/products";
+import type { BadgeVariant } from "@/components/ui";
 import type { Locale } from "@/lib/i18n/config";
 import { cn } from "@/lib/cn";
 
@@ -11,14 +11,34 @@ import ProductCard from "@/components/products/ProductCard";
 
 import { CATALOG_SECTION_BLEED } from "./rowInset";
 
+/** One recommended card, already resolved by the page. */
+export interface RecommendedItem {
+  /** React key — the API product id. Never an array index. */
+  key: string | number;
+  title: string;
+  image: string;
+  href: string;
+  /** Absent renders no chip at all; the slot still reserves its height. */
+  badge?: { text: string; variant: BadgeVariant };
+}
+
 export interface RecommendedProductsProps {
   locale: Locale;
+  /**
+   * The related products, already fetched, mapped and capped by the page.
+   * REQUIRED and deliberately without a default: a default would silently mask
+   * a missing prop and let stale content render while the fetch logs looked
+   * healthy. The page does not render this component at all when the list is
+   * empty, so this is never an empty array in practice.
+   */
+  items: RecommendedItem[];
   allCatalogLabel: string;
 }
 
 export default function RecommendedProducts({
   locale,
   allCatalogLabel,
+  items,
 }: RecommendedProductsProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -111,22 +131,22 @@ export default function RecommendedProducts({
           "lg:grid lg:grid-cols-4 lg:snap-none lg:overflow-visible",
         )}
       >
-        {recommendedProducts.map((product) => (
+        {items.map((item) => (
           // 44% leaves two cards fully visible with ~14% of the third showing
           // past the right edge — the peek is deliberate, signalling more
           // content. Two cards plus one 10px gap span 318 of a 350px viewport,
           // so 22px of the third remains. From lg up the grid owns the width
           // and this releases it.
           <div
-            key={product.slug}
+            key={item.key}
             className="w-[44%] shrink-0 snap-start lg:w-auto lg:shrink"
           >
             <ProductCard
               variant="framed"
-              href={`/${locale}/catalog/${product.categorySlug}/${product.slug}`}
-              image={product.image}
-              title={product.title}
-              badge={product.badge}
+              href={item.href}
+              image={item.image}
+              title={item.title}
+              badge={item.badge}
             />
           </div>
         ))}

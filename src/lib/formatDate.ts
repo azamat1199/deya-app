@@ -1,41 +1,31 @@
 import type { Locale } from "./i18n/config";
 
-const RU_MONTHS = [
-  "января",
-  "февраля",
-  "марта",
-  "апреля",
-  "мая",
-  "июня",
-  "июля",
-  "августа",
-  "сентября",
-  "октября",
-  "ноября",
-  "декабря",
-];
-
-const EN_MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-/** Formats an ISO date ("2025-07-10") for display, e.g. "10 июля 2025" / "July 10, 2025". */
+/**
+ * Formats a date for display from either a plain "2025-07-10" or a full ISO
+ * 8601 UTC timestamp ("2026-08-18T17:05:00Z").
+ *
+ * Intl.DateTimeFormat, not hardcoded month tables: ru, uz and en need different
+ * month names AND different orders, and the previous hand-rolled version both
+ * lacked uz (it fell through to English) and split the string on "-", which
+ * turned a timestamp's day into "18T17:05:00Z" → NaN.
+ *
+ * An unparseable or empty value renders NOTHING rather than "Invalid Date".
+ */
 export function formatPostDate(isoDate: string, locale: Locale): string {
-  const [year, month, day] = isoDate.split("-").map(Number);
+  const trimmed = (isoDate ?? "").trim();
+  if (!trimmed) return "";
 
-  if (locale === "ru") {
-    return `${day} ${RU_MONTHS[month - 1]} ${year}`;
+  const parsed = new Date(trimmed);
+  if (Number.isNaN(parsed.getTime())) return "";
+
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(parsed);
+  } catch {
+    return "";
   }
-  return `${EN_MONTHS[month - 1]} ${day}, ${year}`;
 }

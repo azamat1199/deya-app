@@ -1,3 +1,5 @@
+import { isValidPhoneNumber } from "libphonenumber-js";
+
 import { apiOrigin } from "@/lib/api";
 
 /**
@@ -12,7 +14,7 @@ export interface LeadInput {
   type: LeadType;
   name: string;
   email: string;
-  /** Already normalised to "+998XXXXXXXXX" by normalisePhone. */
+  /** Already E.164 — a plus and digits only, any country. */
   phone: string;
   message: string;
   consent_personal_data: boolean;
@@ -58,24 +60,27 @@ export const API_FIELD_TO_FORM: Record<string, LeadFormField> = {
   consent_marketing: "consentMarketing",
 };
 
-/** Digits expected after the +998 country code. */
-const LOCAL_DIGITS = 9;
-
 /**
- * The phone input renders a fixed +998 prefix and collects only the rest, so
- * the country code is prepended here. Tolerates a user who pasted the full
- * number anyway: spaces, dashes and brackets go, then a leading 998 or +998 is
- * collapsed rather than doubled.
+ * Reduces any typed or pasted value to E.164: a plus and digits, nothing else.
+ * NO country is assumed — PhoneInput supplies a fully-qualified number and the
+ * country comes from its selector. Spaces, dashes and brackets cannot survive.
  */
 export function normalisePhone(raw: string): string {
-  let digits = raw.replace(/[^\d]/g, "");
-  if (digits.startsWith("998")) digits = digits.slice(3);
-  return `+998${digits}`;
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  const digits = trimmed.replace(/[^\d]/g, "");
+  return digits ? `+${digits}` : "";
 }
 
-/** True when the normalised number carries exactly the expected digit count. */
-export function isValidPhone(normalised: string): boolean {
-  return new RegExp(`^\\+998\\d{${LOCAL_DIGITS}}$`).test(normalised);
+/**
+ * Per-country validity, length included, delegated to libphonenumber-js. A UZ
+ * number needs 9 digits after +998, a US one 10 after +1, German lengths vary —
+ * none of that is expressed here on purpose.
+ */
+export function isValidPhone(value: string): boolean {
+  const e164 = normalisePhone(value);
+  if (!e164) return false;
+  return isValidPhoneNumber(e164);
 }
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

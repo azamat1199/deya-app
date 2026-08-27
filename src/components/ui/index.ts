@@ -17,6 +17,8 @@ export { default as Modal } from "./Modal";
 export type { ModalProps } from "./Modal";
 
 export { default as FormField } from "./FormField";
+export { default as PhoneInput } from "./PhoneInput";
+export type { PhoneInputProps } from "./PhoneInput";
 export type { FormFieldProps, FormFieldType } from "./FormField";
 
 export { default as Checkbox } from "./Checkbox";

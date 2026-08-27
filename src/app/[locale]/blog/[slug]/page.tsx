@@ -2,27 +2,53 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import BlogBlocks from "@/components/blog/BlogBlocks";
+import BlogBlocks, { type KeyedBlogBlock } from "@/components/blog/BlogBlocks";
 import OtherArticles from "@/components/blog/OtherArticles";
 import { Section } from "@/components/ui";
-import { newsPosts } from "@/content/news";
 import { formatPostDate } from "@/lib/formatDate";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
+import { getPost, type PostBlock, type PostDetail } from "@/lib/posts";
+
+/**
+ * Maps API blocks onto the render union the design already has.
+ *
+ * The only `type` the live API emits is "text"; the docs' "heading" never
+ * appears. A single API block may carry BOTH text and an image, so it can yield
+ * two render blocks — each keyed off the block id, never an index. An empty
+ * text or image is skipped rather than rendered as an empty heading or a broken
+ * picture, and an unrecognised type renders nothing but says so.
+ */
+function toRenderBlocks(blocks: PostBlock[]): KeyedBlogBlock[] {
+  const out: KeyedBlogBlock[] = [];
+
+  for (const block of blocks) {
+    const known = block.type === "text" || block.type === "paragraph" || block.type === "heading";
+    if (!known && block.type) {
+      console.warn(
+        `[BlogPostPage] unrecognised block type "${block.type}" (id ${block.id}) — rendering nothing for it`,
+      );
+      continue;
+    }
+
+    if (block.text) {
+      out.push(
+        block.type === "heading"
+          ? { key: `${block.id}-heading`, type: "heading", level: 2, text: block.text }
+          : { key: `${block.id}-text`, type: "paragraph", text: block.text },
+      );
+    }
+    if (block.image) {
+      out.push({ key: `${block.id}-image`, type: "image", src: block.image, alt: "" });
+    }
+  }
+
+  return out;
+}
 
 type BlogPostPageProps = {
   params: Promise<{ locale: string; slug: string }>;
 };
-
-function findPost(slug: string) {
-  return newsPosts.find((post) => post.slug === slug);
-}
-
-// Only the slug: the [locale] layout already enumerates the locales, and Next
-// crosses the two sets itself.
-export function generateStaticParams() {
-  return newsPosts.map((post) => ({ slug: post.slug }));
-}
 
 export async function generateMetadata({
   params,
@@ -30,16 +56,22 @@ export async function generateMetadata({
   const { locale, slug } = await params;
   if (!isLocale(locale)) return {};
 
-  const post = findPost(slug);
-  if (!post) return {};
+  // Never throws: metadata generation must not be able to fail the response.
+  let post: PostDetail | null = null;
+  try {
+    post = await getPost(slug, locale);
+  } catch {
+    post = null;
+  }
+  if (!post) return { title: "Статья не найдена — DEYA" };
 
   return {
     title: `${post.title} — DEYA`,
-    description: post.excerpt,
+    description: post.excerpt || undefined,
     openGraph: {
       title: post.title,
-      description: post.excerpt,
-      images: [post.cover],
+      description: post.excerpt || undefined,
+      ...(post.cover ? { images: [post.cover] } : {}),
     },
   };
 }
@@ -60,9 +92,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { locale, slug } = await params;
   if (!isLocale(locale)) notFound();
 
-  const post = findPost(slug);
+  // The slug comes straight from the route param. A missing post is a real
+  // 404 — never mock content at a real URL.
+  const post = await getPost(slug, locale);
   if (!post) notFound();
 
+  const renderBlocks = toRenderBlocks(post.blocks);
   const dictionary = await getDictionary(locale as Locale);
 
   return (
@@ -111,14 +146,18 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
         {/* dateTime carries the ISO value for machines; the visible string is
             formatted from it per locale, never stored pre-formatted. */}
-        <time
-          dateTime={post.date}
-          className="mt-2.5 block text-[11px] text-ink-500"
-        >
-          {formatPostDate(post.date, locale as Locale)}
-        </time>
+        {/* dateTime carries the ISO value for machines; an unparseable or
+            absent date renders nothing rather than "Invalid Date". */}
+        {formatPostDate(post.published_at, locale as Locale) && (
+          <time
+            dateTime={post.published_at}
+            className="mt-2.5 block text-[11px] text-ink-500"
+          >
+            {formatPostDate(post.published_at, locale as Locale)}
+          </time>
+        )}
 
-        <BlogBlocks blocks={post.blocks} />
+        <BlogBlocks blocks={renderBlocks} />
       </article>
 
       {/* Outside the reading column on purpose: this spans the page container,

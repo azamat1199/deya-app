@@ -9,8 +9,15 @@ import { cn } from "@/lib/cn";
 import { locales } from "@/lib/i18n/config";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 
+/** Labels only — the switcher's layout, styling and behaviour are untouched. */
+const LOCALE_LABELS: Record<string, string> = {
+  uz: "UZ",
+  ru: "RU",
+  en: "EN",
+};
+
 function localeLabel(loc: string) {
-  return loc === "en" ? "ENG" : "РУС";
+  return LOCALE_LABELS[loc] ?? loc.toUpperCase();
 }
 
 export interface LanguageSwitchProps {
