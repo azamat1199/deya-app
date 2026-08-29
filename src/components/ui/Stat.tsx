@@ -20,8 +20,10 @@ export default function Stat({ value, numericValue, label, className }: StatProp
   const [hasAnimated, setHasAnimated] = useState(false);
   const elementRef = useRef<HTMLDivElement>(null);
 
-  const numericPrefixLength = String(numericValue).length;
-  const suffix = value.startsWith(String(numericValue)) ? value.slice(numericPrefixLength) : "";
+  // A CMS value whose leading digits are not `numericValue` — "N/A", say — has
+  // nothing to count up to, so it renders verbatim instead of as a bare "0".
+  const countsUp = value.startsWith(String(numericValue));
+  const suffix = countsUp ? value.slice(String(numericValue).length) : "";
 
   useEffect(() => {
     const element = elementRef.current;
@@ -61,7 +63,7 @@ export default function Stat({ value, numericValue, label, className }: StatProp
   return (
     <div ref={elementRef} className={className}>
       <p className="text-5xl font-light text-brand-500 lg:text-7xl xl:text-8xl">
-        {display}
+        {countsUp ? display : value}
         {suffix}
       </p>
       {/* The number-to-caption distance is this margin, not a gap on the

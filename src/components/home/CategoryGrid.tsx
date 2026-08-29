@@ -1,12 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { homeCategories } from "@/content/categories";
 import type { Locale } from "@/lib/i18n/config";
+
+/**
+ * One tile. Deliberately NOT the shared content `Category` type: that one is
+ * keyed by slug and is also read by the catalog page and its banner, whereas
+ * this grid needs a stable `id` for its React key and is fed from the API.
+ */
+export interface CategoryGridItem {
+  id: string | number;
+  slug: string;
+  title: string;
+  image: string;
+}
 
 export interface CategoryGridProps {
   locale: Locale;
   toCatalogLabel: string;
+  /** From GET /api/v1/home/ `categories[]`, already sorted by sort_order, or
+   *  the static set when that request failed. */
+  categories: CategoryGridItem[];
 }
 
 const GRADIENT =
@@ -15,6 +29,7 @@ const GRADIENT =
 export default function CategoryGrid({
   locale,
   toCatalogLabel,
+  categories,
 }: CategoryGridProps) {
   return (
     <div
@@ -22,9 +37,9 @@ export default function CategoryGrid({
       style={{ background: GRADIENT }}
     >
       <div className="grid grid-cols-1 gap-[10px] max-md:grid-cols-2 md:grid-cols-2">
-        {homeCategories.map((category) => (
+        {categories.map((category) => (
           <Link
-            key={category.slug}
+            key={category.id}
             href={`/${locale}/catalog?category=${category.slug}`}
             aria-label={`Перейти в каталог: ${category.title}`}
             className="group relative aspect-4/3 overflow-hidden max-md:aspect-square lg:aspect-square"

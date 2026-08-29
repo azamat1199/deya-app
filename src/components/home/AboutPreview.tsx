@@ -3,15 +3,19 @@ import Link from "next/link";
 
 import { ScrollReveal, Stat } from "@/components/ui";
 import { homeContent } from "@/content/home";
-import { stats } from "@/content/stats";
+import type { StatItem } from "@/content/types";
 import type { Locale } from "@/lib/i18n/config";
 import { withEmphasis } from "@/lib/withEmphasis";
 
 export interface AboutPreviewProps {
   locale: Locale;
+  /** From GET /api/v1/home/ `stats[]`, or the static set when that request
+   *  failed. No default: the page owns the fallback, so a missing prop is a
+   *  bug rather than a silent revert to mock content. */
+  stats: StatItem[];
 }
 
-export default function AboutPreview({ locale }: AboutPreviewProps) {
+export default function AboutPreview({ locale, stats }: AboutPreviewProps) {
   const {
     eyebrow,
     heading,
@@ -95,7 +99,7 @@ export default function AboutPreview({ locale }: AboutPreviewProps) {
                 <div className="grid grid-cols-2 gap-y-6 pt-8 max-md:gap-y-0 max-md:pt-6.5 max-md:[&>*:nth-child(-n+2)]:pb-[10px] max-md:[&>*:nth-child(-n+2)]:mb-[10px] max-md:[&>*:nth-child(n+3)]:pt-3 max-md:[&>*:nth-child(odd)]:border-r-[0.5px] max-md:[&>*:nth-child(odd)]:border-r-[#0000004D] md:flex md:gap-y-0 md:divide-x md:divide-line-200/50 lg:pt-12 ">
                   {stats.map((stat) => (
                     <div
-                      key={stat.label}
+                      key={stat.id}
                       className="text-center md:flex-1 md:mx-6 md:my-8 md:first:ml-0 lg:my-12"
                     >
                       <Stat {...stat} />

@@ -14,6 +14,16 @@ export interface HeroSliderProps {
 
 const AUTOPLAY_MS = 6000;
 
+/**
+ * A CMS-supplied cta_url may point off-site. next/link would try to
+ * client-navigate to an absolute URL it does not own, so those render as a
+ * plain anchor in a new tab instead. Protocol-relative ("//host/path") counts
+ * as external too.
+ */
+function isExternalHref(href: string): boolean {
+  return /^(https?:)?\/\//i.test(href);
+}
+
 /** Clears the fixed header, then drops the copy ~12vh further down — the
  * Figma frame puts the h1's cap-height about 12% of the viewport below the
  * header bar. Clamped at both ends so a 700px-tall laptop doesn't push the
@@ -103,12 +113,31 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                 <h1 className="text-4xl leading-tight font-normal">
                   {slide.title}
                 </h1>
-                <p className="text-base text-white/85">{slide.description}</p>
+                {/* Omitted when the CMS has no subtitle and no static slide
+                    matched it — an empty <p> would still claim its line box
+                    and the space-y-6 gap above it. */}
+                {slide.description && (
+                  <p className="text-base text-white/85">{slide.description}</p>
+                )}
               </div>
               <div aria-hidden="true" />
-              <Button variant="white" size="lg" href={slide.ctaHref} fullWidth>
-                {slide.ctaLabel}
-              </Button>
+              {/* A slide with no cta_url/cta_label renders no button at all —
+                  never href="" or an empty-label button. The empty row 3 stays
+                  so the copy above keeps the exact vertical position it has on
+                  the slides that do carry one. */}
+              {slide.ctaHref && slide.ctaLabel ? (
+                <Button
+                  variant="white"
+                  size="lg"
+                  href={slide.ctaHref}
+                  external={isExternalHref(slide.ctaHref)}
+                  fullWidth
+                >
+                  {slide.ctaLabel}
+                </Button>
+              ) : (
+                <div aria-hidden="true" />
+              )}
             </div>
 
             {/* Desktop: same three-row grid. The CTA is deliberately NOT here —
@@ -130,9 +159,12 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                 <h1 className="text-4xl leading-tight font-normal md:text-5xl lg:text-6xl">
                   {slide.title}
                 </h1>
-                <p className="text-base text-white/85 md:text-lg">
-                  {slide.description}
-                </p>
+                {/* Same guard as the phone branch above. */}
+                {slide.description && (
+                  <p className="text-base text-white/85 md:text-lg">
+                    {slide.description}
+                  </p>
+                )}
               </div>
               <div aria-hidden="true" />
               <div aria-hidden="true" className="h-24 lg:h-28" />
@@ -147,7 +179,13 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
           canScrollPrev,
           canScrollNext,
           isAutoplayPaused,
-        }) => (
+        }) => {
+          // Named once rather than repeated in the href and the label below —
+          // the CTA has to be guarded as a pair, and re-deriving it per use
+          // would not narrow.
+          const active = slides[selectedIndex] ?? slides[0];
+
+          return (
           <>
             {/* Phone/tablet: pagination spans the full width. */}
             <div className="absolute inset-x-5 bottom-8 z-10 flex items-center gap-3 text-white md:hidden">
@@ -196,13 +234,21 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                 it still tracks the visible slide. */}
             <div className="absolute inset-x-0 bottom-8 z-10 hidden md:block lg:bottom-12">
               <div className="container-page flex items-center justify-between gap-6">
-                <Button
-                  variant="white"
-                  size="lg"
-                  href={(slides[selectedIndex] ?? slides[0]).ctaHref}
-                >
-                  {(slides[selectedIndex] ?? slides[0]).ctaLabel}
-                </Button>
+                {/* Same pair-guard as the phone branch. The empty div keeps
+                    justify-between honest so the slide switcher stays pinned
+                    right instead of sliding over to the left edge. */}
+                {active?.ctaHref && active?.ctaLabel ? (
+                  <Button
+                    variant="white"
+                    size="lg"
+                    href={active.ctaHref}
+                    external={isExternalHref(active.ctaHref)}
+                  >
+                    {active.ctaLabel}
+                  </Button>
+                ) : (
+                  <div aria-hidden="true" />
+                )}
 
                 <div className="flex items-center gap-4 text-white">
                   <button
@@ -246,7 +292,8 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
               </div>
             </div>
           </>
-        )}
+          );
+        }}
       />
     </div>
   );

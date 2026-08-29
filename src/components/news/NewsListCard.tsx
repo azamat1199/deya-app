@@ -92,9 +92,14 @@ export default function NewsListCard({
         >
           {title}
         </h3>
-        <p className="mt-3 line-clamp-3 text-[15px] leading-[1.55] text-ink-700">
-          {excerpt}
-        </p>
+        {/* Omitted entirely when the post has no excerpt — an empty <p> would
+            still claim its margin and line box, pushing the read-more label of
+            one card out of line with its neighbours. */}
+        {excerpt.trim() && (
+          <p className="mt-3 line-clamp-3 text-[15px] leading-[1.55] text-ink-700">
+            {excerpt}
+          </p>
+        )}
         {/* mt-auto pushes this to the bottom of the equal-height flex column,
             so all four align on one baseline however long the titles run. */}
         <span

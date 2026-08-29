@@ -103,7 +103,11 @@ function buildVariants(instant: boolean): MapVariants {
     },
     hub: {
       hidden: { scale: 0, opacity: 0 },
-      shown: { scale: 1, opacity: 1, transition: { duration: d(POINT_DURATION) } },
+      shown: {
+        scale: 1,
+        opacity: 1,
+        transition: { duration: d(POINT_DURATION) },
+      },
     },
     hubLabel: {
       hidden: { opacity: 0 },
@@ -270,7 +274,91 @@ function MapSvg({
   );
 }
 
-export default function ExportMap() {
+/** Case- and whitespace-insensitive, so "  Южная  Азия " matches
+ *  "ЮЖНАЯ АЗИЯ". Cyrillic and Latin stay distinct, which is what keeps the
+ *  API's "Amerika" from colliding with the "АМЕРИКА" marker. */
+function matchKey(name: string): string {
+  return name.trim().toUpperCase().replace(/\s+/g, " ");
+}
+
+/**
+ * Replaces each marker's label with the matching API region's name, matched BY
+ * NAME. Coordinates, offsets, anchors, ordering and the marker set itself are
+ * untouched — the three configs in content/regions.ts are hand-tuned per
+ * breakpoint and the API sends the same "1.00"/"1.00" position pair for every
+ * region, so its position_x/position_y are deliberately never read.
+ *
+ * LABEL SOURCING, once the API has answered with at least one region:
+ *
+ *   matched   → the API's own name
+ *   unmatched → NO label text. The dot and its spoke still render, because
+ *               that geometry is layout rather than data, but the static
+ *               label is NOT substituted — a stale name presented as live
+ *               data is worse than a missing one, and the console.error in
+ *               ExportMap names the orphan so it gets fixed in the CMS.
+ *
+ * An API region matching no marker is ignored: markers are never added.
+ *
+ * The ONE exception is `regions.length === 0` — an empty array or a failed
+ * request — where the static labels are kept deliberately, because a wholly
+ * unlabelled map is useless. That is the only path on which content/regions.ts
+ * labels reach the screen.
+ */
+function withApiLabels(
+  config: ExportMapConfig,
+  regions: ExportRegion[],
+): ExportMapConfig {
+  if (regions.length === 0) return config;
+
+  const byName = new Map(
+    regions.map((region) => [matchKey(region.name), region.name]),
+  );
+
+  return {
+    ...config,
+    regions: config.regions.map((region) => ({
+      ...region,
+      label: byName.get(matchKey(region.label)) ?? "",
+    })),
+  };
+}
+
+/**
+ * Both halves of the mismatch, reported together. Computed off the desktop
+ * config because all three breakpoints carry the same six marker names.
+ */
+function findMismatches(regions: ExportRegion[]) {
+  if (regions.length === 0) return { orphanMarkers: [], unusedRegions: [] };
+
+  const markerKeys = new Set(
+    exportMapDesktop.regions.map((region) => matchKey(region.label)),
+  );
+  const apiKeys = new Set(regions.map((region) => matchKey(region.name)));
+
+  return {
+    orphanMarkers: exportMapDesktop.regions
+      .filter((region) => !apiKeys.has(matchKey(region.label)))
+      .map((region) => region.id),
+    unusedRegions: regions
+      .filter((region) => !markerKeys.has(matchKey(region.name)))
+      .map((region) => `${region.name} (id=${region.id})`),
+  };
+}
+
+/** Only what the labels need. Coordinates are the map's own. */
+export interface ExportRegion {
+  id: number;
+  name: string;
+}
+
+export interface ExportMapProps {
+  /** From GET /api/v1/home/ `export_regions[]`. An empty array — whether the
+   *  section is genuinely empty or the request failed — keeps every marker on
+   *  its static label; see withApiLabels. */
+  regions: ExportRegion[];
+}
+
+export default function ExportMap({ regions }: ExportMapProps) {
   const { t } = useTranslation();
   const [isPartnerFormOpen, setIsPartnerFormOpen] = useState(false);
   const diagramRef = useRef<HTMLDivElement>(null);
@@ -294,6 +382,46 @@ export default function ExportMap() {
     [prefersReducedMotion],
   );
 
+  // One overlay per breakpoint config. Labels only — see withApiLabels.
+  const desktopConfig = useMemo(
+    () => withApiLabels(exportMapDesktop, regions),
+    [regions],
+  );
+  const tabletConfig = useMemo(
+    () => withApiLabels(exportMapTablet, regions),
+    [regions],
+  );
+  const mobileConfig = useMemo(
+    () => withApiLabels(exportMapMobile, regions),
+    [regions],
+  );
+
+  // Reported from an effect rather than during render, so a re-render cannot
+  // repeat it. A marker left unlabelled is a data fault, not a display choice:
+  // it must be loud enough to get fixed in the CMS.
+  const { orphanMarkers, unusedRegions } = useMemo(
+    () => findMismatches(regions),
+    [regions],
+  );
+  useEffect(() => {
+    if (orphanMarkers.length > 0) {
+      console.error(
+        `[ExportMap] ${orphanMarkers.length} marker(s) have no matching export_region and render WITHOUT a label: ${orphanMarkers.join(", ")} — add these names in the CMS.`,
+      );
+    }
+    // warn, NOT error: an export_region with no marker is a CMS data-entry
+    // problem, not a code fault, and console.error trips the Next dev error
+    // overlay on every home page load. The check itself stays — a genuinely
+    // unmatched region must keep being named here so it can be found in the
+    // CMS. The orphan-marker case above stays an error: that one costs a
+    // label on the rendered map.
+    if (unusedRegions.length > 0) {
+      console.warn(
+        `[ExportMap] ${unusedRegions.length} export_region(s) match no marker on the map and are not rendered: ${unusedRegions.join(", ")}.`,
+      );
+    }
+  }, [orphanMarkers, unusedRegions]);
+
   const svgMotionProps = {
     variants,
     initial: prefersReducedMotion ? (false as const) : ("hidden" as const),
@@ -312,7 +440,10 @@ export default function ExportMap() {
           the map's top offset, so the "map starts at the heading's third line"
           relationship survives any type-scale change. */}
       <div className="grid pt-16 lg:pt-24 lg:[--h2-line-height:2.8125rem] xl:[--h2-line-height:3.75rem]">
-        <ScrollReveal direction="up" className="lg:[grid-area:1/1] lg:self-start">
+        <ScrollReveal
+          direction="up"
+          className="lg:[grid-area:1/1] lg:self-start"
+        >
           {/* 22px is the largest size at which all four authored lines still
               fit unwrapped in a 360px viewport. 34ch from lg is what keeps the
               longest authored line ("и вкус в более чем 25 стран", 27 chars)
@@ -337,10 +468,14 @@ export default function ExportMap() {
             <div className="sr-only">
               <p>{t("home.exportMap.mapLabel")}</p>
               <ul>
-                <li>{exportMapDesktop.factory.label}</li>
-                {exportMapDesktop.regions.map((region) => (
-                  <li key={region.id}>{region.label}</li>
-                ))}
+                <li>{desktopConfig.factory.label}</li>
+                {/* An unlabelled marker contributes no list item — a blank one
+                    would be announced as an empty bullet. */}
+                {desktopConfig.regions
+                  .filter((region) => region.label)
+                  .map((region) => (
+                    <li key={region.id}>{region.label}</li>
+                  ))}
               </ul>
             </div>
 
@@ -350,14 +485,14 @@ export default function ExportMap() {
                 box from both sides and leaves dead space left and right. */}
             <div className="aspect-38/35 w-full md:hidden">
               <MapSvg
-                config={exportMapMobile}
+                config={mobileConfig}
                 className="h-full w-full overflow-visible"
                 {...svgMotionProps}
               />
             </div>
             <div className="hidden aspect-9/5 w-full md:block lg:hidden">
               <MapSvg
-                config={exportMapTablet}
+                config={tabletConfig}
                 className="h-full w-full overflow-visible"
                 {...svgMotionProps}
               />
@@ -367,7 +502,7 @@ export default function ExportMap() {
                 is anchored to the container's right edge. */}
             <div className="hidden aspect-1321/377 w-full lg:block">
               <MapSvg
-                config={exportMapDesktop}
+                config={desktopConfig}
                 className="h-full w-full overflow-visible"
                 {...svgMotionProps}
               />

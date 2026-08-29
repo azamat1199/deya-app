@@ -1,18 +1,32 @@
 import Link from "next/link";
 
 import ProductCard from "@/components/products/ProductCard";
-import { ScrollReveal } from "@/components/ui";
-import { featuredProducts } from "@/content/products";
+import { ScrollReveal, type BadgeVariant } from "@/components/ui";
 import type { Locale } from "@/lib/i18n/config";
+
+/** One card, already resolved to what ProductCard takes. */
+export interface FeaturedProductItem {
+  id: string | number;
+  /** The PRODUCT name — never category.name. */
+  title: string;
+  image: string;
+  href: string;
+  /** Absent when the API sent no badge; an absent badge renders no chip. */
+  badge?: { text: string; variant: BadgeVariant };
+}
 
 export interface FeaturedProductsProps {
   locale: Locale;
   allCatalogLabel: string;
+  /** From GET /api/v1/home/ `featured_products[]`, or the static set when that
+   *  request failed. */
+  products: FeaturedProductItem[];
 }
 
 export default function FeaturedProducts({
   locale,
   allCatalogLabel,
+  products,
 }: FeaturedProductsProps) {
   return (
     <section className="bg-[#FFFCF7] text-ink-900">
@@ -26,14 +40,14 @@ export default function FeaturedProducts({
               not on ProductCard: it moves the row's edges, leaving each card's
               own white background and shadow intact. */}
           <div className="grid grid-cols-2 gap-2.5 max-md:-mx-2.5 max-md:gap-x-3  lg:grid-cols-4">
-            {featuredProducts.map((product, index) => (
+            {products.map((product, index) => (
               <ScrollReveal
-                key={product.slug}
+                key={product.id}
                 direction="up"
                 delay={index * 0.08}
               >
                 <ProductCard
-                  href={`/${locale}/catalog/${product.categorySlug}/${product.slug}`}
+                  href={product.href}
                   image={product.image}
                   title={product.title}
                   badge={product.badge}

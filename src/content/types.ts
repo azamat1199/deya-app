@@ -3,12 +3,18 @@ export interface Slide {
   badge?: string;
   title: string;
   description: string;
-  ctaLabel: string;
-  ctaHref: string;
+  /** Both cta fields are absent together on a slide with no button. The API
+   *  sends "" for both; the page collapses that to undefined so HeroSlider
+   *  never renders href="" or a button with an empty label. */
+  ctaLabel?: string;
+  ctaHref?: string;
   image: string;
 }
 
 export interface StatItem {
+  /** Stable React key. The label is no longer usable as one: the API sends ""
+   *  for every stat, which produced four identical keys. */
+  id: string;
   value: string;
   numericValue: number;
   label: string;

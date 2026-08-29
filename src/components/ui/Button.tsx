@@ -12,6 +12,10 @@ export interface ButtonProps {
   variant: ButtonVariant;
   size?: ButtonSize;
   href?: string;
+  /** Renders a plain anchor opening in a new tab instead of a next/link. For
+   *  CMS-supplied hrefs that point off-site — next/link would try to
+   *  client-navigate to an absolute URL it does not own. Styling is identical. */
+  external?: boolean;
   loading?: boolean;
   disabled?: boolean;
   icon?: ReactNode;
@@ -63,6 +67,7 @@ export default function Button({
   variant,
   size = "md",
   href,
+  external = false,
   loading = false,
   disabled = false,
   icon,
@@ -99,6 +104,22 @@ export default function Button({
         return;
       }
       onClick?.();
+    }
+
+    if (external) {
+      return (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={classes}
+          aria-disabled={isInactive}
+          tabIndex={isInactive ? -1 : undefined}
+          onClick={handleClick}
+        >
+          {content}
+        </a>
+      );
     }
 
     return (
