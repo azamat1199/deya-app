@@ -1,4 +1,4 @@
-import { apiOrigin, mediaUrl } from "@/lib/api";
+import { apiOrigin, mediaImageUrl, mediaUrl } from "@/lib/api";
 
 /**
  * GET /api/v1/posts/           — PAGINATED { count, next, previous, results }
@@ -56,7 +56,7 @@ function toSummary(raw: Record<string, unknown>, origin: string): PostSummary {
     excerpt: readString(raw, "excerpt"),
     // Shared helper: these arrive over http:// and a component must never see
     // one. Empty stays empty so the caller can substitute a placeholder.
-    cover: mediaUrl(readString(raw, "cover"), origin),
+    cover: mediaImageUrl(readString(raw, "cover"), origin),
     published_at: readString(raw, "published_at"),
   };
 }

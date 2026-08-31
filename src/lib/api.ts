@@ -5,6 +5,8 @@
  * image URL reached next/image from one module while the other looked fine.
  */
 
+import { IMAGES } from "@/content/images";
+
 /** Strips trailing slashes so a path constant can be concatenated directly. */
 export function normaliseOrigin(base: string): string {
   return base.trim().replace(/\/+$/, "");
@@ -79,4 +81,39 @@ export function mediaUrl(value: string, origin: string): string {
   }
 
   return trimmed;
+}
+
+/**
+ * mediaUrl for a value that is going to end up in an image `src`. GUARANTEES a
+ * non-empty URL: an empty, whitespace-only or unset field resolves to local
+ * artwork instead.
+ *
+ * This exists because `<Image src="">` makes the browser re-request the current
+ * page as the image — a bug this project has now hit three times (ProductGallery,
+ * the catalog card, the catalog_file work). Fixing it with a conditional in the
+ * JSX only fixes the one component that got the conditional; fixing it here
+ * means no component downstream of a fetch module can be handed "" at all.
+ *
+ * DELIBERATELY NOT folded into mediaUrl itself. mediaUrl also normalises values
+ * bound for an `href` or a download — settings.catalog_file, certificates.file —
+ * where empty is load-bearing information: the caller hides the link rather than
+ * rendering a dead one, and substituting a .jpg for a missing PDF would be
+ * worse than the bug. Two helpers, one per destination:
+ *
+ *   image src → mediaImageUrl, never empty
+ *   href/file → mediaUrl, empty means "hide the link"
+ *
+ * A field whose emptiness is genuinely meaningful to a component — a partner
+ * with no logo renders its NAME instead, a post body block with no image is
+ * dropped entirely — also stays on mediaUrl on purpose.
+ *
+ * `fallback` defaults to the shared placeholder; pass a more apt local asset
+ * where one exists (a hero photograph for a hero slide, say).
+ */
+export function mediaImageUrl(
+  value: string,
+  origin: string,
+  fallback: string = IMAGES.placeholder,
+): string {
+  return mediaUrl(value, origin) || fallback;
 }

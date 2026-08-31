@@ -1,4 +1,5 @@
-import { apiOrigin, mediaUrl } from "@/lib/api";
+import { IMAGES } from "@/content/images";
+import { apiOrigin, mediaImageUrl, mediaUrl } from "@/lib/api";
 
 /**
  * GET /api/v1/home/
@@ -141,9 +142,10 @@ function toSlide(value: unknown, origin: string): HomeSlide | null {
     title,
     subtitle: readString(value, "subtitle"),
     // Shared helper, never a local copy: these arrive over http:// and a
-    // component must never see one. Empty stays empty so the caller can
-    // substitute its own artwork rather than hand next/image an empty src.
-    image: mediaUrl(readString(value, "image"), origin),
+    // component must never see one. mediaImageUrl, not mediaUrl — this lands in
+    // a full-bleed hero `src`, so the hero photograph stands in for a missing
+    // upload rather than the small product placeholder.
+    image: mediaImageUrl(readString(value, "image"), origin, IMAGES.heroFactory),
     cta_label: readString(value, "cta_label"),
     cta_url: readString(value, "cta_url"),
   };
@@ -172,7 +174,7 @@ function toCategory(value: unknown, origin: string): HomeCategory | null {
     id,
     name,
     slug,
-    image: mediaUrl(readString(value, "image"), origin),
+    image: mediaImageUrl(readString(value, "image"), origin),
     // Missing sort_order sinks to the end rather than jumping to the front.
     sort_order: readNumber(value, "sort_order") ?? Number.MAX_SAFE_INTEGER,
   };
@@ -256,7 +258,7 @@ function toPost(value: unknown, origin: string): HomePost | null {
     title,
     slug,
     excerpt: readString(value, "excerpt"),
-    cover: mediaUrl(readString(value, "cover"), origin),
+    cover: mediaImageUrl(readString(value, "cover"), origin),
     published_at: readString(value, "published_at"),
   };
 }

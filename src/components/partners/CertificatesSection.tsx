@@ -2,6 +2,7 @@ import CertificatesGrid, {
   type CertificateCard,
 } from "@/components/partners/CertificatesGrid";
 import { certificates, certificatesContent } from "@/content/certificates";
+import { IMAGES } from "@/content/images";
 import { getCertificates, type Certificate } from "@/lib/certificates";
 import { getSettings } from "@/lib/settings";
 
@@ -28,7 +29,7 @@ function toCertificateCard(
     key: certificate.id,
     title: certificate.title,
     image:
-      certificate.image.trim() || (STATIC_CERTIFICATES[index]?.image ?? ""),
+      certificate.image.trim() || STATIC_CERTIFICATES[index]?.image || IMAGES.placeholder,
   };
 }
 

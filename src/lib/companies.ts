@@ -1,4 +1,4 @@
-import { apiOrigin, mediaUrl } from "@/lib/api";
+import { apiOrigin, mediaImageUrl } from "@/lib/api";
 
 /**
  * GET /api/v1/companies/
@@ -66,6 +66,6 @@ export async function getCompanies(): Promise<Company[]> {
   // http:// and the component must never see one.
   return body.filter(isCompany).map((company) => ({
     ...company,
-    image: mediaUrl(company.image, origin),
+    image: mediaImageUrl(company.image, origin),
   }));
 }

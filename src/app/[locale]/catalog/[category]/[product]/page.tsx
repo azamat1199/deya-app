@@ -17,6 +17,7 @@ import {
   badgeLabel,
   getProduct,
   getRelatedProducts,
+  productImageUrl,
   type Product as ApiProduct,
   type ProductDetail,
   type ProductWeight,
@@ -43,7 +44,7 @@ function toRecommendedItem(
   return {
     key: related.id,
     title: related.name,
-    image: related.main_image?.image ?? "",
+    image: productImageUrl(related),
     href: `/${locale}/catalog/${related.category.slug}/${related.slug}`,
     badge: badgeLabel(related.badge),
   };

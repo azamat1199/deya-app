@@ -7,7 +7,7 @@ import { Button, ScrollReveal } from "@/components/ui";
 import { catalogProducts } from "@/content/catalog";
 import type { Product } from "@/content/types";
 import type { Category } from "@/lib/categories";
-import type { Product as ApiProduct } from "@/lib/products";
+import { productImageUrl, type Product as ApiProduct } from "@/lib/products";
 import type { Locale } from "@/lib/i18n/config";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { cn } from "@/lib/cn";
@@ -91,7 +91,7 @@ function apiProductToCard(product: ApiProduct, locale: Locale): CatalogCard {
       slug: product.slug,
       categorySlug: product.category.slug,
       title: product.name,
-      image: product.main_image?.image ?? "",
+      image: productImageUrl(product),
       badge: toBadge(product.badge),
     },
     href: `/${locale}/catalog/${product.category.slug}/${product.slug}`,

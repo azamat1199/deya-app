@@ -1,4 +1,4 @@
-import { apiOrigin, mediaUrl } from "@/lib/api";
+import { apiOrigin, mediaImageUrl, mediaUrl } from "@/lib/api";
 
 /**
  * GET /api/v1/certificates/
@@ -62,7 +62,7 @@ export async function getCertificates(): Promise<Certificate[]> {
   // fetches it.
   return body.filter(isCertificate).map((certificate) => ({
     ...certificate,
-    image: mediaUrl(certificate.image, origin),
+    image: mediaImageUrl(certificate.image, origin),
     file: mediaUrl(certificate.file, origin),
   }));
 }

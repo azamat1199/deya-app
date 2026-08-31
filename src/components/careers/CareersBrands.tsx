@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { careersContent, type BrandItem } from "@/content/careers";
+import { IMAGES } from "@/content/images";
 import { cn } from "@/lib/cn";
 import { getCompanies, type Company } from "@/lib/companies";
 
@@ -56,7 +57,7 @@ function toBrandCard(company: Company): BrandCard {
     name: company.name,
     // Empty images fall through to the static artwork at the same position,
     // then to the bare `bg-light` frame past the static count.
-    image: company.image || (STATIC_BRANDS[0]?.image ?? ""),
+    image: company.image || STATIC_BRANDS[0]?.image || IMAGES.placeholder,
     description: toDescription(company.description),
     href: company.vacancies_url.trim(),
   };

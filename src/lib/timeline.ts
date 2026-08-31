@@ -1,4 +1,4 @@
-import { apiOrigin, mediaUrl } from "@/lib/api";
+import { apiOrigin, mediaImageUrl } from "@/lib/api";
 
 /**
  * GET /api/v1/timeline/
@@ -90,7 +90,7 @@ export async function getTimeline(locale: string): Promise<TimelineEntry[]> {
       ...entry,
       // Shared helper, never a local copy: these arrive over http:// and a
       // component must never see one.
-      image: mediaUrl(entry.image, origin),
+      image: mediaImageUrl(entry.image, origin),
     }))
     .sort((a, b) => a.year - b.year || a.id - b.id);
 }

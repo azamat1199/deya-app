@@ -1,4 +1,4 @@
-import { apiOrigin, mediaUrl } from "@/lib/api";
+import { apiOrigin, mediaImageUrl } from "@/lib/api";
 
 /**
  * GET /api/v1/categories/
@@ -74,7 +74,7 @@ export async function getCategories(): Promise<Category[]> {
       ...category,
       // Shared helper, not a local copy: the payload's absolute URLs arrive
       // over http:// and the component must never see one.
-      image: mediaUrl(category.image, origin),
+      image: mediaImageUrl(category.image, origin),
     }))
     .sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
 }

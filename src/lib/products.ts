@@ -1,4 +1,5 @@
-import { apiOrigin, mediaUrl } from "@/lib/api";
+import { IMAGES } from "@/content/images";
+import { apiOrigin, mediaImageUrl } from "@/lib/api";
 import { isCategory, type Category } from "@/lib/categories";
 
 /**
@@ -99,7 +100,10 @@ function isPaginatedBody(value: unknown): value is PaginatedBody {
 function isProductImage(value: unknown): value is ProductImage {
   if (typeof value !== "object" || value === null) return false;
   const candidate = value as Record<string, unknown>;
-  return typeof candidate.image === "string";
+  // Non-empty is part of the shape. A row whose url is "" is not a usable
+  // image, and admitting it only moves the empty string downstream — which is
+  // exactly how `<Image src="">` reached the catalog card.
+  return typeof candidate.image === "string" && candidate.image.trim() !== "";
 }
 
 function isFlavor(value: unknown): value is ProductFlavor {
@@ -122,6 +126,16 @@ function isProduct(value: unknown): boolean {
   );
 }
 
+/**
+ * The url for a product card's image, placeholder included. THE single place
+ * that decision is made: every card — the catalog grid, the recommendation row,
+ * the home featured row — reads it from here rather than each spelling out its
+ * own `?? ""`, which is what let an empty string reach next/image.
+ */
+export function productImageUrl(product: Product): string {
+  return product.main_image?.image || IMAGES.placeholder;
+}
+
 function toProduct(value: unknown, origin: string): Product {
   const raw = value as Record<string, unknown>;
   const category = raw.category as Category;
@@ -131,14 +145,20 @@ function toProduct(value: unknown, origin: string): Product {
     id: raw.id as number,
     name: raw.name as string,
     slug: raw.slug as string,
-    category: { ...category, image: mediaUrl(category.image, origin) },
+    // Category tiles always show artwork, so an absent one takes the
+    // placeholder rather than travelling as "".
+    category: { ...category, image: mediaImageUrl(category.image, origin) },
     flavor: isFlavor(raw.flavor) ? raw.flavor : null,
     badge:
       typeof raw.badge === "string" && raw.badge.trim() ? raw.badge.trim() : null,
     is_featured: raw.is_featured === true,
     // Shared helper, never a local copy: these arrive over http:// and the
-    // component must never see one.
-    main_image: image ? { ...image, image: mediaUrl(image.image, origin) } : null,
+    // component must never see one. Stays nullable — "this product has no
+    // photograph" is real information; productImageUrl above is what turns it
+    // into a renderable src.
+    main_image: image
+      ? { ...image, image: mediaImageUrl(image.image, origin) }
+      : null,
   };
 }
 
@@ -309,10 +329,12 @@ export async function getProduct(slug: string): Promise<ProductDetail | null> {
     throw new Error(`GET ${url} returned an unusable product shape`);
   }
 
+  // isProductImage now rejects an empty url, so a gallery never carries a
+  // blank entry for ProductGallery to filter out again downstream.
   const images = Array.isArray(raw.images)
     ? raw.images.filter(isProductImage).map((image) => ({
         ...image,
-        image: mediaUrl(image.image, origin),
+        image: mediaImageUrl(image.image, origin),
       }))
     : [];
 
@@ -325,7 +347,10 @@ export async function getProduct(slug: string): Promise<ProductDetail | null> {
     box_weight: typeof raw.box_weight === "string" ? raw.box_weight : "",
     shelf_life_months:
       typeof raw.shelf_life_months === "number" ? raw.shelf_life_months : null,
-    category: { ...raw.category, image: mediaUrl(raw.category.image, origin) },
+    category: {
+      ...raw.category,
+      image: mediaImageUrl(raw.category.image, origin),
+    },
     flavor: isFlavor(raw.flavor) ? raw.flavor : null,
     badge:
       typeof raw.badge === "string" && raw.badge.trim() ? raw.badge.trim() : null,

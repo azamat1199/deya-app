@@ -5,6 +5,7 @@ import CategoryBanner, {
   type CategoryBannerItem,
 } from "@/components/catalog/CategoryBanner";
 import { homeCategories } from "@/content/categories";
+import { IMAGES } from "@/content/images";
 import ProductGrid from "@/components/catalog/ProductGrid";
 import { Section } from "@/components/ui";
 import { getCategories, type Category } from "@/lib/categories";
@@ -106,7 +107,7 @@ export default async function CatalogPage({
     ? categories.slice(0, BANNER_LIMIT).map((category) => ({
         id: category.id,
         title: category.name,
-        image: category.image || (STATIC_BANNER[0]?.image ?? ""),
+        image: category.image || STATIC_BANNER[0]?.image || IMAGES.placeholder,
         slug: category.slug,
       }))
     : STATIC_BANNER.slice(0, BANNER_LIMIT);

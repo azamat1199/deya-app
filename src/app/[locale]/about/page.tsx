@@ -6,6 +6,7 @@ import HistoryHero, {
   type HistorySlideItem,
 } from "@/components/about/HistoryHero";
 import { historySlides } from "@/content/history";
+import { IMAGES } from "@/content/images";
 import { isLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import { getTimeline, type TimelineEntry } from "@/lib/timeline";
@@ -38,7 +39,7 @@ function toSlide(entry: TimelineEntry): HistorySlideItem {
     year: String(entry.year),
     // Empty image => the static artwork at the same position rather than
     // handing next/image an empty src.
-    image: entry.image || (STATIC_SLIDES[0]?.image ?? ""),
+    image: entry.image || STATIC_SLIDES[0]?.image || IMAGES.placeholder,
     paragraph: entry.description,
   };
 }
