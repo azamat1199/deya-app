@@ -1,4 +1,4 @@
-import { apiOrigin, mediaUrl } from "@/lib/api";
+import { apiOrigin, mediaUrl, readJson } from "@/lib/api";
 
 /**
  * GET /api/v1/partners/
@@ -60,7 +60,7 @@ export async function getPartners(): Promise<Partner[]> {
     throw new Error(`GET ${url} failed with ${response.status}`);
   }
 
-  const body: unknown = await response.json();
+  const body: unknown = await readJson(response, url);
   if (!Array.isArray(body)) {
     throw new Error(`GET ${url} did not return an array`);
   }

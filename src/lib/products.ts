@@ -1,5 +1,5 @@
 import { IMAGES } from "@/content/images";
-import { apiOrigin, mediaImageUrl } from "@/lib/api";
+import { apiOrigin, mediaImageUrl, readJson } from "@/lib/api";
 import { isCategory, type Category } from "@/lib/categories";
 
 /**
@@ -205,7 +205,7 @@ export async function getProducts(): Promise<Product[]> {
       throw new Error(`GET ${url} failed with ${response.status}`);
     }
 
-    const body: unknown = await response.json();
+    const body: unknown = await readJson(response, url);
     if (!isPaginatedBody(body)) {
       throw new Error(`GET ${url} did not return a { count, next, results } body`);
     }
@@ -255,7 +255,7 @@ export async function getRelatedProducts(slug: string): Promise<Product[]> {
     throw new Error(`GET ${url} failed with ${response.status}`);
   }
 
-  const body: unknown = await response.json();
+  const body: unknown = await readJson(response, url);
   if (!Array.isArray(body)) {
     throw new Error(`GET ${url} did not return an array`);
   }
@@ -313,7 +313,7 @@ export async function getProduct(slug: string): Promise<ProductDetail | null> {
     throw new Error(`GET ${url} failed with ${response.status}`);
   }
 
-  const body: unknown = await response.json();
+  const body: unknown = await readJson(response, url);
   if (typeof body !== "object" || body === null) {
     throw new Error(`GET ${url} did not return an object`);
   }

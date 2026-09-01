@@ -117,3 +117,29 @@ export function mediaImageUrl(
 ): string {
   return mediaUrl(value, origin) || fallback;
 }
+
+/**
+ * `response.json()` with the failure made diagnosable.
+ *
+ * A bare `await response.json()` on a malformed body throws
+ * `SyntaxError: Unexpected non-whitespace character after JSON at position 521`
+ * — no URL, no endpoint, nothing to grep for. Every caller in this directory
+ * already catches and logs `cause`, so wrapping the parse hands them a message
+ * that names the request and keeps the SyntaxError underneath it.
+ *
+ * Still THROWS rather than returning null, deliberately: the modules here are
+ * contracted to throw and their callers all fall back to static content on a
+ * rejection (`Promise.allSettled` on the catalog page, try/catch on about, blog,
+ * careers and partners). Returning null would hand those callers a `fulfilled`
+ * result they would then `.map()` over.
+ */
+export async function readJson(
+  response: Response,
+  url: string,
+): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch (error) {
+    throw new Error(`GET ${url} returned unparseable JSON`, { cause: error });
+  }
+}

@@ -1,4 +1,4 @@
-import { apiOrigin, mediaImageUrl } from "@/lib/api";
+import { apiOrigin, mediaImageUrl, readJson } from "@/lib/api";
 
 /**
  * GET /api/v1/categories/
@@ -63,7 +63,7 @@ export async function getCategories(): Promise<Category[]> {
     throw new Error(`GET ${url} failed with ${response.status}`);
   }
 
-  const body: unknown = await response.json();
+  const body: unknown = await readJson(response, url);
   if (!Array.isArray(body)) {
     throw new Error(`GET ${url} did not return an array`);
   }

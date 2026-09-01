@@ -1,4 +1,4 @@
-import { apiOrigin, mediaImageUrl, mediaUrl } from "@/lib/api";
+import { apiOrigin, mediaImageUrl, mediaUrl, readJson } from "@/lib/api";
 
 /**
  * GET /api/v1/posts/           — PAGINATED { count, next, previous, results }
@@ -120,7 +120,7 @@ export async function getPosts({
     throw new Error(`GET ${url} failed with ${response.status}`);
   }
 
-  const body: unknown = await response.json();
+  const body: unknown = await readJson(response, url);
   if (typeof body !== "object" || body === null || Array.isArray(body)) {
     throw new Error(`GET ${url} did not return a paginated object`);
   }
@@ -185,7 +185,7 @@ export async function getPost(
     return null;
   }
 
-  const body: unknown = await response.json();
+  const body: unknown = await readJson(response, url);
   if (typeof body !== "object" || body === null || Array.isArray(body)) {
     console.error(`[getPost] GET ${url} did not return a single object`);
     return null;
