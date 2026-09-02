@@ -11,7 +11,7 @@ export const homeContent = {
     paragraphHighlights: ["более 200 наименований продукции", "25 стран мира"],
     linkLabel: "Подробнее о фабрике",
     linkHref: "/about",
-    factoryImage: IMAGES.factoryAerial,
+    factoryImage: IMAGES.newFactory,
   },
   exportMap: {
     heading:

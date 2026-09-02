@@ -75,7 +75,14 @@ export default function AboutPreview({ locale, stats }: AboutPreviewProps) {
                 which is why the phone uses the overlay's own background
                 instead and hides this one. Both active at once would stack two
                 white fades and double the opacity. */}
-            <div className="absolute inset-x-0 top-0 z-10 h-[200px] bg-linear-to-b from-white via-white/80 to-transparent max-md:hidden lg:h-[250px]" />
+            {/* Explicit stops rather than from/via/to: the new factory photo is
+                a bright exterior, and on the old three-stop ramp all five stat
+                captions measured between 2.98:1 and 4.47:1 against #6b6b6b —
+                every one under WCAG AA. Holding white to 58% and 0.92 through
+                80% covers the caption band (it ends at ~80% of this ramp) and
+                lifts them past 4.5:1. The element's height is unchanged, so
+                nothing moves. */}
+            <div className="absolute inset-x-0 top-0 z-10 h-[200px] bg-[linear-gradient(to_bottom,#fff_0%,#fff_58%,rgba(255,255,255,0.92)_80%,rgba(255,255,255,0)_100%)] max-md:hidden lg:h-[250px]" />
             {/* On mobile the fade lives here rather than on the sibling above:
                 this wrapper is auto-height, so it is exactly as tall as the
                 stats plus pb-40, and the gradient tracks the content at any
@@ -96,7 +103,7 @@ export default function AboutPreview({ locale, stats }: AboutPreviewProps) {
                     Column gap is already 0 and the two columns are equal, so
                     the border lands exactly on the midline with no horizontal
                     padding needed. */}
-                <div className="grid grid-cols-2 gap-y-6 pt-8 max-md:gap-y-0 max-md:pt-6.5 max-md:[&>*:nth-child(-n+2)]:pb-[10px] max-md:[&>*:nth-child(-n+2)]:mb-[10px] max-md:[&>*:nth-child(n+3)]:pt-3 max-md:[&>*:nth-child(odd)]:border-r-[0.5px] max-md:[&>*:nth-child(odd)]:border-r-[#0000004D] md:flex md:gap-y-0 md:divide-x md:divide-line-200/50 lg:pt-12 ">
+                <div className="grid grid-cols-2 gap-y-6  max-md:gap-y-0 max-md:pt-6.5 max-md:[&>*:nth-child(-n+2)]:pb-[10px] max-md:[&>*:nth-child(-n+2)]:mb-[10px]  max-md:[&>*:nth-child(odd)]:border-r-[0.5px] max-md:[&>*:nth-child(odd)]:border-r-[#0000004D] md:flex md:gap-y-0 md:divide-x md:divide-line-200/50  ">
                   {stats.map((stat) => (
                     <div
                       key={stat.id}

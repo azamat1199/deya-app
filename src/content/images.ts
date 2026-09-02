@@ -4,6 +4,10 @@
 export const IMAGES = {
   heroFactory: "/images/hero-factory.jpg",
   factoryAerial: "/images/factory-aerial.jpg",
+  /** The current factory exterior, replacing factoryAerial on the home page's
+   *  about band. factoryAerial stays — content/news.ts still uses it for a post
+   *  cover and a body image. */
+  newFactory: "/images/new_factory.jpg",
   croissantJam: "/images/croissant-jam.jpg",
   waferCandyMiller: "/images/wafer-candy-miller.jpg",
   chocolateGlazer: "/images/chocolate-glazer.jpg",
