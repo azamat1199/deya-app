@@ -1,59 +1,40 @@
+// Still a client component, and not by accident: the phone branch renders
+// through <Slider>, whose `renderSlide` prop is a FUNCTION. Functions cannot
+// cross the server/client boundary, so this file has to stay on the client even
+// though it no longer fetches anything. The fetch itself had no business here —
+// see lib/careerValues.ts.
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 
 import { Slider } from "@/components/ui";
 import { careersContent } from "@/content/careers";
-import { mediaUrl, normaliseOrigin } from "@/lib/api";
-
-/**
- * GET /api/v1/career-values/ answers with a BARE ARRAY, not the
- * { count, next, results } envelope DRF list views usually return — so the
- * body is used directly and nothing unwraps .results.
- */
-interface CareerValue {
-  id: number;
-  title: string;
-  text: string;
-  image: string;
-}
 
 /** The shape both sources normalise to, so the JSX below reads one thing. */
-interface AboutTile {
+export interface AboutTile {
   id: string | number;
   title: string;
   description: string;
   image: string | null;
 }
 
-// Trailing slash is load-bearing: Django's APPEND_SLASH answers the slashless
-// form with a 301, confirmed against the live host. Do not trim it.
-const CAREER_VALUES_PATH = "/api/v1/career-values/";
-
 /**
- * The hand-authored tiles, kept as the fallback rather than deleted. This is
- * also the initial state, so the server render and first paint show real copy
- * and the section can never appear blank while the request is in flight.
+ * The hand-authored tiles, kept as the fallback rather than deleted. Resolved
+ * on the SERVER now (see the careers page), so the prop always arrives
+ * populated and the section can never paint empty — which is exactly what it
+ * did while this array was merely a fallback and the initial state was [].
+ *
+ * Each id is the tile's own title: stable, unique, and never undefined, so the
+ * static path cannot produce a duplicate React key either.
  */
-const STATIC_TILES: AboutTile[] = careersContent.about.tiles.map((tile) => ({
-  id: tile.title,
-  title: tile.title,
-  description: tile.description,
-  image: tile.image,
-}));
-
-function isCareerValue(value: unknown): value is CareerValue {
-  if (typeof value !== "object" || value === null) return false;
-  const candidate = value as Record<string, unknown>;
-  return (
-    typeof candidate.id === "number" &&
-    typeof candidate.title === "string" &&
-    candidate.title.trim() !== "" &&
-    typeof candidate.text === "string" &&
-    typeof candidate.image === "string"
-  );
-}
+export const STATIC_TILES: AboutTile[] = careersContent.about.tiles.map(
+  (tile) => ({
+    id: tile.title,
+    title: tile.title,
+    description: tile.description,
+    image: tile.image,
+  }),
+);
 
 function TileBackground({ image }: { image: string | null }) {
   if (!image) {
@@ -70,70 +51,14 @@ function TileBackground({ image }: { image: string | null }) {
   );
 }
 
-export default function CareersAbout() {
-  // Starts on the static content, so a failure, a timeout, an empty array or
-  // malformed items all resolve by simply never replacing it.
-  const [tiles, setTiles] = useState<AboutTile[]>([]);
+export interface CareersAboutProps {
+  /** Resolved on the server by the careers page — API rows when the request
+   *  succeeded, STATIC_TILES when it failed or came back empty. Always
+   *  populated, so the section never paints an empty grid. */
+  tiles: AboutTile[];
+}
 
-  useEffect(() => {
-    // Host comes from the environment, never from this file. With the variable
-    // unset there is nothing to call, so the static fallback stands.
-    const base = process.env.NEXT_PUBLIC_API_URL;
-    if (!base) return;
-    const origin = normaliseOrigin(base);
-
-    const controller = new AbortController();
-
-    fetch(`${origin}${CAREER_VALUES_PATH}`, {
-      signal: controller.signal,
-      headers: { Accept: "application/json" },
-    })
-      .then((response) =>
-        response.ok
-          ? (response.json() as Promise<unknown>)
-          : Promise.reject(new Error(String(response.status))),
-      )
-      .then((body) => {
-        if (!Array.isArray(body)) return;
-
-        const values = body.filter(isCareerValue);
-        // An empty or wholly malformed payload is treated as no answer at all:
-        // stale copy beats an empty grid on a public marketing page.
-        if (values.length === 0) return;
-
-        setTiles(
-          values.map((value, index) => ({
-            id: value.id,
-            title: value.title,
-            description: value.text,
-            // The payload's absolute URLs arrive over http://; mediaUrl
-            // upgrades them to https:// so next/image accepts them and the
-            // browser does not block them as mixed content. An empty image
-            // borrows the static artwork at the same position, and past the
-            // static count TileBackground falls through to its brand gradient.
-            image: mediaUrl(value.image, origin) || STATIC_TILES[index]?.image || null,
-          })),
-        );
-      })
-      // Network error, non-2xx, invalid JSON — all keep the fallback, but none
-      // of them stay silent any more. `cause` is a separate argument because
-      // Node/undici reports network-level failures as the bare string "fetch
-      // failed" and hides the real reason (ENOTFOUND, ECONNREFUSED, a TLS
-      // error) in error.cause.
-      .catch((error: unknown) => {
-        // An abort is this effect cleaning up on unmount, not a failure.
-        if (error instanceof DOMException && error.name === "AbortError") return;
-        console.error(
-          "[CareersAbout] falling back to static content —",
-          error instanceof Error ? error.message : String(error),
-          "| cause:",
-          error instanceof Error ? (error.cause ?? "(none)") : "(none)",
-        );
-      });
-
-    return () => controller.abort();
-  }, []);
-
+export default function CareersAbout({ tiles }: CareersAboutProps) {
   return (
     <>
       {/* Phone: single-card swipeable carousel with dot pagination. */}
