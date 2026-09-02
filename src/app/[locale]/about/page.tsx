@@ -7,6 +7,7 @@ import HistoryHero, {
 } from "@/components/about/HistoryHero";
 import { historySlides } from "@/content/history";
 import { IMAGES } from "@/content/images";
+import { getFactory, type Factory } from "@/lib/factory";
 import { isLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import { getTimeline, type TimelineEntry } from "@/lib/timeline";
@@ -63,12 +64,21 @@ export default async function AboutPage({ params }: AboutPageProps) {
   // (framer-motion, scroll listeners, refs), and `next: { revalidate: 300 }` is
   // server-fetch semantics only. The locale is passed through so the backend can
   // resolve the language and so each locale gets its own cache entry.
+  // Both fetched here, in parallel: neither depends on the other, and awaiting
+  // them in sequence would just add a round trip. getFactory never rejects — it
+  // logs its own failure and answers null — so only the timeline needs the
+  // try/catch.
   let fetched: TimelineEntry[] = [];
   let fetchError: unknown = null;
+  let factory: Factory | null = null;
   try {
-    fetched = await getTimeline(locale);
+    [fetched, factory] = await Promise.all([
+      getTimeline(locale),
+      getFactory(locale),
+    ]);
   } catch (error) {
     fetchError = error;
+    factory = await getFactory(locale);
   }
 
   const usingApi = fetched.length > 0;
@@ -91,7 +101,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
   return (
     <>
       <HistoryHero slides={slides} />
-      <FounderStory />
+      <FounderStory factory={factory} />
     </>
   );
 }

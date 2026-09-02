@@ -1,7 +1,5 @@
-import Image from "next/image";
-
-import { aboutContent } from "@/content/about";
-import { withEmphasis } from "@/lib/withEmphasis";
+import FounderImage from "@/components/about/FounderImage";
+import type { Factory } from "@/lib/factory";
 
 // Figma type, authored at a 1440px reference width. Line-height and tracking
 // stay constant; only the size scales.
@@ -16,8 +14,22 @@ const NAME_TYPE =
 const QUOTE_TYPE =
   "font-normal italic [quotes:none] text-[clamp(14px,1.11vw,16px)] leading-[1.25] text-white/90";
 
-/** The two runs the design sets in bold italic, inside the body paragraph. */
-const EMPHASIS = "font-medium italic text-white";
+/**
+ * Styling for the tags inside CMS rich text. The wrapper's own *_TYPE class
+ * still carries size, colour and leading; this only covers what nested tags
+ * need, since markup from the CMS cannot carry classes of its own.
+ *
+ * The editor emits one <p> per line — the quote is three of them — so
+ * consecutive paragraphs get their own rhythm rather than a browser default
+ * margin that would fight the clamp()-based spacing above.
+ *
+ * strong/b reproduce the bold-italic runs the design calls for. They render
+ * flat today because the CMS text has no emphasis markup yet; the rule is here
+ * so it lights up the moment an editor wraps those phrases, with no code
+ * change.
+ */
+const RICH_TEXT =
+  "[&_p]:m-0 [&_p+p]:mt-[0.4em] [&_strong]:font-medium [&_strong]:italic [&_strong]:text-white [&_b]:font-medium [&_b]:italic [&_b]:text-white [&_em]:italic [&_i]:italic [&_a]:text-white [&_a]:underline [&_a]:underline-offset-2";
 
 const GAP_UNDER_HEADING = "mt-[clamp(14px,1.53vw,22px)]";
 const GAP_UNDER_NAME = "mt-[clamp(10px,0.97vw,14px)]";
@@ -56,8 +68,9 @@ const M_NAME_TYPE =
 const M_QUOTE_TYPE =
   "font-normal italic [quotes:none] text-[clamp(12px,3.4vw,15px)] leading-[1.25] tracking-normal text-white/90";
 
-/** Bold italic runs inside the body copy — <strong><em>, not a split. */
-const M_EMPHASIS = "font-medium text-white";
+/** The mobile counterpart of RICH_TEXT — same idea, mobile's emphasis weight. */
+const M_RICH_TEXT =
+  "[&_p]:m-0 [&_p+p]:mt-[0.4em] [&_strong]:font-medium [&_strong]:text-white [&_b]:font-medium [&_b]:text-white [&_em]:italic [&_i]:italic [&_a]:text-white [&_a]:underline [&_a]:underline-offset-2";
 
 // The heading crosses the subject's white shirt, so the scrim has to carry the
 // contrast on its own. Stops are tuned against the measured lightest pixel
@@ -67,25 +80,48 @@ const M_EMPHASIS = "font-medium text-white";
 const M_SCRIM =
   "bg-[linear-gradient(to_top,rgba(0,0,0,0.84)_0%,rgba(0,0,0,0.72)_45%,rgba(0,0,0,0.55)_62%,rgba(0,0,0,0.30)_72%,rgba(0,0,0,0)_80%)]";
 
-export default function FounderStory() {
-  const { heading, paragraph, paragraphHighlights, name, quote, image } =
-    aboutContent.founder;
+export interface FounderStoryProps {
+  /** From GET /api/v1/factory/, or null when that request failed. Null renders
+   *  the section's gradient with no text — never stale hardcoded copy, which
+   *  would hide an outage and drift from what editors see in the CMS. */
+  factory: Factory | null;
+}
 
+export default function FounderStory({ factory }: FounderStoryProps) {
+  const heading = factory?.title ?? "";
+  const paragraph = factory?.subtitle ?? "";
+  const name = factory?.description ?? "";
+  const quote = factory?.subdescription ?? "";
+  const image = factory?.image ?? null;
+  // The portrait is of the person named in `description`. With no name the
+  // photograph carries no information a screen reader can use beyond the copy
+  // beside it, so it becomes decorative rather than getting an invented label.
+  const imageAlt = name || "";
+
+  // Each slot is omitted rather than rendered empty: no bare heading, and no
+  // stray guillemets around nothing. The guillemets themselves live in the CMS
+  // text, so there is no literal «» wrapper here to double them.
   const headingGroup = (
     <>
-      <h2 className={HEADING_TYPE}>{heading}</h2>
-      <p className={`${GAP_UNDER_HEADING} ${BODY_TYPE}`}>
-        {withEmphasis(paragraph, paragraphHighlights, EMPHASIS)}
-      </p>
+      {heading && <h2 className={HEADING_TYPE}>{heading}</h2>}
+      {paragraph && (
+        <div
+          className={`${GAP_UNDER_HEADING} ${BODY_TYPE} ${RICH_TEXT}`}
+          dangerouslySetInnerHTML={{ __html: paragraph }}
+        />
+      )}
     </>
   );
 
   const attributionGroup = (
     <>
-      <p className={NAME_TYPE}>{name}</p>
-      <blockquote className={`${GAP_UNDER_NAME} ${QUOTE_TYPE}`}>
-        «{quote}»
-      </blockquote>
+      {name && <p className={NAME_TYPE}>{name}</p>}
+      {quote && (
+        <blockquote
+          className={`${GAP_UNDER_NAME} ${QUOTE_TYPE} ${RICH_TEXT}`}
+          dangerouslySetInnerHTML={{ __html: quote }}
+        />
+      )}
     </>
   );
 
@@ -98,13 +134,10 @@ export default function FounderStory() {
           frame height is in shot (head clear of the top edge, watch bottom
           right) and only the sides are cropped, which is what centres the
           subject. */}
-      <div className="relative aspect-[1/1.95] w-full overflow-hidden md:hidden">
-        <Image
+      <div className="relative aspect-[1/1.95] w-full overflow-hidden bg-[linear-gradient(to_bottom,#2a2a2a_0%,#111_100%)] md:hidden">
+        <FounderImage
           src={image}
-          alt={name}
-          fill
-          sizes="100vw"
-          quality={90}
+          alt={imageAlt}
           className="object-cover object-[50%_50%]"
         />
 
@@ -113,37 +146,44 @@ export default function FounderStory() {
           className={`pointer-events-none absolute inset-0 ${M_SCRIM}`}
         />
 
-        <h2 className={`${M_INSET} ${M_HEADING_POS} ${M_HEADING_TYPE}`}>
-          {heading}
-        </h2>
+        {heading && (
+          <h2 className={`${M_INSET} ${M_HEADING_POS} ${M_HEADING_TYPE}`}>
+            {heading}
+          </h2>
+        )}
 
-        <p className={`${M_INSET} ${M_BODY_POS} ${M_BODY_TYPE}`}>
-          {withEmphasis(paragraph, paragraphHighlights, M_EMPHASIS, true)}
-        </p>
+        {paragraph && (
+          <div
+            className={`${M_INSET} ${M_BODY_POS} ${M_BODY_TYPE} ${M_RICH_TEXT}`}
+            dangerouslySetInnerHTML={{ __html: paragraph }}
+          />
+        )}
 
         {/* Absolute inset-0 rather than display:contents — the figure has to
             stay the containing block so its children's percentages still
             resolve against the section's height. */}
         <figure className="absolute inset-0">
-          <figcaption className={`${M_INSET} ${M_NAME_POS} ${M_NAME_TYPE}`}>
-            {name}
-          </figcaption>
-          <blockquote className={`${M_INSET} ${M_QUOTE_POS} ${M_QUOTE_TYPE}`}>
-            «{quote}»
-          </blockquote>
+          {name && (
+            <figcaption className={`${M_INSET} ${M_NAME_POS} ${M_NAME_TYPE}`}>
+              {name}
+            </figcaption>
+          )}
+          {quote && (
+            <blockquote
+              className={`${M_INSET} ${M_QUOTE_POS} ${M_QUOTE_TYPE} ${M_RICH_TEXT}`}
+              dangerouslySetInnerHTML={{ __html: quote }}
+            />
+          )}
         </figure>
       </div>
 
       {/* >= 768: text overlaid on a full-bleed photo. 4/3 through the tablet
           range so the figure stays tall enough, widening to the Figma 1772/896
           from 1024 up. */}
-      <div className="relative hidden aspect-4/3 w-full overflow-hidden md:block min-[1024px]:aspect-[1772/896]">
-        <Image
+      <div className="relative hidden aspect-4/3 w-full overflow-hidden bg-[linear-gradient(115deg,#2a2a2a_0%,#111_100%)] md:block min-[1024px]:aspect-[1772/896]">
+        <FounderImage
           src={image}
-          alt={name}
-          fill
-          sizes="100vw"
-          quality={90}
+          alt={imageAlt}
           className="object-cover object-center"
         />
 
@@ -160,8 +200,23 @@ export default function FounderStory() {
 
         {/* top/bottom percentages resolve against the section's height, which
             is what the 9% / 92% anchors in the design are measured against —
-            percentage padding would resolve against width instead. */}
-        <div className="container-page absolute inset-x-0 top-[9%] z-10">
+            percentage padding would resolve against width instead.
+
+            The max() is the header-clip fix. /about renders its header
+            `fixed` (HistoryHero sets hasHeroBackground), so the bar overlays
+            every section below it, and a bare 9% put the heading's first line
+            inside that band: measured 22px of it covered at 1280 and 14px at
+            1440. Flooring the offset at the header height plus a 1rem gap
+            clears it.
+
+            Note this is not the root cause — that is the header staying fixed
+            past the hero — and because the frame is 1772/896, 9% only exceeds
+            the floor above roughly 2100px of viewport width, so at every
+            realistic width this now resolves to the floor rather than to 9%.
+            The heading therefore sits a little lower than the Figma anchor.
+            Tracked separately; fixing it properly means touching the header
+            and every other section on this page. */}
+        <div className="container-page absolute inset-x-0 top-[max(9%,calc(var(--header-height)+1rem))] z-10">
           <div className="max-w-[70%] min-[1024px]:max-w-[56%] min-[1280px]:max-w-[48%]">
             {headingGroup}
           </div>
