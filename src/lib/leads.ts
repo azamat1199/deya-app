@@ -26,10 +26,29 @@ export interface LeadInput {
 /**
  * `fieldErrors` is keyed by the API's own field names, so the caller maps them
  * onto its inputs. `detail` carries anything that belongs to no single field.
+ *
+ * `rateLimited`/`retryAfterSeconds` are additive and OPTIONAL rather than a
+ * separate union arm, deliberately: this type is shared by every lead form
+ * (ContactForm included), and a caller that doesn't know about 429s yet still
+ * compiles unchanged and still degrades sanely — `fieldErrors` is always `{}`
+ * and `detail` is always absent on a 429, so an unmodified caller's existing
+ * `result.detail ?? (matched ? null : t("form.error"))` falls through to its
+ * own generic message instead of the raw DRF throttle sentence it shows today.
  */
 export type LeadResult =
   | { ok: true }
-  | { ok: false; fieldErrors: Record<string, string>; detail?: string };
+  | {
+      ok: false;
+      fieldErrors: Record<string, string>;
+      detail?: string;
+      /** True only for an HTTP 429. A caller that checks this can show a
+       *  dedicated message instead of the generic fieldErrors/detail path —
+       *  see submitLead's 429 branch for why detail is never populated here. */
+      rateLimited?: boolean;
+      /** Seconds from the response's own Retry-After header, or null when the
+       *  header was absent or not a plain integer. Never a guessed number. */
+      retryAfterSeconds?: number | null;
+    };
 
 /**
  * Trailing slash is load-bearing and more so here than on the GETs: Django's
@@ -191,6 +210,32 @@ export async function submitLead(input: LeadInput): Promise<LeadResult> {
   }
 
   if (response.ok) return { ok: true };
+
+  // Its own case, checked before any body parsing: a 429 body is prose for a
+  // human or a log ("Request was throttled...."), not the field-keyed shape
+  // parseErrors expects. Running it through there anyway wouldn't crash — the
+  // whole string would just land in `detail` — but that IS the bug: an
+  // English backend sentence rendered as the form's error message instead of
+  // a real "you're going too fast" copy. So the body is never read here at
+  // all; only the standard Retry-After header, which DRF's throttling always
+  // sets as a plain integer-seconds value (never an HTTP-date) is.
+  if (response.status === 429) {
+    const header = response.headers.get("Retry-After");
+    const parsed = header ? Number.parseInt(header, 10) : NaN;
+    const retryAfterSeconds = Number.isFinite(parsed) ? parsed : null;
+
+    // warn, not error: an expected, handled condition (the caller shows a
+    // dedicated message and cools the button down), not a genuine failure.
+    console.warn(
+      `[submitLead] POST ${url} rate-limited (429)${
+        retryAfterSeconds !== null
+          ? ` — Retry-After: ${retryAfterSeconds}s`
+          : " — no Retry-After header"
+      }`,
+    );
+
+    return { ok: false, fieldErrors: {}, rateLimited: true, retryAfterSeconds };
+  }
 
   // A validation rejection carries a JSON body worth surfacing; anything else
   // (500, HTML error page) falls back to the form-level message.

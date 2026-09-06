@@ -67,7 +67,12 @@
     "newsletterSuccess": "Thank you! You are now subscribed.",
     "success": "Thank you! Your request has been sent.",
     "error": "Something went wrong. Please try again.",
+    "rateLimited": "Too many submission attempts. Please try again in a minute.",
+    "rateLimitedWithSeconds": "Too many submission attempts. Please try again in {seconds}s.",
     "phoneInvalid": "Enter a valid phone number for the selected country"
+  },
+  "legal": {
+    "unavailable": "This document is temporarily unavailable."
   },
   "common": {
     "phone": "+998 (55) 151 55 55",

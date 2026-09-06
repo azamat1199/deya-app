@@ -14,6 +14,7 @@ import { Section } from "@/components/ui";
 import { getCareerValues, type CareerValue } from "@/lib/careerValues";
 import { isLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
+import { getProductInfo, type ProductInfoItem } from "@/lib/productInfo";
 
 type CareersPageProps = {
   params: Promise<{ locale: string }>;
@@ -78,15 +79,58 @@ export default async function CareersPage({ params }: CareersPageProps) {
     );
   }
 
+  // The two CareersCulture blocks that sandwich CareersBrands. Row count is
+  // the contract — see productInfo.ts — so unlike career values, THERE IS NO
+  // STATIC FALLBACK here: the API has no equivalent for headingHighlight/
+  // closingNote-style content, and content/careers.ts's culture object is not
+  // shaped as two rows. Fewer than 2 usable rows means the corresponding
+  // block(s) render nothing rather than stale copy, per this project's rule
+  // against masking an outage — brands keeps rendering regardless, since it is
+  // fetched and rendered independently.
+  let productInfo: ProductInfoItem[] = [];
+  let productInfoError: unknown = null;
+  try {
+    productInfo = await getProductInfo(locale);
+  } catch (error) {
+    productInfoError = error;
+  }
+
+  if (productInfoError) {
+    console.error(
+      "[CareersPage] product info request failed, omitting both CareersCulture blocks —",
+      productInfoError instanceof Error
+        ? productInfoError.message
+        : String(productInfoError),
+      "| cause:",
+      productInfoError instanceof Error
+        ? (productInfoError.cause ?? "(none)")
+        : "(none)",
+    );
+  } else if (productInfo.length < 2) {
+    console.error(
+      `[CareersPage] product info returned ${productInfo.length} usable row(s), need 2 — the corresponding CareersCulture block(s) are omitted`,
+    );
+  }
+
+  const cultureBlockA = productInfo[0] ?? null;
+  const cultureBlockB = productInfo[1] ?? null;
+
   return (
     <>
       <CareersHero vacanciesLabel={dictionary.buttons.vacancies} />
-      <Section bg="white" containerWidth="home">
-        <CareersCulture />
-      </Section>
+      {cultureBlockA && (
+        <Section bg="white" containerWidth="home">
+          <CareersCulture item={cultureBlockA} />
+        </Section>
+      )}
       <Section bg="white" containerWidth="home">
         <CareersBrands />
       </Section>
+      {cultureBlockB && (
+        <Section bg="white" containerWidth="home">
+          <CareersCulture item={cultureBlockB} />
+        </Section>
+      )}
       <Section bg="white" containerWidth="home">
         <CareersGrowth />
       </Section>

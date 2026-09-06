@@ -69,6 +69,19 @@ export interface Dictionary {
     newsletterSuccess: string;
     success: string;
     error: string;
+    /** Shown on HTTP 429 when the response carried no Retry-After header —
+     *  no fake countdown, just a plain "try again shortly". */
+    rateLimited: string;
+    /** Same case, but the response DID carry Retry-After: contains the
+     *  literal token "{seconds}", replaced with the real wait time at the
+     *  call site. Not a project-wide i18n templating convention — scoped to
+     *  this one string, since nothing else here needs interpolation. */
+    rateLimitedWithSeconds: string;
+  };
+  legal: {
+    /** Shown on /privacy-policy or /personal-data-consent when the API
+     *  request for that document failed or resolved to nothing. */
+    unavailable: string;
   };
   common: {
     phone: string;

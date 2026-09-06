@@ -1,96 +1,24 @@
-import type { ReactNode } from "react";
 import Link from "next/link";
 
 import { ScrollReveal } from "@/components/ui";
-import type { LegalBlock, LegalPageContent } from "@/content/legal/types";
+import type { LegalDocument } from "@/lib/legalDocuments";
 import type { Locale } from "@/lib/i18n/config";
 
-const URL_OR_EMAIL = /(https?:\/\/[^\s]+|[\w.-]+@[\w.-]+\.\w+)/g;
-
-function renderTextWithLinks(text: string): ReactNode[] {
-  return text.split(URL_OR_EMAIL).map((part, index) => {
-    if (!part) return null;
-    if (/^https?:\/\//.test(part)) {
-      return (
-        <a
-          key={index}
-          href={part}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-brand-600 hover:underline"
-        >
-          {part}
-        </a>
-      );
-    }
-    if (/^[\w.-]+@[\w.-]+\.\w+$/.test(part)) {
-      return (
-        <a
-          key={index}
-          href={`mailto:${part}`}
-          className="text-brand-600 hover:underline"
-        >
-          {part}
-        </a>
-      );
-    }
-    return part;
-  });
-}
-
-function LegalBlocks({ blocks }: { blocks: LegalBlock[] }) {
-  return (
-    <>
-      {blocks.map((block, index) => {
-        if (block.type === "paragraph") {
-          return (
-            <p
-              key={index}
-              className="mb-4 text-sm leading-relaxed text-ink-600"
-            >
-              {renderTextWithLinks(block.text)}
-            </p>
-          );
-        }
-
-        if (block.type === "list") {
-          return (
-            <ul key={index} className="mb-4">
-              {block.items.map((item, itemIndex) => (
-                <li
-                  key={itemIndex}
-                  className="mb-1 text-sm leading-relaxed text-ink-600"
-                >
-                  — {renderTextWithLinks(item)}
-                </li>
-              ))}
-            </ul>
-          );
-        }
-
-        return (
-          <div key={index}>
-            <h2 className="mt-6 mb-2 text-sm font-semibold text-ink-900">
-              {block.heading}
-            </h2>
-            <LegalBlocks blocks={block.blocks} />
-          </div>
-        );
-      })}
-    </>
-  );
-}
-
 export interface LegalPageProps {
-  content: LegalPageContent;
+  /** null when the fetch for this slug failed or resolved to nothing —
+   *  renders the minimal unavailable state instead of a title/body. */
+  doc: LegalDocument | null;
   locale: Locale;
   backLabel: string;
+  /** Shown in place of the title/body when `doc` is null. */
+  unavailableLabel: string;
 }
 
 export default function LegalPage({
-  content,
+  doc,
   locale,
   backLabel,
+  unavailableLabel,
 }: LegalPageProps) {
   return (
     <section className="bg-white pt-8 pb-20 lg:pt-12 lg:pb-32">
@@ -125,12 +53,27 @@ export default function LegalPage({
             {backLabel}
           </Link>
 
-          <ScrollReveal direction="fade">
-            <h1 className="mb-8 text-3xl leading-snug font-normal text-ink-900 lg:mb-10 lg:text-4xl">
-              {content.title}
-            </h1>
-            <LegalBlocks blocks={content.blocks} />
-          </ScrollReveal>
+          {doc ? (
+            <ScrollReveal direction="fade">
+              <h1 className="mb-8 text-3xl leading-snug font-normal text-ink-900 lg:mb-10 lg:text-4xl">
+                {doc.title}
+              </h1>
+              {/* Sanitised HTML from the API, styled the same way FounderStory
+                  and CareersBrands render their rich-text fields: Tailwind
+                  arbitrary variants targeting the tags sanitizeRichText allows
+                  through, rather than a second parser. Sizing here matches
+                  what this page's paragraphs looked like before the API
+                  integration (mb-4 text-sm leading-relaxed text-ink-600). */}
+              <div
+                className="[&_p]:mb-4 [&_p:last-child]:mb-0 [&_p]:text-sm [&_p]:leading-relaxed [&_p]:text-ink-600 [&_strong]:font-semibold [&_b]:font-semibold [&_em]:italic [&_i]:italic [&_a]:text-brand-600 [&_a:hover]:underline"
+                dangerouslySetInnerHTML={{ __html: doc.body }}
+              />
+            </ScrollReveal>
+          ) : (
+            <p className="text-sm leading-relaxed text-ink-600">
+              {unavailableLabel}
+            </p>
+          )}
         </div>
       </div>
     </section>

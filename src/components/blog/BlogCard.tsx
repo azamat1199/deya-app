@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { NewsPost } from "@/content/types";
+import { IMAGES } from "@/content/images";
 import type { Locale } from "@/lib/i18n/config";
 import { formatPostDate } from "@/lib/formatDate";
 import { cn } from "@/lib/cn";
@@ -42,6 +43,25 @@ export default function BlogCard({
 }: BlogCardProps) {
   const titleId = `blog-card-${post.slug}`;
 
+  // The API has been observed sending the literal OpenAPI placeholder string
+  // "string" for `cover` on an unpopulated post — the same placeholder-data
+  // pattern already seen on /api/v1/product-info/ and /api/v1/career-values/.
+  // mediaImageUrl (in the fetch layer) only guarantees a NON-EMPTY value, not
+  // a well-formed one: it cannot tell "string" apart from a real relative
+  // path, so it prefixes it into "https://deya.uz/string" — a syntactically
+  // valid URL that next/image still rejects, because next.config.ts
+  // deliberately restricts this host to its real upload prefix (/media/**)
+  // rather than allowing the whole domain. That restriction is the right
+  // fix for the config side of this bug already; widening it would make
+  // next/image accept the garbage URL and attempt to fetch it instead of
+  // refusing it. A real cover is always under /media/ once resolved, so
+  // anything else — missing, or present but not a real asset path — falls
+  // back to the same placeholder used elsewhere on the site.
+  const coverSrc =
+    post.cover && post.cover.includes("/media/")
+      ? post.cover
+      : IMAGES.placeholder;
+
   return (
     // The whole card is the link, so the image, title and excerpt are clickable
     // too — including on touch, where there is no hover affordance to hint that
@@ -54,7 +74,7 @@ export default function BlogCard({
     >
       <div className="relative aspect-4/3 w-full overflow-hidden bg-light">
         <Image
-          src={post.cover}
+          src={coverSrc}
           alt={post.title}
           fill
           sizes="(min-width: 1200px) 25vw, (min-width: 768px) 50vw, 100vw"

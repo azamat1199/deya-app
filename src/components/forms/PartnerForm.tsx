@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useForm, useWatch } from "react-hook-form";
 
@@ -14,6 +14,25 @@ import {
   submitLead,
   type LeadType,
 } from "@/lib/leads";
+
+/** Cooldown when the API rejects with 429 but sends no Retry-After — matches
+ *  the wording of the generic rateLimited message ("through a minute"), so the
+ *  button re-enabling and the text it re-enables under never disagree. */
+const DEFAULT_COOLDOWN_SECONDS = 60;
+
+/**
+ * Isolates the one impure call (Date.now()) behind a plain module-level
+ * function. react-hook-form's handleSubmit(fn) rebuilds its returned closure
+ * on every render, and the React Compiler's purity check appears to trace
+ * into that closure's body as if it could run during render — a call to
+ * Date.now() written directly inside onSubmit gets flagged even though it
+ * only ever runs from a real submit event. Calling it through a named helper
+ * defined outside the component satisfies the check without changing when
+ * the clock is actually read.
+ */
+function msFromNowSeconds(seconds: number): number {
+  return Date.now() + seconds * 1000;
+}
 
 type PartnerFormValues = {
   name: string;
@@ -61,6 +80,9 @@ export default function PartnerForm({
   // error naming `phone` would have nowhere to land. It is held here and passed
   // straight to PhoneInput's own error slot.
   const [phoneApiError, setPhoneApiError] = useState<string | null>(null);
+  // Epoch ms when a 429 cooldown ends, or null when not rate-limited. Set from
+  // the response's own Retry-After when present, else DEFAULT_COOLDOWN_MS.
+  const [rateLimitedUntil, setRateLimitedUntil] = useState<number | null>(null);
   const {
     register,
     handleSubmit,
@@ -79,7 +101,28 @@ export default function PartnerForm({
     useWatch({ control, name: "consentPersonalData" }),
   );
 
+  // Re-enables the button by itself once the cooldown elapses — one timeout,
+  // not a ticking interval: nothing here displays a live countdown, so there
+  // is nothing that needs a per-second re-render.
+  useEffect(() => {
+    if (rateLimitedUntil === null) return;
+    // Only ever cleared from inside the timeout callback, never synchronously
+    // in the effect body — Math.max keeps a same-tick expiry (retryAfterSeconds
+    // of 0) as a `setTimeout(fn, 0)` rather than a direct call here.
+    const remaining = Math.max(0, rateLimitedUntil - Date.now());
+    const timer = setTimeout(() => setRateLimitedUntil(null), remaining);
+    return () => clearTimeout(timer);
+  }, [rateLimitedUntil]);
+
   const onSubmit = handleSubmit(async (values) => {
+    // Belt and suspenders alongside the disabled button: a disabled
+    // type="submit" already blocks both a click and Enter, but this state is
+    // something react-hook-form's own isSubmitting has no idea about. No
+    // Date.now() re-check needed — the effect above is what keeps
+    // rateLimitedUntil authoritative, clearing it the instant the cooldown
+    // truly elapses, so null already means "safe to submit".
+    if (rateLimitedUntil !== null) return;
+
     setFormError(null);
     setPhoneApiError(null);
 
@@ -127,6 +170,21 @@ export default function PartnerForm({
     }
 
     setStatus("error");
+
+    // Checked before the fieldErrors loop, and returns before it: a 429 body
+    // is never field-shaped, so there is nothing there for that loop to find.
+    // Fields are deliberately left exactly as the user typed them — only a
+    // success clears the form.
+    if (result.rateLimited) {
+      const seconds = result.retryAfterSeconds ?? DEFAULT_COOLDOWN_SECONDS;
+      setFormError(
+        result.retryAfterSeconds !== null
+          ? t("form.rateLimitedWithSeconds").replace("{seconds}", String(seconds))
+          : t("form.rateLimited"),
+      );
+      setRateLimitedUntil(msFromNowSeconds(seconds));
+      return;
+    }
 
     // Field-specific rejections land on their inputs; whatever is left over
     // becomes the form-level message.
@@ -250,7 +308,9 @@ export default function PartnerForm({
         size="lg"
         fullWidth
         loading={isSubmitting}
-        disabled={!consentGiven || !phoneValid || isSubmitting}
+        disabled={
+          !consentGiven || !phoneValid || isSubmitting || rateLimitedUntil !== null
+        }
       >
         {t("buttons.sendRequest")}
       </Button>

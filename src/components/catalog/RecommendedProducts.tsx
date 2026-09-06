@@ -79,7 +79,10 @@ export default function RecommendedProducts({
       const stops = Math.max(1, cards.length - visible + 1);
       setDotCount(stops);
       setActiveIndex(
-        Math.min(stops - 1, Math.max(0, Math.round(scroller!.scrollLeft / step))),
+        Math.min(
+          stops - 1,
+          Math.max(0, Math.round(scroller!.scrollLeft / step)),
+        ),
       );
     }
 
@@ -98,7 +101,7 @@ export default function RecommendedProducts({
     // The one container for the whole section: heading row and card row both
     // sit inside it, so the single px-10 it carries is the only boundary either
     // of them has. Nothing below adds its own horizontal padding.
-    <div className={cn("mt-20 pb-5", CATALOG_SECTION_BLEED)}>
+    <div className={cn("mt-20 mb-20 pb-5", CATALOG_SECTION_BLEED)}>
       <div className="flex items-end justify-between gap-4">
         {/* Larger on mobile than on desktop, per the two references. */}
         <h2 className="text-[32px] leading-tight font-normal text-ink-900 lg:text-[28px]">

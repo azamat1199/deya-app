@@ -67,7 +67,12 @@
     "newsletterSuccess": "Rahmat! Siz xabarnomaga obuna bo‘ldingiz.",
     "success": "Rahmat! Arizangiz yuborildi.",
     "error": "Nimadir xato ketdi. Qayta urinib ko‘ring.",
+    "rateLimited": "Yuborish urinishlari juda ko‘p. Bir daqiqadan so‘ng qayta urinib ko‘ring.",
+    "rateLimitedWithSeconds": "Yuborish urinishlari juda ko‘p. {seconds} soniyadan so‘ng qayta urinib ko‘ring.",
     "phoneInvalid": "Tanlangan davlat uchun to‘g‘ri telefon raqamini kiriting"
+  },
+  "legal": {
+    "unavailable": "Ushbu hujjat vaqtincha mavjud emas."
   },
   "common": {
     "phone": "+998 (55) 151 55 55",

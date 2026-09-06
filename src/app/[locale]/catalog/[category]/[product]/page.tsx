@@ -239,8 +239,17 @@ export default async function ProductPage({ params }: ProductPageProps) {
           {dictionary.nav.products}
         </Link>
         <span className="mx-2">/</span>
+        {/* The catalog LISTING filtered by category, not the nested
+            /catalog/[category]/[product] route — that pattern is only valid
+            with a product slug after it, which is what this crumb linked to
+            before (a 404). Built from detail.category.slug, the fetched
+            product's own resolved category, rather than the URL's `category`
+            param: nothing on this route validates that segment against the
+            product it names, so a stale or mistyped one must not leak into
+            the link. Same ?category= pattern CategoryBanner and ProductGrid's
+            own tabs already use — one filtering mechanism, not a second. */}
         <Link
-          href={`/${locale}/catalog/${category}`}
+          href={`/${locale}/catalog?category=${detail.category.slug}`}
           className="hover:text-ink-900"
         >
           {categoryLabel}

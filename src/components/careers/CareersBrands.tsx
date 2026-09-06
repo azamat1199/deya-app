@@ -5,6 +5,7 @@ import { careersContent, type BrandItem } from "@/content/careers";
 import { IMAGES } from "@/content/images";
 import { cn } from "@/lib/cn";
 import { getCompanies, type Company } from "@/lib/companies";
+import { isBlankRichText, sanitizeRichText } from "@/lib/sanitizeRichText";
 
 const RED_RUN = "подходящую вам должность";
 
@@ -16,7 +17,14 @@ interface BrandCard {
   key: string | number;
   name: string;
   image: string;
-  description: BrandItem["description"];
+  /** The static fallback's hand-authored block tree only — see
+   *  `descriptionHtml` for the live-API path. */
+  description?: BrandItem["description"];
+  /** Sanitized HTML from the live API, rendered the same way FounderStory
+   *  renders subtitle/subdescription. The admin's editor for this field is
+   *  TipTap; the API sends real markup, not the flat blank-line-separated
+   *  text this field used to be treated as (see the removed toDescription). */
+  descriptionHtml?: string;
   /** Empty string means this card renders without its vacancies link. */
   href: string;
 }
@@ -34,23 +42,6 @@ const STATIC_BRANDS: BrandCard[] = careersContent.brands.items.map((item) => ({
   href: item.href,
 }));
 
-/**
- * The API sends one flat string where BrandCopy renders paragraphs of inline
- * runs. Blank lines become paragraph breaks — the most structure recoverable
- * from plain text. Bold runs cannot survive the round trip: the static content
- * marks them up per segment and the payload carries no equivalent, so live copy
- * renders unemphasised.
- */
-function toDescription(text: string): BrandItem["description"] {
-  const paragraphs = text
-    .split(/\r?\n\s*\r?\n/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
-
-  if (paragraphs.length === 0) return undefined;
-  return paragraphs.map((paragraph) => [{ text: paragraph }]);
-}
-
 function toBrandCard(company: Company): BrandCard {
   return {
     key: company.id,
@@ -58,7 +49,13 @@ function toBrandCard(company: Company): BrandCard {
     // Empty images fall through to the static artwork at the same position,
     // then to the bare `bg-light` frame past the static count.
     image: company.image || STATIC_BRANDS[0]?.image || IMAGES.placeholder,
-    description: toDescription(company.description),
+    // The admin's editor for this field is TipTap: the API sends real HTML,
+    // not the flat blank-line-separated text this used to assume (that
+    // mismatch is what let literal "<p>" characters reach this page — see
+    // git history). Sanitized the same way FounderStory renders subtitle.
+    descriptionHtml: isBlankRichText(company.description)
+      ? undefined
+      : sanitizeRichText(company.description),
     href: company.vacancies_url.trim(),
   };
 }
@@ -137,6 +134,23 @@ function BrandCopy({
   );
 }
 
+/** Same visual rules as BrandCopy's <p>/<strong>, applied to markup instead
+ *  of a block tree — the live API path (see toBrandCard) sanitizes real HTML
+ *  rather than building the paragraph-array shape the static fallback uses. */
+function BrandCopyHtml({ html }: { html: string }) {
+  return (
+    <div
+      className={cn(
+        "space-y-[14px] overflow-hidden max-md:space-y-3",
+        "[&_p]:text-[12px] [&_p]:leading-[1.5] [&_p]:text-ink-900",
+        "min-[1024px]:max-[1280px]:[&_p]:text-[11px]",
+        "[&_strong]:font-semibold [&_b]:font-semibold",
+      )}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+}
+
 export default async function CareersBrands() {
   const { heading, viewVacanciesLabel } = careersContent.brands;
 
@@ -208,9 +222,13 @@ export default async function CareersBrands() {
                 sizes="(min-width: 1280px) 25vw, (min-width: 768px) 50vw, 100vw"
                 className="object-cover"
               />
-              {brand.description && (
+              {(brand.descriptionHtml || brand.description) && (
                 <div className={PANEL}>
-                  <BrandCopy description={brand.description} />
+                  {brand.descriptionHtml ? (
+                    <BrandCopyHtml html={brand.descriptionHtml} />
+                  ) : (
+                    <BrandCopy description={brand.description!} />
+                  )}
                 </div>
               )}
             </div>
@@ -229,9 +247,13 @@ export default async function CareersBrands() {
                   equivalent. Same BrandCopy as the overlay above; whichever of
                   the two is display:none is out of the accessibility tree, so
                   only one is ever exposed. */}
-              {brand.description && (
+              {(brand.descriptionHtml || brand.description) && (
                 <div className="mt-3 hidden w-full text-ink-700 max-md:block">
-                  <BrandCopy description={brand.description} />
+                  {brand.descriptionHtml ? (
+                    <BrandCopyHtml html={brand.descriptionHtml} />
+                  ) : (
+                    <BrandCopy description={brand.description!} />
+                  )}
                 </div>
               )}
 
