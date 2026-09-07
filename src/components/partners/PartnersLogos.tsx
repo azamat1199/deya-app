@@ -57,15 +57,6 @@ export default async function PartnersLogos() {
     );
   }
 
-  // TEMPORARY diagnostic — remove once the backend is stable.
-  console.log(
-    "[diag PartnersLogos]",
-    JSON.stringify({
-      usingApi,
-      itemsLength: items.length,
-      firstItemName: items[0]?.name ?? null,
-    }),
-  );
 
   // Order is the backend's; the split is the existing halving, untouched.
   const midpoint = Math.ceil(items.length / 2);

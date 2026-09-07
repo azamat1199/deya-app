@@ -223,12 +223,6 @@ export default function PartnerForm({
       {/* Same bordered row, divider and input classes FormField's tel branch
           used; only the prefix became a combobox. */}
       <div>
-        {/* <label className="mb-1.5 block text-sm font-medium text-ink-900">
-          {t("form.phonePlaceholder")}
-          <span className="ml-0.5 text-brand-600" aria-hidden="true">
-            *
-          </span>
-        </label> */}
         <PhoneInput
           locale={locale}
           value={phoneDisplay}

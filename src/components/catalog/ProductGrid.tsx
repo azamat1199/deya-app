@@ -182,17 +182,6 @@ export default function ProductGrid({
     );
   }
 
-  // TEMPORARY diagnostic — remove once the backend is stable.
-  console.log(
-    "[diag ProductGrid]",
-    JSON.stringify({
-      usingApi,
-      itemsLength: cards.length,
-      firstItemName: cards[0]?.product.title ?? null,
-      categoriesLength: categories.length,
-    }),
-  );
-
   // Compared by category id, not slug, and filtered from the already-fetched
   // array — switching tabs never refetches.
   const filtered = useMemo(() => {

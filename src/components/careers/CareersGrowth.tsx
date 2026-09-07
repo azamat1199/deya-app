@@ -3,7 +3,8 @@ import Image from "next/image";
 import { careersContent } from "@/content/careers";
 
 export default function CareersGrowth() {
-  const { heading, headingHighlight, paragraphs, closingNote, image } = careersContent.growth;
+  const { heading, headingHighlight, paragraphs, closingNote, image } =
+    careersContent.growth;
   const [headingBefore, headingAfter] = heading.split(headingHighlight);
 
   return (
@@ -27,7 +28,10 @@ export default function CareersGrowth() {
 
         <div className="mt-6 space-y-4">
           {paragraphs.map((paragraph) => (
-            <p key={paragraph} className="text-sm leading-relaxed text-ink-700 lg:text-base">
+            <p
+              key={paragraph}
+              className="text-sm leading-relaxed text-ink-700 lg:text-base"
+            >
               {paragraph}
             </p>
           ))}

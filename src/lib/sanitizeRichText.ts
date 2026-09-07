@@ -51,6 +51,29 @@ export function sanitizeRichText(html: string): string {
 }
 
 /**
+ * The same markup reduced to its text, for the places that cannot render HTML
+ * at all: an `alt`, a `title` attribute, a meta description. Without it a
+ * TipTap field like "<p>Text</p>" reaches an accessible name with its tags
+ * intact — the attribute-side half of the bug that printed literal "<p>" on
+ * the careers page.
+ *
+ * The entity pass is not decoration: sanitize-html re-encodes the text it
+ * emits, so "A & B" comes back as "A &amp; B", and an attribute needs the
+ * character, not the entity (React escapes the attribute itself on output).
+ * `&amp;` is decoded last so a literal "&lt;" in the copy — encoded twice on
+ * the way through — cannot decode into a working tag.
+ */
+export function richTextToPlainText(html: string): string {
+  return sanitizeHtml(html, { allowedTags: [], allowedAttributes: {} })
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, "&")
+    .trim();
+}
+
+/**
  * True when sanitising leaves nothing renderable — an empty string, or markup
  * that was entirely stripped, or tags with no text between them ("<p></p>").
  * Callers use it to omit the element rather than render an empty paragraph.

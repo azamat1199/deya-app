@@ -289,8 +289,6 @@ export default async function HomePage({ params }: HomePageProps) {
         </Section>
       )}
 
-      {/* <Section bg="white" containerWidth="home">
-        <ScrollReveal> */}
       {featuredCards.length > 0 && (
         <FeaturedProducts
           locale={locale as Locale}
@@ -298,8 +296,6 @@ export default async function HomePage({ params }: HomePageProps) {
           products={featuredCards}
         />
       )}
-      {/* </ScrollReveal>
-      </Section> */}
 
       {/* overflow-x-clip absorbs the scrollbar-width overshoot from the
           full-bleed 100vw children inside ExportMap (clip, not hidden, so it

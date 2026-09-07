@@ -29,9 +29,11 @@ const STATIC_SLIDES: HistorySlideItem[] = historySlides.map((slide) => ({
 }));
 
 /**
- * NOTE: `title` has no home. The timeline renders a year label and a paragraph
- * — there is no title element in the markup — so the payload's title is not
- * displayed. Adding one would mean new markup, which is out of scope here.
+ * `title` is per-slide, like `paragraph` and `image` — it swaps with the
+ * active year, not a fixed section heading. An earlier pass resolved a
+ * single title once (the earliest entry's, standing in for the whole
+ * section) and froze it there regardless of which year was selected; this
+ * carries every entry's own title straight through instead.
  */
 function toSlide(entry: TimelineEntry): HistorySlideItem {
   return {
@@ -41,6 +43,7 @@ function toSlide(entry: TimelineEntry): HistorySlideItem {
     // Empty image => the static artwork at the same position rather than
     // handing next/image an empty src.
     image: entry.image || STATIC_SLIDES[0]?.image || IMAGES.placeholder,
+    title: entry.title,
     paragraph: entry.description,
   };
 }
@@ -49,7 +52,9 @@ type AboutPageProps = {
   params: Promise<{ locale: string }>;
 };
 
-export async function generateMetadata({ params }: AboutPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: AboutPageProps): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const dictionary = await getDictionary(locale);

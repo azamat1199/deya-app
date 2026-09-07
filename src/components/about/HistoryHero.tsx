@@ -33,9 +33,19 @@ const tabId = (year: string) => `history-year-${year}`;
 /**
  * One entry as the timeline renders it, whichever source filled it.
  *
- * `paragraph` carries the live description; `paragraphKey` is the static
- * fallback's i18n key, resolved with t() below. Exactly one of the two is set,
- * so live copy stays server-translated while the fallback stays localised.
+ * `title` drives the h1 and, like `paragraph`/`image`, is PER-SLIDE: it swaps
+ * with `activeIndex` exactly the way the description and photo already do —
+ * an earlier pass wired it as one value resolved once at the page level
+ * (the earliest entry's title, standing in as a fixed heading), which left it
+ * frozen on "История Deya" no matter which year was selected. There is no
+ * t()-translated fallback for it, matching `paragraph`: the static
+ * STATIC_SLIDES path simply leaves it undefined and the h1 renders empty,
+ * the same known trade-off `paragraph`/`paragraphKey` already accept for
+ * different fields.
+ *
+ * `paragraphKey` is the static fallback's i18n key for `paragraph`, resolved
+ * with t() below. Exactly one of `paragraph`/`paragraphKey` is set, so live
+ * copy stays server-translated while the fallback stays localised.
  */
 export interface HistorySlideItem {
   /** React key — the API id, or the year on the static fallback. Never an index. */
@@ -43,6 +53,9 @@ export interface HistorySlideItem {
   /** The label and the tab's DOM id. A string because the markup builds ids from it. */
   year: string;
   image: string;
+  /** The h1's content when this slide is active. Undefined on the static
+   *  fallback path — see the interface doc above. */
+  title?: string;
   paragraph?: string;
   paragraphKey?: TranslationKey;
 }
@@ -76,8 +89,7 @@ const MOBILE_QUERY = "(max-width: 767.98px)";
 /** Extra viewport-heights of scroll per year, past the pinned first screen. */
 const MOBILE_STEP_SVH = 40;
 /** Derived per render now that the entry count comes from the API. */
-const mobileTrackSvh = (lastIndex: number) =>
-  100 + lastIndex * MOBILE_STEP_SVH;
+const mobileTrackSvh = (lastIndex: number) => 100 + lastIndex * MOBILE_STEP_SVH;
 /** Escape hatch: a smooth scroll the user interrupts never reaches its target. */
 const PROGRAMMATIC_SCROLL_TIMEOUT_MS = 1500;
 
@@ -308,7 +320,11 @@ export default function HistoryHero({ slides }: HistoryHeroProps) {
     <div
       ref={trackRef}
       className="max-md:h-(--track-h)"
-      style={{ "--track-h": `${mobileTrackSvh(lastIndex)}svh` } as React.CSSProperties}
+      style={
+        {
+          "--track-h": `${mobileTrackSvh(lastIndex)}svh`,
+        } as React.CSSProperties
+      }
     >
       <div className="max-md:sticky max-md:top-0 max-md:h-svh max-md:supports-[height:100dvh]:h-dvh">
         <section className="relative w-full overflow-hidden bg-ink-900 text-white h-svh supports-[height:100dvh]:h-dvh">
@@ -451,7 +467,11 @@ export default function HistoryHero({ slides }: HistoryHeroProps) {
                   padding) sit inset from its ends. */}
                     <div className="absolute inset-x-0 h-px -translate-y-1/2 bg-[rgba(255,255,255,0.28)]" />
                     {metrics.centres.map((centre, index) => {
-                      const isLarge = isEmphasised(index, activeIndex, lastIndex);
+                      const isLarge = isEmphasised(
+                        index,
+                        activeIndex,
+                        lastIndex,
+                      );
                       return (
                         <span
                           key={slides[index].key}
@@ -566,7 +586,7 @@ export default function HistoryHero({ slides }: HistoryHeroProps) {
               leading is tighter than the glyph box, so nothing in the chain
               above may clip — the copy block carries no overflow rule. */}
                 <h1 className="font-light tracking-[-0.03em] text-white text-[clamp(40px,6.25vw,90px)] leading-[0.95]">
-                  {t("about.history.title")}
+                  {active.title}
                 </h1>
 
                 {/* Grid stack: during the crossfade both paragraphs are in the DOM,

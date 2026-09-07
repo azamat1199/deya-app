@@ -131,9 +131,7 @@ export default async function CareersPage({ params }: CareersPageProps) {
           <CareersCulture item={cultureBlockB} />
         </Section>
       )}
-      <Section bg="white" containerWidth="home">
-        <CareersGrowth />
-      </Section>
+
       <CareersAbout tiles={aboutTiles} />
       <Section bg="white" containerWidth="home">
         <CareersJoinCta />

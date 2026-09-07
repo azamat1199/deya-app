@@ -193,7 +193,6 @@ export default async function CareersBrands() {
     .replace("и найдите", "и\u00A0найдите")
     .split(RED_RUN);
 
-  console.log(items);
   return (
     <div className="py-10 lg:py-24">
       {/* One <h2>: the break onto two lines comes from the max-width, and the

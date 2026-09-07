@@ -25,11 +25,6 @@ export default function CertificatesGrid({
 }: CertificatesGridProps) {
   const { t } = useTranslation();
 
-  // TEMPORARY diagnostic — remove once the backend is stable.
-  console.log(
-    "[diag CertificatesGrid]",
-    JSON.stringify({ itemsLength: items.length, firstItem: items[0] ?? null }),
-  );
   return (
     <>
       <div className="relative mt-10">

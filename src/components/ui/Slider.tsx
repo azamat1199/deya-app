@@ -234,8 +234,6 @@ export default function Slider<T>({
               className="min-w-0 shrink-0 grow-0"
               style={{
                 flexBasis: slideBasis,
-                // paddingLeft: activeGap / 2,
-                // paddingRight: activeGap / 2,
               }}
             >
               {renderSlide(item, index)}

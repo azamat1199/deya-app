@@ -86,7 +86,10 @@ export default function Footer({ settings }: FooterProps) {
                 </AnimatedLink>
               </li>
               <li>
-                <AnimatedLink href={`/${locale}/personal-data-consent`} className="opacity-90 hover:opacity-100">
+                <AnimatedLink
+                  href={`/${locale}/personal-data-consent`}
+                  className="opacity-90 hover:opacity-100"
+                >
                   {t("footer.consent")}
                 </AnimatedLink>
               </li>
@@ -152,14 +155,18 @@ export default function Footer({ settings }: FooterProps) {
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide opacity-80">
               {t("footer.workingHours")}
             </h3>
-            <p className="text-sm whitespace-pre-line opacity-90">{workHours}</p>
+            <p className="text-sm whitespace-pre-line opacity-90">
+              {workHours}
+            </p>
           </div>
 
           <div className="order-7 col-span-2 lg:order-4 lg:col-span-1">
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide opacity-80">
               {t("footer.newsletter")}
             </h3>
-            <p className="mb-4 text-sm opacity-90">{t("footer.newsletterText")}</p>
+            <p className="mb-4 text-sm opacity-90">
+              {t("footer.newsletterText")}
+            </p>
             <NewsletterForm />
           </div>
         </div>
