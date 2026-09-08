@@ -70,21 +70,26 @@ export default async function AboutPage({ params }: AboutPageProps) {
   // server-fetch semantics only. The locale is passed through so the backend can
   // resolve the language and so each locale gets its own cache entry.
   // Both fetched here, in parallel: neither depends on the other, and awaiting
-  // them in sequence would just add a round trip. getFactory never rejects — it
-  // logs its own failure and answers null — so only the timeline needs the
-  // try/catch.
-  let fetched: TimelineEntry[] = [];
-  let fetchError: unknown = null;
-  let factory: Factory | null = null;
-  try {
-    [fetched, factory] = await Promise.all([
-      getTimeline(locale),
-      getFactory(locale),
-    ]);
-  } catch (error) {
-    fetchError = error;
-    factory = await getFactory(locale);
-  }
+  // them in sequence would just add a round trip.
+  //
+  // allSettled, not all: with Promise.all a timeline rejection discarded the
+  // factory result that had already been fetched alongside it and the catch
+  // re-requested it. getFactory passes an AbortSignal, and Next skips
+  // per-render fetch memoization for any call carrying a signal, so that
+  // second call was a genuine second request, not a cache hit.
+  const [timelineResult, factoryResult] = await Promise.allSettled([
+    getTimeline(locale),
+    getFactory(locale),
+  ]);
+
+  const fetched: TimelineEntry[] =
+    timelineResult.status === "fulfilled" ? timelineResult.value : [];
+  const fetchError: unknown =
+    timelineResult.status === "rejected" ? timelineResult.reason : null;
+  // getFactory logs its own failure and answers null rather than rejecting, so
+  // the rejected arm here is only reachable if that contract ever changes.
+  const factory: Factory | null =
+    factoryResult.status === "fulfilled" ? factoryResult.value : null;
 
   const usingApi = fetched.length > 0;
   const slides = usingApi ? fetched.map(toSlide) : STATIC_SLIDES;
