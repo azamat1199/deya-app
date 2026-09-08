@@ -57,6 +57,11 @@ export default function CertificatesGrid({
                   src={cert.image}
                   alt={cert.title}
                   fill
+                  // Without this, `fill` defaults to sizes="100vw" and the
+                  // browser picks a full-viewport candidate for a box that is
+                  // never wider than 271px. Mirrors the box above: 180px below
+                  // md, then height-driven at the 271/358 ratio.
+                  sizes="(min-width: 768px) 271px, 180px"
                   className="object-contain p-3"
                 />
               </div>
