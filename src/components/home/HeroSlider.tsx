@@ -76,6 +76,7 @@ function AutoplayProgress({
 }
 
 export default function HeroSlider({ slides }: HeroSliderProps) {
+  console.log(slides);
   return (
     <div className="relative h-screen w-full overflow-hidden bg-ink-900">
       <Slider
@@ -186,112 +187,112 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
           const active = slides[selectedIndex] ?? slides[0];
 
           return (
-          <>
-            {/* Phone/tablet: pagination spans the full width. */}
-            <div className="absolute inset-x-5 bottom-8 z-10 flex items-center gap-3 text-white md:hidden">
-              <button
-                type="button"
-                aria-label="Previous slide"
-                onClick={scrollPrev}
-                disabled={!canScrollPrev}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/40 transition-colors duration-200 hover:border-white disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <ChevronLeft size={18} />
-              </button>
+            <>
+              {/* Phone/tablet: pagination spans the full width. */}
+              <div className="absolute inset-x-5 bottom-8 z-10 flex items-center gap-3 text-white md:hidden">
+                <button
+                  type="button"
+                  aria-label="Previous slide"
+                  onClick={scrollPrev}
+                  disabled={!canScrollPrev}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/40 transition-colors duration-200 hover:border-white disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronLeft size={18} />
+                </button>
 
-              <span className="text-sm font-medium">
-                {String(selectedIndex + 1).padStart(2, "0")}
-              </span>
-              <span
-                className="relative h-px flex-1 bg-white/30"
-                aria-hidden="true"
-              >
-                <AutoplayProgress
-                  selectedIndex={selectedIndex}
-                  durationMs={AUTOPLAY_MS}
-                  paused={isAutoplayPaused}
-                  className="absolute inset-y-0 left-0 bg-white"
-                />
-              </span>
-              <span className="text-sm font-medium">
-                {String(scrollSnaps.length).padStart(2, "0")}
-              </span>
+                <span className="text-sm font-medium">
+                  {String(selectedIndex + 1).padStart(2, "0")}
+                </span>
+                <span
+                  className="relative h-px flex-1 bg-white/30"
+                  aria-hidden="true"
+                >
+                  <AutoplayProgress
+                    selectedIndex={selectedIndex}
+                    durationMs={AUTOPLAY_MS}
+                    paused={isAutoplayPaused}
+                    className="absolute inset-y-0 left-0 bg-white"
+                  />
+                </span>
+                <span className="text-sm font-medium">
+                  {String(scrollSnaps.length).padStart(2, "0")}
+                </span>
 
-              <button
-                type="button"
-                aria-label="Next slide"
-                onClick={scrollNext}
-                disabled={!canScrollNext}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/40 transition-colors duration-200 hover:border-white disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <ChevronRight size={18} />
-              </button>
-            </div>
+                <button
+                  type="button"
+                  aria-label="Next slide"
+                  onClick={scrollNext}
+                  disabled={!canScrollNext}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/40 transition-colors duration-200 hover:border-white disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
 
-            {/* Desktop: one row — CTA on the left, switcher on the right, both
+              {/* Desktop: one row — CTA on the left, switcher on the right, both
                 on the shared container gutter so the CTA's left edge lines up
                 with the headline above it. The CTA reads from selectedIndex so
                 it still tracks the visible slide. */}
-            <div className="absolute inset-x-0 bottom-8 z-10 hidden md:block lg:bottom-12">
-              <div className="container-page flex items-center justify-between gap-6">
-                {/* Same pair-guard as the phone branch. The empty div keeps
+              <div className="absolute inset-x-0 bottom-8 z-10 hidden md:block lg:bottom-12">
+                <div className="container-page flex items-center justify-between gap-6">
+                  {/* Same pair-guard as the phone branch. The empty div keeps
                     justify-between honest so the slide switcher stays pinned
                     right instead of sliding over to the left edge. */}
-                {active?.ctaHref && active?.ctaLabel ? (
-                  <Button
-                    variant="white"
-                    size="lg"
-                    href={active.ctaHref}
-                    external={isExternalHref(active.ctaHref)}
-                  >
-                    {active.ctaLabel}
-                  </Button>
-                ) : (
-                  <div aria-hidden="true" />
-                )}
+                  {active?.ctaHref && active?.ctaLabel ? (
+                    <Button
+                      variant="white"
+                      size="lg"
+                      href={active.ctaHref}
+                      external={isExternalHref(active.ctaHref)}
+                    >
+                      {active.ctaLabel}
+                    </Button>
+                  ) : (
+                    <div aria-hidden="true" />
+                  )}
 
-                <div className="flex items-center gap-4 text-white">
-                  <button
-                    type="button"
-                    aria-label="Previous slide"
-                    onClick={scrollPrev}
-                    disabled={!canScrollPrev}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 transition-colors duration-200 hover:border-white disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
+                  <div className="flex items-center gap-4 text-white">
+                    <button
+                      type="button"
+                      aria-label="Previous slide"
+                      onClick={scrollPrev}
+                      disabled={!canScrollPrev}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 transition-colors duration-200 hover:border-white disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
 
-                  <span className="text-sm font-medium">
-                    {String(selectedIndex + 1).padStart(2, "0")}
-                  </span>
-                  <span
-                    className="relative h-px w-16 bg-white/30"
-                    aria-hidden="true"
-                  >
-                    <AutoplayProgress
-                      selectedIndex={selectedIndex}
-                      durationMs={AUTOPLAY_MS}
-                      paused={isAutoplayPaused}
-                      className="absolute inset-y-0 left-0 bg-white"
-                    />
-                  </span>
-                  <span className="text-sm font-medium">
-                    {String(scrollSnaps.length).padStart(2, "0")}
-                  </span>
+                    <span className="text-sm font-medium">
+                      {String(selectedIndex + 1).padStart(2, "0")}
+                    </span>
+                    <span
+                      className="relative h-px w-16 bg-white/30"
+                      aria-hidden="true"
+                    >
+                      <AutoplayProgress
+                        selectedIndex={selectedIndex}
+                        durationMs={AUTOPLAY_MS}
+                        paused={isAutoplayPaused}
+                        className="absolute inset-y-0 left-0 bg-white"
+                      />
+                    </span>
+                    <span className="text-sm font-medium">
+                      {String(scrollSnaps.length).padStart(2, "0")}
+                    </span>
 
-                  <button
-                    type="button"
-                    aria-label="Next slide"
-                    onClick={scrollNext}
-                    disabled={!canScrollNext}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 transition-colors duration-200 hover:border-white disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
+                    <button
+                      type="button"
+                      aria-label="Next slide"
+                      onClick={scrollNext}
+                      disabled={!canScrollNext}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 transition-colors duration-200 hover:border-white disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </>
+            </>
           );
         }}
       />

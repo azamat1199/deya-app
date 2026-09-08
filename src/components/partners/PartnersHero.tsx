@@ -5,11 +5,35 @@ import Image from "next/image";
 
 import PartnerForm from "@/components/forms/PartnerForm";
 import { Button, Modal } from "@/components/ui";
-import { partnersContent } from "@/content/partners";
 import { cn } from "@/lib/cn";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 
-export default function PartnersHero() {
+export interface PartnersHeroProps {
+  /**
+   * From GET /api/v1/banners/?type=partner, resolved by partners/page.tsx —
+   * this component is "use client" (modal state), so it cannot fetch its own.
+   *
+   * All three are REQUIRED with no defaults and no t() fallback: this
+   * project's rule (see CareersCulture) is that API data replaces static
+   * content rather than layering over it. When the endpoint has no row the
+   * page omits this component entirely, so there is no "empty banner" state
+   * to design for here.
+   */
+  title: string;
+  subtitle: string;
+  /**
+   * Non-empty by the time it arrives: partners/page.tsx substitutes local
+   * artwork for an empty CMS field, so next/image can never be handed src="".
+   * The guard below stays as defence in depth.
+   */
+  image: string;
+}
+
+export default function PartnersHero({
+  title,
+  subtitle,
+  image,
+}: PartnersHeroProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -19,14 +43,19 @@ export default function PartnersHero() {
     // supported. Never 100vh, which overflows by the toolbar height on iOS.
     // The header is fixed and transparent on this route, so it adds no height.
     <div className="relative min-h-svh w-full overflow-hidden bg-ink-900 supports-[height:100dvh]:min-h-dvh">
-      <Image
-        src={partnersContent.image}
-        alt={partnersContent.heading}
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover"
-      />
+      {/* Omitted rather than given a placeholder when the CMS sends no
+          artwork: the wrapper's bg-ink-900 is already a finished dark hero,
+          and the overlay below keeps the copy legible either way. */}
+      {image && (
+        <Image
+          src={image}
+          alt={title}
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+      )}
       <div className="absolute inset-0 bg-ink-900/50" />
 
       {/* Three rows, not a flex column: with `justify-end` the spare height
@@ -52,12 +81,12 @@ export default function PartnersHero() {
               size scales. Roboto comes from --font-roboto on <html> via the
               theme's font-sans; no family is declared here. */}
           <h1 className="max-w-xl font-light text-white text-[clamp(40px,6.25vw,90px)] leading-[0.95] tracking-[-0.03em]">
-            {partnersContent.heading}
+            {title}
           </h1>
           {/* 20px / 1.25 / -0.03em / 400 at the same reference width. max-w-md
               is kept so the line breaks match the design. */}
           <p className="mt-4 max-w-md font-normal text-white/85 text-[clamp(15px,1.39vw,20px)] leading-[1.25] tracking-[-0.03em]">
-            {partnersContent.description}
+            {subtitle}
           </p>
         </div>
 
@@ -73,11 +102,7 @@ export default function PartnersHero() {
         </Button>
       </div>
 
-      <Modal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        title={partnersContent.heading}
-      >
+      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title={title}>
         <PartnerForm onSuccess={() => setIsOpen(false)} />
       </Modal>
     </div>

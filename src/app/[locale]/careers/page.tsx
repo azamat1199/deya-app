@@ -11,10 +11,26 @@ import CareersGrowth from "@/components/careers/CareersGrowth";
 import CareersHero from "@/components/careers/CareersHero";
 import CareersJoinCta from "@/components/careers/CareersJoinCta";
 import { Section } from "@/components/ui";
+import { IMAGES } from "@/content/images";
+import { getBanners, pickBanner } from "@/lib/banners";
 import { getCareerValues, type CareerValue } from "@/lib/careerValues";
 import { isLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import { getProductInfo, type ProductInfoItem } from "@/lib/productInfo";
+
+/**
+ * A CMS cta_url may point off-site — the live carrier banner points at an
+ * hh.uz vacancies page — and next/link would try to client-navigate to an
+ * absolute URL it does not own. Protocol-relative ("//host/path") counts as
+ * external too.
+ *
+ * Same test as HeroSlider's own isExternalHref. Duplicated rather than shared
+ * because that one is a local function in a "use client" module and this task
+ * is not the place to refactor it; consolidating the two is a separate call.
+ */
+function isExternalHref(href: string): boolean {
+  return /^(https?:)?\/\//i.test(href);
+}
 
 type CareersPageProps = {
   params: Promise<{ locale: string }>;
@@ -34,6 +50,12 @@ export default async function CareersPage({ params }: CareersPageProps) {
   if (!isLocale(locale)) notFound();
 
   const dictionary = await getDictionary(locale);
+
+  // Above the fold, so server-side only: a useEffect would flash an empty hero
+  // on every load, and this API sends no Access-Control-Allow-Origin, so a
+  // browser fetch could not succeed anyway. getBanners never rejects — it logs
+  // its own failure with `cause` and answers [] — so there is nothing to catch.
+  const carrierBanner = pickBanner(await getBanners(locale), "carrier");
 
   // Fetched HERE rather than inside CareersAbout. That component is
   // "use client" (Slider's renderSlide is a function prop), and a browser fetch
@@ -117,7 +139,30 @@ export default async function CareersPage({ params }: CareersPageProps) {
 
   return (
     <>
-      <CareersHero vacanciesLabel={dictionary.buttons.vacancies} />
+      {/* No carrier banner => no hero, deliberately: there is no mock copy to
+          fall back to any more, and a hero with a photo but no words reads as
+          broken. Same shape as the home page's own `heroSlides.length > 0`
+          guard. PROVISIONAL — see the report; this is the one line to change
+          if you'd rather keep a minimal static fallback. */}
+      {carrierBanner && (
+        <CareersHero
+          vacanciesLabel={dictionary.buttons.vacancies}
+          title={carrierBanner.title}
+          subtitle={carrierBanner.subtitle}
+          // Local artwork substituted HERE, never in the component: an empty
+          // src makes the browser re-request the page as the image, which has
+          // already broken ProductGallery and ProductCard.
+          image={carrierBanner.image || IMAGES.placeholder}
+          // null and "" both collapse to undefined, so Button renders a plain
+          // <button> instead of href="" or href="null".
+          ctaHref={carrierBanner.cta_url ?? undefined}
+          ctaExternal={
+            carrierBanner.cta_url
+              ? isExternalHref(carrierBanner.cta_url)
+              : undefined
+          }
+        />
+      )}
       {cultureBlockA && (
         <Section bg="white" containerWidth="home">
           <CareersCulture item={cultureBlockA} />

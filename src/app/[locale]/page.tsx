@@ -17,15 +17,14 @@ import { homeCategories } from "@/content/categories";
 import { IMAGES } from "@/content/images";
 import { newsPosts } from "@/content/news";
 import { featuredProducts } from "@/content/products";
-import { slides as staticSlides } from "@/content/slides";
 import { stats as staticStats } from "@/content/stats";
 import type { Slide, StatItem } from "@/content/types";
+import { getBanners, type Banner } from "@/lib/banners";
 import {
   getHome,
   type HomeCategory,
   type HomeFeaturedProduct,
   type HomePost,
-  type HomeSlide,
   type HomeStat,
 } from "@/lib/home";
 import { isLocale, type Locale } from "@/lib/i18n/config";
@@ -57,66 +56,41 @@ function leadingNumber(value: string): number {
 }
 
 /**
- * The CTA every static slide carries. Both entries in content/slides.ts hold
- * the identical pair, so this is one site-wide default rather than a per-slide
- * mapping — which is what makes it safe to apply to an API slide that has no
- * static counterpart at all.
+ * One `main` banner as HeroSlider's existing Slide shape.
  *
- * The static href is locale-less. src/proxy.ts redirects a bare "/catalog" to
- * the DEFAULT locale, so it is prefixed with the active one here; without that
- * a visitor on /uz would be bounced to the Russian catalog.
- */
-const STATIC_CTA = {
-  label: staticSlides[0]?.ctaLabel ?? "",
-  href: staticSlides[0]?.ctaHref ?? "",
-};
-
-/**
- * Per-field fallback for a CMS row that exists but left strings blank — a
- * different failure from the whole request failing, and one the static content
- * can partly cover.
+ * The hero's copy now comes from GET /api/v1/banners/ type="main" rather than
+ * /api/v1/home/'s own `slides` — the two carry the same three rows, but the
+ * banners endpoint has the subtitles filled in while home.slides sends "" for
+ * every one of them. No per-field static fallback is layered underneath any
+ * more: this project's rule (see CareersCulture) is that API data replaces
+ * static content rather than sitting on top of it.
  *
- * Matched BY TITLE, never by index: the API currently returns three slides
- * against the mock's two, so index n on one side is not the same slide as
- * index n on the other. A slide with no title match keeps an empty subtitle
- * rather than borrowing another slide's prose — wrong copy reads worse than
- * no copy. The CTA is exempt because it is not slide-specific (see above).
+ * `subtitle` becomes `description` — HeroSlider's own name for the same field.
+ *
+ * `badge` is deliberately NOT set: the endpoint has no such field, so it stays
+ * undefined and HeroSlider's always-present 24px badge slot renders empty,
+ * exactly as it does today. Inventing one would change the design.
+ *
+ * The catalog CTA is NOT the banner's cta_label/cta_url — those are ignored
+ * here on purpose. The button keeps pointing at the catalog, with its label
+ * from the dictionary (buttons.viewCatalog) instead of the static slides mock
+ * it used to read, which is what keeps mock strings out of the render path.
+ * The href is locale-prefixed: src/proxy.ts redirects a bare "/catalog" to the
+ * DEFAULT locale, so a visitor on /uz would otherwise land on the Russian one.
  */
-function toHeroSlide(slide: HomeSlide, locale: string, notes: string[]): Slide {
-  const staticMatch = staticSlides.find(
-    (candidate) => candidate.title.trim() === slide.title.trim(),
-  );
-
-  let description = slide.subtitle;
-  if (!description) {
-    description = staticMatch?.description ?? "";
-    notes.push(
-      description
-        ? `slides[id=${slide.id}].subtitle ← static "${staticMatch?.id}"`
-        : `slides[id=${slide.id}].subtitle EMPTY, no static slide titled "${slide.title}"`,
-    );
-  }
-
-  // Guarded as a PAIR: a half-filled CTA is as unusable as an empty one, so
-  // either blank field falls the whole button back to the static default.
-  let ctaLabel = slide.cta_label;
-  let ctaHref = slide.cta_url;
-  if (!ctaLabel || !ctaHref) {
-    ctaLabel = STATIC_CTA.label;
-    ctaHref = STATIC_CTA.href ? `/${locale}${STATIC_CTA.href}` : "";
-    notes.push(`slides[id=${slide.id}].cta_label/cta_url ← static CTA`);
-  }
-
+function toHeroSlide(
+  banner: Banner,
+  locale: string,
+  catalogLabel: string,
+): Slide {
   return {
-    id: String(slide.id),
-    title: slide.title,
-    description,
-    // Still collapsed to undefined as a pair, so a missing static default
-    // cannot produce href="" or a button with an empty label either.
-    ctaLabel: ctaLabel || undefined,
-    ctaHref: ctaHref || undefined,
+    id: String(banner.id),
+    title: banner.title,
+    description: banner.subtitle,
+    ctaLabel: catalogLabel || undefined,
+    ctaHref: `/${locale}/catalog`,
     // Empty image → the static hero photograph, never an empty src.
-    image: slide.image || IMAGES.heroFactory,
+    image: banner.image || IMAGES.heroFactory,
   };
 }
 
@@ -189,26 +163,42 @@ export default async function HomePage({ params }: HomePageProps) {
 
   const dictionary = await getDictionary(locale as Locale);
 
-  // THE one request this page makes. Six sections, one round trip: no component
-  // below fetches anything of its own, and /api/v1/categories/ and
-  // /api/v1/posts/ are deliberately NOT called here — their rows are already in
-  // this body. (The layout separately fetches /api/v1/settings/ for the header
-  // and footer, which is not this page's request.)
-  const home = await getHome(locale);
+  // Two requests now, in parallel: /api/v1/home/ still feeds five sections
+  // (stats, categories, featured_products, export_regions, latest_posts), and
+  // /api/v1/banners/ feeds the hero, which used to come from home.slides.
+  // Neither depends on the other. No component below fetches anything of its
+  // own, and /api/v1/categories/ and /api/v1/posts/ are deliberately NOT
+  // called here — their rows are already in the home body. (The layout
+  // separately fetches /api/v1/settings/ for the header and footer, which is
+  // not this page's request.)
+  //
+  // Above the fold, so server-side only: a useEffect would flash an empty hero
+  // and this API sends no Access-Control-Allow-Origin anyway. Neither helper
+  // rejects — each logs its own failure with `cause` and answers null / [].
+  const [home, banners] = await Promise.all([
+    getHome(locale),
+    getBanners(locale),
+  ]);
+  const mainBanners = banners.filter((banner) => banner.type === "main");
 
   // null means the REQUEST failed, and every section falls back to its static
   // content at once — getHome has already logged the one error with its cause.
   // An empty array from a SUCCESSFUL response is not a failure: it means the
   // section has no rows, and the section is hidden below rather than quietly
   // refilled with mock content.
-  // Collected across every adapter below and reported in ONE console.warn, so
-  // a CMS row left half-filled stays visible to us instead of quietly looking
-  // like a finished page.
+  // Collected by the stats adapter — the only one with a per-field static
+  // fallback left, now that the hero reads from /api/v1/banners/ — and
+  // reported in ONE console.warn, so a CMS row left half-filled stays visible
+  // to us instead of quietly looking like a finished page.
   const fallbackNotes: string[] = [];
 
-  const heroSlides: Slide[] = home
-    ? home.slides.map((slide) => toHeroSlide(slide, locale, fallbackNotes))
-    : staticSlides;
+  // Sourced from /api/v1/banners/ type="main", NOT home.slides — see
+  // toHeroSlide. Rendered in id order, which is also the order the endpoint
+  // returns today. No static fallback: an empty list hides the slider below
+  // rather than showing mock copy as the first thing a visitor sees.
+  const heroSlides: Slide[] = mainBanners.map((banner) =>
+    toHeroSlide(banner, locale, dictionary.buttons.viewCatalog),
+  );
 
   const statItems: StatItem[] = home
     ? home.stats.map((stat) => toStatItem(stat, fallbackNotes))
