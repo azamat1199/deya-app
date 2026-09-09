@@ -76,7 +76,6 @@ function AutoplayProgress({
 }
 
 export default function HeroSlider({ slides }: HeroSliderProps) {
-  console.log(slides);
   return (
     <div className="relative h-screen w-full overflow-hidden bg-ink-900">
       <Slider
