@@ -126,6 +126,30 @@ body {
   font-variation-settings: "wdth" 100;
 }
 
+@layer base {
+  /* The browser's OWN stylesheet sets `cursor: default` on <button> — verified
+     via CSS.getMatchedStylesForNode, which attributes it to origin
+     "user-agent", selector "…, button". It is NOT Tailwind Preflight: 4.3.2's
+     preflight.css declares no cursor on buttons at all (that reset existed in
+     early v4 and is gone here), so upgrading Tailwind will not fix or change
+     this.
+
+     Done once here rather than as a class on every button. Before this rule
+     the codebase had already accumulated eight hand-patched cursor-pointer
+     classes across Modal, ExportMap, PartnerForm, ProductGrid, BlogCard,
+     MarqueeRow and PhoneInput — the maintenance liability this avoids.
+
+     Both exclusions are load-bearing: :disabled keeps real disabled buttons on
+     the UA default (and out of the way of the disabled:cursor-not-allowed
+     utility several components already set), and [aria-disabled="true"] covers
+     the anchor branch of ui/Button, where :disabled cannot match because an
+     <a> is not a form control. */
+  button:not(:disabled):not([aria-disabled="true"]),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}
+
 @layer utilities {
   /* Horizontally scrollable strips (e.g. the /about year timeline) that must
      not show a scrollbar chrome over the photo behind them. */
