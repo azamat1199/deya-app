@@ -14,7 +14,6 @@ import { cn } from "@/lib/cn";
 import type { TranslationKey } from "@/lib/i18n/dictionary";
 
 import ProductCard from "./ProductCard";
-import { CATALOG_ROW_INSET } from "./rowInset";
 
 export interface ProductGridProps {
   locale: Locale;
@@ -113,7 +112,9 @@ function mockProductToCard(product: Product, locale: Locale): CatalogCard {
  *  is a live category whose label is the API `name`. */
 const ALL_TAB_LABEL_KEY: TranslationKey = "buttons.allCatalog";
 
-const PAGE_SIZE = 10;
+/** 15 = the 5-column grid's first three rows, per Figma. Also the batch each
+ *  "show more" click adds, so every reveal fills whole rows. */
+const PAGE_SIZE = 15;
 
 // Below md the six filters stay in this one container — splitting them into two
 // wrappers would have to be undone at md to keep the desktop row intact — but
@@ -244,15 +245,14 @@ export default function ProductGrid({
       </div>
 
       {/* 36px from the filter row down to the grid below md: the wrapper's own
-          pb-6 (24) plus this 12. The inset is padding on this container, so the
-          24px column gap between cards is unaffected. */}
+          pb-6 (24) plus this 12.
+          NO horizontal padding here on purpose: the grid takes its left and
+          right boundaries from the same Section container the filter row above
+          uses, so the first column starts on the "Весь каталог" tab's left edge
+          and the last ends on the download link's right edge. It used to carry
+          CATALOG_ROW_INSET (md:px-10), which inset it 40px inside that row. */}
       {visibleCards.length > 0 ? (
-        <div
-          className={cn(
-            "mt-10 grid grid-cols-2 gap-x-6 gap-y-10 max-md:mt-3 md:grid-cols-3 lg:grid-cols-5",
-            CATALOG_ROW_INSET,
-          )}
-        >
+        <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 max-md:mt-3 md:grid-cols-3 lg:grid-cols-5">
           {visibleCards.map((card) => (
             <ProductCard
               key={card.key}
@@ -264,7 +264,7 @@ export default function ProductGrid({
       ) : (
         /* A selected category with nothing in it gets a sentence, never a blank
            band where the grid should be. */
-        <p className={cn("mt-10 text-sm text-ink-500 max-md:mt-3", CATALOG_ROW_INSET)}>
+        <p className="mt-10 text-sm text-ink-500 max-md:mt-3">
           {t("catalog.empty")}
         </p>
       )}
