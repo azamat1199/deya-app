@@ -42,7 +42,20 @@ export default function CareersHero({
 }: CareersHeroProps) {
   return (
     <div className="relative w-full overflow-hidden bg-ink-900">
-      <div className="relative h-125 w-full max-md:h-dvh md:h-150 lg:h-175 xl:h-197.5">
+      {/* One viewport tall at every width. This was a fixed ladder — h-125,
+          md:h-150, lg:h-175, xl:h-197.5 — which capped the photo at 700px on a
+          1280/1440 screen and 790px on a 1920/2560 one, so it never reached the
+          fold. Width was already edge to edge: the wrapper above is w-full and
+          the page renders this hero outside any Section, so no breakout,
+          negative margin or calc(100vw) is needed — the container-page inside
+          insets only the copy, which is what keeps it on the logo's left edge.
+
+          svh with a dvh upgrade, matching HistoryHero and PartnersHero: svh is
+          the URL-bar-visible height, so the hero fits whether a mobile toolbar
+          is showing or collapsed, and dvh takes over where supported. Never
+          100vh, which overflows by the toolbar height on iOS. This also
+          subsumes the old max-md:h-dvh. */}
+      <div className="relative h-svh w-full supports-[height:100dvh]:h-dvh">
         <Image
           src={image}
           alt={title}
