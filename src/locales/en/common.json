@@ -115,6 +115,11 @@
     "otherArticles": "Other articles"
   },
   "catalog": {
-    "empty": "No products in this category yet."
+    "empty": "No products in this category yet.",
+    "badges": {
+      "new": "New",
+      "bestseller": "Bestseller",
+      "discount": "Discount"
+    }
   }
 }

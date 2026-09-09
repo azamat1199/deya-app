@@ -115,6 +115,11 @@
     "otherArticles": "Boshqa maqolalar"
   },
   "catalog": {
-    "empty": "Bu toifada hozircha mahsulot yo‘q."
+    "empty": "Bu toifada hozircha mahsulot yo‘q.",
+    "badges": {
+      "new": "Yangi",
+      "bestseller": "Xit savdo",
+      "discount": "Chegirma"
+    }
   }
 }

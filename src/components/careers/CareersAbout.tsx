@@ -1,8 +1,3 @@
-// Still a client component, and not by accident: the phone branch renders
-// through <Slider>, whose `renderSlide` prop is a FUNCTION. Functions cannot
-// cross the server/client boundary, so this file has to stay on the client even
-// though it no longer fetches anything. The fetch itself had no business here —
-// see lib/careerValues.ts.
 "use client";
 
 import Image from "next/image";
@@ -10,7 +5,6 @@ import Image from "next/image";
 import { Slider } from "@/components/ui";
 import { careersContent } from "@/content/careers";
 
-/** The shape both sources normalise to, so the JSX below reads one thing. */
 export interface AboutTile {
   id: string | number;
   title: string;
@@ -18,15 +12,6 @@ export interface AboutTile {
   image: string | null;
 }
 
-/**
- * The hand-authored tiles, kept as the fallback rather than deleted. Resolved
- * on the SERVER now (see the careers page), so the prop always arrives
- * populated and the section can never paint empty — which is exactly what it
- * did while this array was merely a fallback and the initial state was [].
- *
- * Each id is the tile's own title: stable, unique, and never undefined, so the
- * static path cannot produce a duplicate React key either.
- */
 export const STATIC_TILES: AboutTile[] = careersContent.about.tiles.map(
   (tile) => ({
     id: tile.title,
@@ -52,16 +37,12 @@ function TileBackground({ image }: { image: string | null }) {
 }
 
 export interface CareersAboutProps {
-  /** Resolved on the server by the careers page — API rows when the request
-   *  succeeded, STATIC_TILES when it failed or came back empty. Always
-   *  populated, so the section never paints an empty grid. */
   tiles: AboutTile[];
 }
 
 export default function CareersAbout({ tiles }: CareersAboutProps) {
   return (
     <>
-      {/* Phone: single-card swipeable carousel with dot pagination. */}
       <div className="container-page py-10 md:hidden">
         <Slider
           items={tiles}
@@ -83,7 +64,6 @@ export default function CareersAbout({ tiles }: CareersAboutProps) {
         />
       </div>
 
-      {/* Tablet/desktop: full-bleed 2x2 grid. */}
       <div className="relative left-1/2 right-1/2 hidden w-screen mx-[-50vw] md:block">
         <div className="grid grid-cols-2 gap-0.5">
           {tiles.map((tile) => (

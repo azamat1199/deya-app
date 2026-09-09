@@ -3,42 +3,20 @@ import Link from "next/link";
 
 import type { Locale } from "@/lib/i18n/config";
 
-/** One banner card, whichever source filled it. */
 export interface CategoryBannerItem {
-  /** React key — the API id, or the slug on the static fallback. Never an index. */
   id: string | number;
   title: string;
   image: string;
-  /** Still consumed by the existing card link below, so it is not dead weight. */
   slug: string;
 }
 
 export interface CategoryBannerProps {
   locale: Locale;
-  /**
-   * The first four live categories, already sliced and sorted by the page.
-   * REQUIRED and deliberately without a default: a default would silently mask
-   * a missing prop and let the mock render while the fetch logs looked healthy.
-   */
   categories: CategoryBannerItem[];
 }
 
-// The one place the gutter is defined. A grid gap sits between tracks only, so
-// the row's outer edges stay on the full-bleed 0 → 100vw they already occupy
-// and the four cards absorb the 30px themselves — 7.5px each. It is the row
-// gutter too, so a wrapped 2×2 is separated by the same 10px.
 const CARD_GUTTER = "gap-[10px]";
 
-// Below md the whole 2×2 has to land inside the first screen. The banner is the
-// first thing under the (in-flow) header and carries no spacing of its own, so
-// the height left for it is exactly one viewport minus the bar; two rows and
-// one gutter share that, which fixes each card's height — and with the column
-// width already set by the grid, its aspect ratio along with it. No number is
-// hardcoded: it re-solves on any device from a 640px-tall phone up.
-//
-// svh, not dvh: svh is the URL-bar-visible state, the smaller of the two, so
-// the block fits whether the bar is showing or collapsed. dvh would also fit,
-// but it re-resolves as the bar animates, and that is a visible reflow.
 const CARD_HEIGHT = "max-md:h-[calc((100svh_-_var(--header-height)_-_10px)/2)]";
 
 export default function CategoryBanner({
@@ -51,9 +29,6 @@ export default function CategoryBanner({
         className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 ${CARD_GUTTER}`}
       >
         {categories.map((category) => (
-          // Links left exactly as they were: this component already navigated
-          // to the filtered catalog before the integration, so removing them
-          // would be a behaviour change, not an integration.
           <Link
             key={category.id}
             href={`/${locale}/catalog?category=${category.slug}`}

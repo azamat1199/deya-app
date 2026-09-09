@@ -8,10 +8,6 @@ import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export interface ContactSalesButtonProps {
   className?: string;
-  /**
-   * Id of the product whose page this button sits on. Optional: without it the
-   * lead is still sent as "sales", just with no `product` field in the body.
-   */
   productId?: number;
 }
 
@@ -21,10 +17,6 @@ export default function ContactSalesButton({
 }: ContactSalesButtonProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-
-  // This button only ever appears on a product page, so a missing id is a wiring
-  // bug rather than a valid state. The lead still sends — just without the
-  // `product` key — but it never does so silently.
   useEffect(() => {
     if (productId === undefined) {
       console.error(
@@ -35,13 +27,20 @@ export default function ContactSalesButton({
 
   return (
     <>
-      <Button variant="primary" size="lg" className={className} onClick={() => setIsOpen(true)}>
+      <Button
+        variant="primary"
+        size="lg"
+        className={className}
+        onClick={() => setIsOpen(true)}
+      >
         {t("buttons.contactSales")}
       </Button>
 
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title={t("buttons.contactSales")}>
-        {/* Same shared form, submitted as a sales lead rather than a partner
-            one, carrying this page's product id when it has one. */}
+      <Modal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        title={t("buttons.contactSales")}
+      >
         <PartnerForm type="sales" productId={productId} />
       </Modal>
     </>

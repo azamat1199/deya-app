@@ -130,6 +130,17 @@ export interface Dictionary {
   catalog: {
     /** Shown instead of the grid when the selected category has no products. */
     empty: string;
+    /**
+     * Product chips. Keyed by the EXACT lowercase strings /api/v1/products/
+     * puts in its `badge` field — "new", "bestseller", "discount" — so the
+     * lookup in ProductGrid is a direct map with no aliasing. Stored in
+     * natural case like every other string here; Badge uppercases in CSS.
+     */
+    badges: {
+      new: string;
+      bestseller: string;
+      discount: string;
+    };
   };
 }
 

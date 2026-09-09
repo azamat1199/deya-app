@@ -18,8 +18,6 @@ export interface FeaturedProductItem {
 export interface FeaturedProductsProps {
   locale: Locale;
   allCatalogLabel: string;
-  /** From GET /api/v1/home/ `featured_products[]`, or the static set when that
-   *  request failed. */
   products: FeaturedProductItem[];
 }
 
@@ -32,13 +30,6 @@ export default function FeaturedProducts({
     <section className="bg-[#FFFCF7] text-ink-900">
       <div className="mx-auto w-full px-2.5">
         <div className="pt-2.5 pb-2.5 lg:pt-2.5 lg:pb-2.5">
-          {/* The CategoryGrid row above is full-bleed — it cancels its own
-              container with -mx-[50vw] and sits on the viewport edges at 0.
-              To line up with it, this row has to lose the 10px the wrapper
-              above contributes, so the negative margin cancels exactly that
-              px-2.5 rather than reaching for the viewport. Margin on the grid,
-              not on ProductCard: it moves the row's edges, leaving each card's
-              own white background and shadow intact. */}
           <div className="grid grid-cols-2 gap-2.5 max-md:-mx-2.5 max-md:gap-x-3  lg:grid-cols-4">
             {products.map((product, index) => (
               <ScrollReveal

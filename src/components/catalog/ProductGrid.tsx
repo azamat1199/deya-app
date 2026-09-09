@@ -41,19 +41,52 @@ interface FilterTab {
 }
 
 /**
- * The API's badge is a bare string ("new"), while Badge takes text + variant.
- * The text reuses the copy the mock content already ships for that variant
- * rather than inventing new wording; an unrecognised value keeps its raw text
- * on the neutral variant, and null/empty renders no chip at all.
+ * The API's badge is a bare lowercase string, while Badge takes text +
+ * variant. Verified against the live endpoint: the field is `badge` and the
+ * only values it emits are "new", "bestseller", "discount" and "" — never
+ * "hit", which is what the previous map was keyed on.
+ *
+ * That mismatch is why chips rendered inconsistently: "new" hit the map and
+ * showed hardcoded Russian, while "bestseller" and "discount" missed it and
+ * fell through to a branch that passed the RAW API STRING through as the
+ * label, which Badge's `uppercase` turned into "BESTSELLER" / "DISCOUNT".
+ * Every label now resolves through the dictionary instead, so all three
+ * switch with the site language.
+ *
+ * `new` and `hit` are the same red chip in Badge — the variant here carries
+ * no visual difference, only intent.
  */
-const BADGE_TEXT: Record<string, { text: string; variant: "new" | "hit" }> = {
-  new: { text: "Новинка", variant: "new" },
-  hit: { text: "Хит продаж", variant: "hit" },
+const BADGE_KEYS: Record<
+  string,
+  { key: TranslationKey; variant: "new" | "hit" }
+> = {
+  new: { key: "catalog.badges.new", variant: "new" },
+  bestseller: { key: "catalog.badges.bestseller", variant: "hit" },
+  discount: { key: "catalog.badges.discount", variant: "hit" },
 };
 
-function toBadge(badge: string | null): Product["badge"] {
-  if (!badge) return undefined;
-  return BADGE_TEXT[badge.toLowerCase()] ?? { text: badge, variant: "new" };
+/**
+ * An empty/absent badge renders no chip. So does an UNRECOGNISED one — it is
+ * reported rather than shown, because the old pass-the-raw-string behaviour is
+ * exactly the untranslated-label bug being fixed here. A new CMS value
+ * therefore needs a dictionary key before it can appear.
+ */
+function toBadge(
+  badge: string | null,
+  t: (key: TranslationKey) => string,
+): Product["badge"] {
+  const value = badge?.trim().toLowerCase();
+  if (!value) return undefined;
+
+  const entry = BADGE_KEYS[value];
+  if (!entry) {
+    console.warn(
+      `[ProductGrid] unmapped badge value ${JSON.stringify(badge)} — no chip rendered. Add a catalog.badges.* key and map it in BADGE_KEYS.`,
+    );
+    return undefined;
+  }
+
+  return { text: t(entry.key), variant: entry.variant };
 }
 
 /**
@@ -81,7 +114,11 @@ interface CatalogCard {
  *
  * href reuses the card's existing two-segment pattern with the API's own slugs.
  */
-function apiProductToCard(product: ApiProduct, locale: Locale): CatalogCard {
+function apiProductToCard(
+  product: ApiProduct,
+  locale: Locale,
+  t: (key: TranslationKey) => string,
+): CatalogCard {
   return {
     key: product.id,
     categoryId: product.category.id,
@@ -91,7 +128,7 @@ function apiProductToCard(product: ApiProduct, locale: Locale): CatalogCard {
       categorySlug: product.category.slug,
       title: product.name,
       image: productImageUrl(product),
-      badge: toBadge(product.badge),
+      badge: toBadge(product.badge, t),
     },
     href: `/${locale}/catalog/${product.category.slug}/${product.slug}`,
   };
@@ -148,9 +185,9 @@ export default function ProductGrid({
   const cards = useMemo<CatalogCard[]>(
     () =>
       usingApi
-        ? products.map((product) => apiProductToCard(product, locale))
+        ? products.map((product) => apiProductToCard(product, locale, t))
         : catalogProducts.map((product) => mockProductToCard(product, locale)),
-    [products, usingApi, locale],
+    [products, usingApi, locale, t],
   );
 
   // "All" first and selected on load, then one tab per live category in the
@@ -203,11 +240,6 @@ export default function ProductGrid({
 
   return (
     <ScrollReveal direction="up">
-      {/* Below md this stacks into a centred column 40px apart: the download
-          link on top (order-first), then the filter block. The base
-          `items-center` is what centres them — the filter container takes
-          fit-content width, capped by the container, which is also what lets it
-          wrap. flex-nowrap keeps the column from wrapping into a second one. */}
       <div className="flex flex-wrap items-center justify-between gap-6 pb-6 max-md:flex-col max-md:flex-nowrap max-md:gap-10">
         <div className={cn("flex flex-wrap gap-6", FILTER_ROW)}>
           {tabs.map((tab) => (
@@ -217,9 +249,6 @@ export default function ProductGrid({
               onClick={() => handleFilterChange(tab)}
               className={cn(
                 "text-sm transition-colors cursor-pointer",
-                // Below md the ink is positional, not stateful: the catch-all
-                // reads muted on its own line, the five categories read dark.
-                // The underline stays the one moving active indicator.
                 tab.id === null ? FILTER_ALL : FILTER_CATEGORY,
                 activeId === tab.id
                   ? "font-medium text-ink-900 underline underline-offset-4"
@@ -231,7 +260,6 @@ export default function ProductGrid({
           ))}
         </div>
 
-        {/* Hidden when no catalog is uploaded — never href="" or "#". */}
         {catalogFile && (
           <a
             href={catalogFile}
@@ -244,13 +272,6 @@ export default function ProductGrid({
         )}
       </div>
 
-      {/* 36px from the filter row down to the grid below md: the wrapper's own
-          pb-6 (24) plus this 12.
-          NO horizontal padding here on purpose: the grid takes its left and
-          right boundaries from the same Section container the filter row above
-          uses, so the first column starts on the "Весь каталог" tab's left edge
-          and the last ends on the download link's right edge. It used to carry
-          CATALOG_ROW_INSET (md:px-10), which inset it 40px inside that row. */}
       {visibleCards.length > 0 ? (
         <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 max-md:mt-3 md:grid-cols-3 lg:grid-cols-5">
           {visibleCards.map((card) => (
@@ -262,8 +283,6 @@ export default function ProductGrid({
           ))}
         </div>
       ) : (
-        /* A selected category with nothing in it gets a sentence, never a blank
-           band where the grid should be. */
         <p className="mt-10 text-sm text-ink-500 max-md:mt-3">
           {t("catalog.empty")}
         </p>

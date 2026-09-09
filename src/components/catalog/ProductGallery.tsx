@@ -12,9 +12,6 @@ export interface ProductGalleryProps {
 }
 
 export default function ProductGallery({ product }: ProductGalleryProps) {
-  // Belt-and-braces on top of the data layer's filtering: whatever the caller
-  // passes, no falsy entry survives into `images`, so next/image can never be
-  // handed an empty src. The placeholder is the caller's own product.image.
   const candidates =
     product.gallery && product.gallery.length > 0
       ? product.gallery
@@ -22,15 +19,9 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
   const images = candidates.filter(Boolean);
 
   const [activeIndex, setActiveIndex] = useState(0);
-
-  // Clamped during render rather than reset from an effect. A shorter array can
-  // never leave the index pointing past its end, and doing it here avoids the
-  // cascading extra render that setState-inside-useEffect would cost. Growing
-  // the array is harmless — only shrinking it could overflow.
   const safeIndex = Math.min(activeIndex, Math.max(0, images.length - 1));
   const activeSrc = images[safeIndex];
 
-  // Nothing renderable at all — show the frame rather than an <Image src="">.
   if (!activeSrc) return null;
 
   return (
@@ -69,7 +60,13 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
                   : "border-line-200 hover:border-ink-300",
               )}
             >
-              <Image src={src} alt="" fill sizes="100px" className="object-cover" />
+              <Image
+                src={src}
+                alt=""
+                fill
+                sizes="100px"
+                className="object-cover"
+              />
             </button>
           ))}
         </div>
