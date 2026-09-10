@@ -1,7 +1,14 @@
+"use client";
+
+// Client-side ONLY for the post-click scroll below — nothing here renders
+// differently on the client, and the props stay plain serialisable data.
+
 import Image from "next/image";
 import Link from "next/link";
 
 import type { Locale } from "@/lib/i18n/config";
+
+import { scrollToCatalogGrid } from "./catalogGridAnchor";
 
 export interface CategoryBannerItem {
   id: string | number;
@@ -32,6 +39,18 @@ export default function CategoryBanner({
           <Link
             key={category.id}
             href={`/${locale}/catalog?category=${category.slug}`}
+            // NOT preventDefault'd: the Link still owns the navigation and the
+            // URL, exactly as before. This only asks to be taken to the
+            // results once they render — see scrollToCatalogGrid, which waits
+            // for the grid to report this slug rather than scrolling now.
+            //
+            // Re-clicking the category already showing scrolls anyway: the
+            // grid reports a match on the first frame, so the page moves to
+            // the results immediately. Chosen over doing nothing because a
+            // tile that sometimes moves the page and sometimes does not reads
+            // as broken, and the wait-for-match guard makes it a single,
+            // idempotent scroll either way.
+            onClick={() => scrollToCatalogGrid(category.slug)}
             className={`group relative flex h-105 items-end justify-center overflow-hidden pb-12 md:h-125 lg:h-150 ${CARD_HEIGHT}`}
           >
             <Image

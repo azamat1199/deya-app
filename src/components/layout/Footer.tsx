@@ -3,10 +3,14 @@
 import { InstagramIcon, TelegramIcon } from "@/components/icons/SocialIcons";
 import NewsletterForm from "@/components/forms/NewsletterForm";
 import { AnimatedLink } from "@/components/ui";
+import type { Category } from "@/lib/categories";
 import { useTranslation } from "@/lib/i18n/useTranslation";
-import { NAV_ITEMS, PRODUCT_CATEGORY_LINKS } from "@/lib/nav";
+import { NAV_ITEMS } from "@/lib/nav";
 import { formatForDisplay } from "@/lib/phone";
 import { telHref, type Settings } from "@/lib/settings";
+
+/** The column is a short teaser, not the full catalog — the grid is one click away. */
+const CATEGORY_LIMIT = 6;
 
 export interface FooterProps {
   /**
@@ -15,10 +19,21 @@ export interface FooterProps {
    * to the static copy it shipped with — a stale footer beats a blank one.
    */
   settings: Settings | null;
+  /**
+   * Product categories for the ПРОДУКЦИЯ column, fetched once in the locale
+   * layout. Empty means the request failed or the CMS has none — the column
+   * then shows its heading alone rather than a hardcoded list.
+   */
+  categories: Category[];
 }
 
-export default function Footer({ settings }: FooterProps) {
+export default function Footer({ settings, categories }: FooterProps) {
   const { t, locale } = useTranslation();
+
+  // Already ordered by `sort_order` (then `id` for ties) inside getCategories,
+  // which is contracted to sort because the response order is not the display
+  // order. Re-sorting here would be a second copy of that rule, free to drift.
+  const productCategories = categories.slice(0, CATEGORY_LIMIT);
 
   // Each value falls back to its existing static source individually, so one
   // empty API field cannot blank a whole column.
@@ -58,18 +73,29 @@ export default function Footer({ settings }: FooterProps) {
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide opacity-80">
               {t("footer.products")}
             </h3>
-            <ul className="space-y-2 text-sm">
-              {PRODUCT_CATEGORY_LINKS.map((category) => (
-                <li key={category.slug}>
-                  <AnimatedLink
-                    href={`/${locale}/catalog/${category.slug}`}
-                    className="opacity-90 hover:opacity-100"
-                  >
-                    {t(category.labelKey)}
-                  </AnimatedLink>
-                </li>
-              ))}
-            </ul>
+            {productCategories.length > 0 && (
+              <ul className="space-y-2 text-sm">
+                {productCategories.map((category) => (
+                  <li key={category.id}>
+                    {/* The SAME ?category= href CategoryBanner, CategoryGrid
+                        and the product breadcrumb build, from the category's
+                        own API `slug` — never a slugified label, which is how
+                        the old static list ended up pointing at /catalog/{slug},
+                        a route needing a product slug after it. The catalog
+                        page reads this param and hands it to ProductGrid as
+                        `initialCategory`, which matches it against slug to
+                        pick the active filter. Interpolated raw, exactly as
+                        CategoryBanner does it — one mechanism, not two. */}
+                    <AnimatedLink
+                      href={`/${locale}/catalog?category=${category.slug}`}
+                      className="opacity-90 hover:opacity-100"
+                    >
+                      {category.name}
+                    </AnimatedLink>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="order-3 lg:order-6">

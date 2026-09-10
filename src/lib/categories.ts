@@ -48,12 +48,27 @@ export function isCategory(value: unknown): value is Category {
  * row in the CMS cannot blank the grid. A non-array body, a non-2xx status or a
  * missing base URL all throw — the caller decides whether to fall back.
  */
-export async function getCategories(): Promise<Category[]> {
+export async function getCategories(locale?: string): Promise<Category[]> {
   const origin = apiOrigin();
-  const url = `${origin}${CATEGORIES_PATH}`;
+
+  // `locale` is OPTIONAL so the existing catalog call site keeps its exact
+  // current behaviour — omitting it sends the byte-identical request this
+  // module always sent, no new query string and no new header.
+  //
+  // When it IS passed, both `?lang=` and `Accept-Language` go out: the pair
+  // getSettings and getHome already send. Probing the live endpoint showed
+  // only the header actually moves the names here (`?lang=` alone is a no-op),
+  // but both are sent so this module matches its siblings rather than baking
+  // in one endpoint's current quirk. `?lang=` also keeps the fetch cache key
+  // distinct per locale instead of relying on the header being part of it.
+  const query = locale ? `?lang=${encodeURIComponent(locale)}` : "";
+  const url = `${origin}${CATEGORIES_PATH}${query}`;
+
+  const headers: Record<string, string> = { Accept: "application/json" };
+  if (locale) headers["Accept-Language"] = locale;
 
   const response = await fetch(url, {
-    headers: { Accept: "application/json" },
+    headers,
     // EXPLICIT, never the default: leaving it unset freezes the build-time
     // result into static HTML, so CMS edits would never appear.
     next: { revalidate: 300 },

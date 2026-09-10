@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button, ScrollReveal } from "@/components/ui";
@@ -14,6 +14,10 @@ import { cn } from "@/lib/cn";
 import type { TranslationKey } from "@/lib/i18n/dictionary";
 
 import ProductCard from "./ProductCard";
+import {
+  CATALOG_GRID_CATEGORY_ATTR,
+  CATALOG_GRID_ID,
+} from "./catalogGridAnchor";
 
 export interface ProductGridProps {
   locale: Locale;
@@ -149,6 +153,10 @@ function mockProductToCard(product: Product, locale: Locale): CatalogCard {
  *  is a live category whose label is the API `name`. */
 const ALL_TAB_LABEL_KEY: TranslationKey = "buttons.allCatalog";
 
+/** The catch-all tab's slug. Never appears in a URL — `?category=` is simply
+ *  dropped for "all" — but the grid still reports it as its rendered state. */
+const ALL_TAB_SLUG = "all";
+
 /** 15 = the 5-column grid's first three rows, per Figma. Also the batch each
  *  "show more" click adds, so every reveal fills whole rows. */
 const PAGE_SIZE = 15;
@@ -194,7 +202,7 @@ export default function ProductGrid({
   // order the fetch module already sorted them (sort_order ascending).
   const tabs = useMemo<FilterTab[]>(
     () => [
-      { id: null, slug: "all", label: t(ALL_TAB_LABEL_KEY) },
+      { id: null, slug: ALL_TAB_SLUG, label: t(ALL_TAB_LABEL_KEY) },
       ...categories.map((category) => ({
         id: category.id,
         slug: category.slug,
@@ -212,6 +220,36 @@ export default function ProductGrid({
     return match ? match.id : null;
   });
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  /**
+   * The ?category= this grid has already applied. Seeded with the value the
+   * initializer above consumed, so a direct page load syncs nothing.
+   */
+  const appliedCategoryRef = useRef(initialCategory);
+
+  /**
+   * A <Link> navigation WITHIN /catalog — a CategoryBanner tile, a footer
+   * category, a breadcrumb — re-renders the page but leaves this component
+   * mounted. The useState initializer above therefore never runs again, so
+   * every such click used to change the URL and nothing else: the grid kept
+   * the filter it mounted with. Only a full reload looked right.
+   *
+   * Re-derived here from the prop, by the same rule the initializer uses, so
+   * there is still one definition of "which tab does this slug mean".
+   *
+   * Guarded by the ref rather than by the dep array: `categories` is a fresh
+   * array on every server render, so an unguarded effect would also re-run —
+   * and reset pagination — when the param had not actually changed.
+   */
+  useEffect(() => {
+    if (appliedCategoryRef.current === initialCategory) return;
+    appliedCategoryRef.current = initialCategory;
+
+    const match = categories.find((c) => c.slug === initialCategory);
+    setActiveId(match ? match.id : null);
+    // Same reset handleFilterChange does — a new filter starts at page one.
+    setVisibleCount(PAGE_SIZE);
+  }, [initialCategory, categories]);
 
   // Never silent: whenever the static content stands in, say why.
   if (!usingApi) {
@@ -238,9 +276,23 @@ export default function ProductGrid({
     router.replace(`/${locale}/catalog${query}`, { scroll: false });
   }
 
+  // What the grid is rendering RIGHT NOW, published on the DOM so a banner
+  // click can wait for its own category to appear before scrolling. Derived
+  // from activeId, never from the URL, so it can only ever claim a filter the
+  // cards below actually reflect.
+  const activeSlug = tabs.find((tab) => tab.id === activeId)?.slug ?? ALL_TAB_SLUG;
+
   return (
     <ScrollReveal direction="up">
-      <div className="flex flex-wrap items-center justify-between gap-6 pb-6 max-md:flex-col max-md:flex-nowrap max-md:gap-10">
+      <div
+        id={CATALOG_GRID_ID}
+        {...{ [CATALOG_GRID_CATEGORY_ATTR]: activeSlug }}
+        // scroll-margin so scrollIntoView stops clear of the sticky header
+        // instead of tucking the filter row underneath it. Reads the same
+        // --header-height the header sizes itself with, so it follows the
+        // 4rem→5rem breakpoint change on its own.
+        className="scroll-mt-[calc(var(--header-height)+1.5rem)] flex flex-wrap items-center justify-between gap-6 pb-6 max-md:flex-col max-md:flex-nowrap max-md:gap-10"
+      >
         <div className={cn("flex flex-wrap gap-6", FILTER_ROW)}>
           {tabs.map((tab) => (
             <button
