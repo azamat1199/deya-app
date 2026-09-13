@@ -74,6 +74,13 @@
   "legal": {
     "unavailable": "Ushbu hujjat vaqtincha mavjud emas."
   },
+  "cookies": {
+    "message": "Saytning ishlashini yaxshilash, undan foydalanishni tahlil qilish va siz bilan o‘zaro aloqani qulayroq qilish uchun cookie fayllaridan foydalanamiz. Saytdan foydalanishda davom etar ekansiz, siz cookie fayllaridan",
+    "policyLink": "Maxfiylik siyosati",
+    "messageSuffix": "ga muvofiq foydalanilishiga rozilik bildirasiz.",
+    "accept": "Qabul qilaman",
+    "ariaLabel": "Cookie fayllaridan foydalanish haqida bildirishnoma"
+  },
   "common": {
     "phone": "+998 (55) 151 55 55",
     "phoneRaw": "+998551515555",

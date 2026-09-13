@@ -180,7 +180,14 @@ export default function Header({ settings }: HeaderProps) {
             {hotlineText && hotlineHref && (
               <a
                 href={hotlineHref}
-                className="hidden rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-700 lg:inline-flex lg:items-center"
+                // Red → white inversion on hover, per the design. Hover, click
+                // and focus-visible are the same treatment because the Figma
+                // export specifies no distinct pressed state.
+                //
+                // The ring is what keeps the white state readable: this bar is
+                // itself white on non-hero routes, so a borderless white button
+                // would otherwise vanish into it. See the PR note.
+                className="hidden rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white ring-brand-600 transition-colors duration-200 ease-in-out hover:bg-white hover:text-ink-900 hover:ring-1 focus-visible:bg-white focus-visible:text-ink-900 focus-visible:ring-2 focus-visible:outline-none active:bg-white active:text-ink-900 active:ring-1 lg:inline-flex lg:items-center"
               >
                 {hotlineText}
               </a>

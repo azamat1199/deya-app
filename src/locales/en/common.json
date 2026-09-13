@@ -74,6 +74,13 @@
   "legal": {
     "unavailable": "This document is temporarily unavailable."
   },
+  "cookies": {
+    "message": "We use cookies to improve how the site works, to analyse how it is used, and to make your experience more convenient. By continuing to use the site, you agree to the use of cookies in accordance with the",
+    "policyLink": "Privacy Policy",
+    "messageSuffix": ".",
+    "accept": "Accept",
+    "ariaLabel": "Cookie usage notice"
+  },
   "common": {
     "phone": "+998 (55) 151 55 55",
     "phoneRaw": "+998551515555",

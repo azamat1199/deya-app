@@ -26,14 +26,33 @@ export interface ButtonProps {
   className?: string;
 }
 
+/**
+ * The design gives Hover and Click the SAME treatment, so `active:` repeats
+ * `hover:` rather than darkening a step further. That is deliberate and
+ * verbatim from the spec — see the note on the PR: the Figma export renders
+ * the two states identically and no distinct pressed treatment was specified,
+ * so none is invented here.
+ *
+ * `focus-visible:` repeats them too. A keyboard user has no hover, and the
+ * focus ring in BASE_CLASSES says "this is focused" but not "this is the
+ * thing hovering would light up" — carrying the colour across makes the two
+ * input methods show the same affordance.
+ */
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary: "bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800",
+  // The design's outline button: white → red inversion. Keeps its border, so
+  // it stays legible on a white page rather than relying on the artwork behind
+  // it the way `white` does.
   outline:
-    "border border-ink-900 bg-transparent text-ink-900 hover:border-brand-600 hover:bg-brand-600 hover:text-white active:bg-brand-700 active:border-brand-700",
+    "border border-ink-900 bg-transparent text-ink-900 hover:border-brand-600 hover:bg-brand-600 hover:text-white focus-visible:border-brand-600 focus-visible:bg-brand-600 focus-visible:text-white active:border-brand-600 active:bg-brand-600 active:text-white",
   "outline-white":
     "border border-white bg-transparent text-white hover:bg-white hover:text-ink-900 active:bg-ink-100",
   ghost: "bg-transparent text-brand-600 hover:text-brand-700 hover:underline active:text-brand-800",
-  white: "bg-white text-ink-900 hover:bg-ink-50 active:bg-ink-100",
+  // Same inversion as `outline`, without the border — this is the variant the
+  // design's ПОСМОТРЕТЬ КАТАЛОГ / СТАТЬ ПАРТНЕРОМ buttons use, and every one
+  // of them is positioned over hero artwork, never on a white section.
+  white:
+    "bg-white text-ink-900 hover:bg-brand-600 hover:text-white focus-visible:bg-brand-600 focus-visible:text-white active:bg-brand-600 active:text-white",
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {

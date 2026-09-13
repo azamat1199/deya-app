@@ -83,6 +83,18 @@ export interface Dictionary {
      *  request for that document failed or resolved to nothing. */
     unavailable: string;
   };
+  /** Cookie-consent banner. `message` + `policyLink` + `messageSuffix` are one
+   *  sentence split around an inline link, the same three-part shape the
+   *  consent copy on the forms already uses — the suffix carries whatever
+   *  grammar has to follow the link, which in Uzbek is a case ending. */
+  cookies: {
+    message: string;
+    policyLink: string;
+    messageSuffix: string;
+    accept: string;
+    /** Names the region for screen readers; never shown. */
+    ariaLabel: string;
+  };
   common: {
     phone: string;
     phoneRaw: string;
