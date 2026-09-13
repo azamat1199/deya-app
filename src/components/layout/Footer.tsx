@@ -144,6 +144,28 @@ export default function Footer({ settings, categories }: FooterProps) {
               )}
             </div>
 
+            {/* Tiles stay white in all three export frames; only the GLYPH
+                changes, red → black on both hover and click. So the tiles
+                transition `color`, not `opacity` — the old
+                `transition-opacity hover:opacity-90` faded the whole white
+                square, which is not what the design asks for, and it also
+                dimmed the tile rather than recolouring the icon.
+
+                `active:` repeats `hover:` because the export's second and
+                third frames are identical; no pressed variant was specified
+                and none is invented. Figma could not be opened to confirm —
+                flagged in the PR.
+
+                Each anchor carries its own hover, so hovering Telegram cannot
+                touch Instagram: they are siblings with no `group` between
+                them, and the icons inherit via currentColor from their own
+                tile only.
+
+                Accessible names were already present — aria-label on each
+                anchor, aria-hidden on each SVG — so nothing is added here.
+
+                text-brand-600 and text-ink-900 are the existing red and black
+                tokens. */}
             <div className="mt-6 flex gap-3">
               {telegramUrl && (
                 <a
@@ -151,7 +173,7 @@ export default function Footer({ settings, categories }: FooterProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Telegram"
-                  className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-brand-600 transition-opacity hover:opacity-90"
+                  className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-brand-600 transition-colors duration-200 ease-in-out hover:text-ink-900 focus-visible:text-ink-900 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-600 focus-visible:outline-none active:text-ink-900"
                 >
                   <TelegramIcon width={18} height={18} />
                 </a>
@@ -162,7 +184,7 @@ export default function Footer({ settings, categories }: FooterProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram"
-                  className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-brand-600 transition-opacity hover:opacity-90"
+                  className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-brand-600 transition-colors duration-200 ease-in-out hover:text-ink-900 focus-visible:text-ink-900 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-600 focus-visible:outline-none active:text-ink-900"
                 >
                   <InstagramIcon width={18} height={18} />
                 </a>

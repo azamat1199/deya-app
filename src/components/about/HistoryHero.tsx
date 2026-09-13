@@ -402,10 +402,23 @@ export default function HistoryHero({ slides }: HistoryHeroProps) {
             offset, is what lines the title up with the first year, so it holds
             through any type-scale change. `md:contents` dissolves the wrapper
             above md, leaving both children direct items of the column exactly
-            as before. The row stops at 84vw (right-[16%]) so the rail's right
-            edge — rule and dot centres — lands there, and starts at the page
-            gutter so the copy keeps the container's left edge. */}
-            <div className="md:contents max-md:absolute max-md:top-[13%] max-md:right-[16%] max-md:bottom-[6%] max-md:left-5 max-md:flex max-md:flex-row-reverse max-md:items-start max-md:gap-5">
+            as before. The row starts at the page gutter so the copy keeps the
+            container's left edge, and now ENDS on the same gutter, so the
+            rail's right edge — the rule and the dot centres, which share that
+            axis — lands on the header burger's right edge (340px on a 360px
+            frame) instead of the 84vw it used to stop at (302.4px).
+
+            ALIGNMENT TARGET IS FLAGGED, NOT CONFIRMED. The brief names the
+            ENG ▾ dropdown as the anchor, but that control is NOT RENDERED on
+            mobile at all — LanguageSwitch appears only in the header's `md:flex`
+            cluster and inside the (closed) MobileMenu drawer, so there is
+            nothing at that position in the build to align to. Figma could not
+            be opened this session to settle whether the axis is the dropdown's
+            right edge, its centre or the burger's. `right-5` is the one anchor
+            that does exist on mobile and is the gutter the logo, the burger and
+            every other element on these screens already share. See the report
+            for the measured alternatives. */}
+            <div className="md:contents max-md:absolute max-md:top-[13%] max-md:right-5 max-md:bottom-[6%] max-md:left-5 max-md:flex max-md:flex-row-reverse max-md:items-start max-md:gap-5">
               <div
                 ref={stripRef}
                 role="tablist"
@@ -584,8 +597,19 @@ export default function HistoryHero({ slides }: HistoryHeroProps) {
               >
                 {/* 90px / 0.95 / -0.03em at the 1440 reference width. The 0.95
               leading is tighter than the glyph box, so nothing in the chain
-              above may clip — the copy block carries no overflow rule. */}
-                <h1 className="font-light tracking-[-0.03em] text-white text-[clamp(40px,6.25vw,90px)] leading-[0.95]">
+              above may clip — the copy block carries no overflow rule.
+
+              Mobile: Roboto 300 / 24px / 110% / -3%. font-light is already the
+              300 and tracking-[-0.03em] is already the -3% (-0.72px at 24px),
+              so only the size and leading are restated under `max-md:`. The
+              clamp() above bottoms out at 40px, which is what the phone was
+              showing. `max-md:pt-8` is the spec's 32px above the title; it sits
+              on the h1 rather than the copy block so it cannot also push the
+              paragraph, and the block's own `max-md:pt-0` is left alone.
+
+              The data binding is untouched — this is still `active.title`,
+              swapping with the selected year. */}
+                <h1 className="font-light tracking-[-0.03em] text-white text-[clamp(40px,6.25vw,90px)] leading-[0.95] max-md:pt-8 max-md:text-[24px] max-md:leading-[1.1]">
                   {active.title}
                 </h1>
 
@@ -597,7 +621,12 @@ export default function HistoryHero({ slides }: HistoryHeroProps) {
                   <AnimatePresence mode="sync" initial={false}>
                     <motion.p
                       key={active.key}
-                      className="[grid-area:1/1] font-normal tracking-[-0.03em] text-white/90 text-[clamp(16px,1.39vw,20px)] leading-[1.25]"
+                      // Mobile: Roboto 400 / 13px / 135% (17.55px) / 0.
+                      // font-normal is already the 400; the size, leading and
+                      // the letter-spacing all need restating, the last one
+                      // because the desktop value is -0.03em and the spec asks
+                      // for 0 here.
+                      className="[grid-area:1/1] font-normal tracking-[-0.03em] text-white/90 text-[clamp(16px,1.39vw,20px)] leading-[1.25] max-md:text-[13px] max-md:leading-[1.35] max-md:tracking-normal"
                       initial={instant ? false : { opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: instant ? 1 : 0 }}

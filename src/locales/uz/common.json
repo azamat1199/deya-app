@@ -24,7 +24,10 @@
     "allCatalog": "Butun katalog",
     "showMoreProducts": "Ko‘proq mahsulot ko‘rsatish",
     "contactSales": "Savdo bo‘limi bilan bog‘lanish",
-    "vacancies": "Vakansiyalar"
+    "vacancies": "Vakansiyalar",
+    "downloadCertificates": "Sertifikatlarni yuklab olish",
+    "downloadingProgress": "{total} tadan {current} tasi yuklab olinmoqda",
+    "downloadPartial": "{total} tadan {current} tasi yuklab olindi"
   },
   "categories": {
     "croissants": "Kruassanlar",

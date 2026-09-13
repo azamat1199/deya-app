@@ -169,11 +169,48 @@ const PAGE_SIZE = 15;
 // gap, so it re-flows with the type scale instead of being pinned.
 const FILTER_ROW = "max-md:justify-center max-md:gap-x-10 max-md:gap-y-[22px]";
 
-const FILTER_ALL =
-  "max-md:w-full max-md:text-center max-md:text-[clamp(14px,4.2vw,17px)] max-md:font-normal max-md:text-ink-500";
+/**
+ * The filter tabs' mobile type, in ONE place. Both "Весь каталог" and every
+ * category tab render from the same `tabs.map()` below, so this is applied to
+ * their shared class string rather than duplicated into the two role-specific
+ * constants underneath — which is also why those two no longer carry a size or
+ * a weight of their own.
+ *
+ * Roboto 400 / 12px / 120% / 0. Every value is a config token except the
+ * leading:
+ *
+ *   font-sans        --font-sans → --font-roboto (@theme inline, globals.css).
+ *                    Unprefixed, because the family is the same at every width
+ *                    and this only makes explicit what <body> already inherits.
+ *                    Confirmed already loaded via next/font — nothing added.
+ *   text-xs          Tailwind v4's default scale, 0.75rem = 12px. This project
+ *                    does not override the type scale (there is no
+ *                    tailwind.config at all — v4 keeps its theme in the
+ *                    @theme inline block), so the token is exactly the spec.
+ *   font-normal      400.
+ *   tracking-normal  0em.
+ *   leading-[1.2]    ARBITRARY — there is no 1.2 in the leading scale (none=1,
+ *                    tight=1.25, snug=1.375, …), so the spec's 120% has no
+ *                    token. Flagged as a candidate for a `--leading-*` entry in
+ *                    globals.css's @theme block. Written as a ratio, not 14.4px,
+ *                    so it tracks the size. It also has to come after text-xs:
+ *                    v4's text-* utilities set a paired line-height, and this
+ *                    is what overrides it.
+ *
+ * MOBILE ONLY, and flagged: the spec gave no desktop size, and desktop is
+ * currently text-sm (14px). Applying 12px unprefixed would have silently shrunk
+ * it. Dropping the `max-md:` prefixes is the one change if Figma wants 12px
+ * everywhere.
+ */
+const FILTER_TYPE =
+  "font-sans max-md:text-xs max-md:leading-[1.2] max-md:font-normal max-md:tracking-normal";
 
-const FILTER_CATEGORY =
-  "max-md:text-[clamp(13px,3.8vw,16px)] max-md:font-normal max-md:text-ink-900";
+// Size and weight moved to FILTER_TYPE above; these keep only what is specific
+// to each role — the full-width centred line for "All", and the two different
+// resting colours. Colours, states and layout are untouched.
+const FILTER_ALL = "max-md:w-full max-md:text-center max-md:text-ink-500";
+
+const FILTER_CATEGORY = "max-md:text-ink-900";
 
 export default function ProductGrid({
   locale,
@@ -301,6 +338,8 @@ export default function ProductGrid({
               onClick={() => handleFilterChange(tab)}
               className={cn(
                 "text-sm transition-colors cursor-pointer",
+                // One shared type style for both tab kinds — see FILTER_TYPE.
+                FILTER_TYPE,
                 tab.id === null ? FILTER_ALL : FILTER_CATEGORY,
                 activeId === tab.id
                   ? "font-medium text-ink-900 underline underline-offset-4"
@@ -342,9 +381,29 @@ export default function ProductGrid({
 
       {hasMore && (
         <div className="mt-12 flex justify-center">
+          {/* Mobile type: Roboto 500 / 12px / 120% / 0, uppercase, centred.
+              `uppercase` and the centring already come from ui/Button (BASE's
+              `uppercase` and `justify-center`), so only the weight, size,
+              leading and tracking are restated.
+
+              WIDTH: the spec says `width: 100` with no unit. Read as 100%, per
+              your own note — 100px cannot hold "ПОКАЗАТЬ ЕЩЕ ПРОДУКЦИЮ", which
+              measures far wider even at 12px. Figma could not be opened to
+              confirm (unreachable all session); FLAGGED in the report.
+              `max-md:w-full` rather than the component's `fullWidth` prop,
+              because that prop has no breakpoint and would stretch the desktop
+              button too. The wrapper is a sibling of the grid inside the same
+              ScrollReveal, so 100% here is exactly the grid's own width.
+
+              The overrides carry `max-md:` because cn() is plain clsx and
+              keeps both the losing and winning class: unprefixed, Tailwind's
+              own scale order would pick BASE's `font-semibold` over
+              `font-medium`. A variant sorts after every unprefixed utility,
+              which settles it. Padding, radius and colour are untouched. */}
           <Button
             variant="primary"
             size="lg"
+            className="max-md:w-full max-md:text-[12px] max-md:leading-[1.2] max-md:font-medium max-md:tracking-normal"
             onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
           >
             {t("buttons.showMoreProducts")}

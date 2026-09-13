@@ -24,7 +24,10 @@
     "allCatalog": "Full Catalog",
     "showMoreProducts": "Show More Products",
     "contactSales": "Contact Sales Department",
-    "vacancies": "Vacancies"
+    "vacancies": "Vacancies",
+    "downloadCertificates": "Download Certificates",
+    "downloadingProgress": "Downloading {current} of {total}",
+    "downloadPartial": "Downloaded {current} of {total}"
   },
   "categories": {
     "croissants": "Croissants",

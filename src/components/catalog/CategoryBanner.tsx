@@ -61,7 +61,14 @@ export default function CategoryBanner({
               className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-linear-to-t from-black/45 via-transparent to-transparent" />
-            <span className="relative z-10 text-2xl font-normal text-white lg:text-3xl">
+            {/* Mobile type: Roboto 400 / 18px / 110% (19.8px) / -3%
+                (-0.54px), centred. font-normal is already the 400. The tile
+                centres this box with `justify-center`, but `text-center` is
+                still load-bearing — a long category name wraps to two lines
+                and would otherwise sit left-ragged. Size, leading and tracking
+                are mobile-only; the unprefixed text-2xl and lg:text-3xl keep
+                desktop exactly as it was. Nothing else about the tile changes. */}
+            <span className="relative z-10 text-2xl font-normal text-white max-md:text-center max-md:text-[18px] max-md:leading-[1.1] max-md:tracking-[-0.03em] lg:text-3xl">
               {category.title}
             </span>
           </Link>

@@ -79,23 +79,55 @@ export default function PartnersHero({
           {/* Figma type, authored at a 1440 reference width: 90px / 0.95 /
               -0.03em / 300. Line-height and tracking are constant — only the
               size scales. Roboto comes from --font-roboto on <html> via the
-              theme's font-sans; no family is declared here. */}
-          <h1 className="max-w-xl font-light text-white text-[clamp(40px,6.25vw,90px)] leading-[0.95] tracking-[-0.03em]">
+              theme's font-sans; no family is declared here.
+
+              Mobile: 46px / 105% / -3% / 300. font-light is already the 300 and
+              tracking-[-0.03em] is already the -3% (-1.38px at 46px), so only
+              the size and leading are restated under max-md:. The clamp above
+              bottoms out at 40px, which is what the phone was showing.
+              max-w-xl (576px) is left alone — it cannot bind inside a 320px
+              container, so it constrains nothing here.
+
+              max-md:pt-8 is the spec's 32px above the title. `pt-8` is a
+              spacing-scale token, not an arbitrary value: this project does not
+              override --spacing, so Tailwind v4's 0.25rem base makes 8 → 2rem →
+              32px. It sits on the h1 rather than the row wrapper so it cannot
+              also move the paragraph, and the grid's own pt-[calc(...)] above
+              is untouched. */}
+          <h1 className="max-w-xl font-light text-white text-[clamp(40px,6.25vw,90px)] leading-[0.95] tracking-[-0.03em] max-md:pt-8 max-md:text-[46px] max-md:leading-[1.05]">
             {title}
           </h1>
           {/* 20px / 1.25 / -0.03em / 400 at the same reference width. max-w-md
-              is kept so the line breaks match the design. */}
-          <p className="mt-4 max-w-md font-normal text-white/85 text-[clamp(15px,1.39vw,20px)] leading-[1.25] tracking-[-0.03em]">
+              is kept so the line breaks match the design.
+
+              Mobile: 13px / 135% / 0 / 400. font-normal is already the 400; the
+              tracking DOES need restating, because the desktop value is -0.03em
+              and the spec asks for 0 here. */}
+          <p className="mt-4 max-w-md font-normal text-white/85 text-[clamp(15px,1.39vw,20px)] leading-[1.25] tracking-[-0.03em] max-md:text-[13px] max-md:leading-[1.35] max-md:tracking-normal">
             {subtitle}
           </p>
         </div>
 
         <div aria-hidden="true" />
 
+        {/* Mobile: Roboto 500 / 12px / 120% / 0, full container width.
+            `max-md:w-full` beats the unprefixed `w-fit`, so the button spans
+            the same container-page bounds as the h1 and the paragraph above —
+            all three share the 20px gutters. `self-end` stays: it is this
+            grid row's alignment, not a width.
+
+            The type overrides carry `max-md:` because cn() is plain clsx and
+            keeps both classes: unprefixed, Tailwind's own scale order would
+            pick ui/Button's BASE `font-semibold` over `font-medium`, and its
+            `tracking-wide` over `tracking-normal`. A variant sorts after every
+            unprefixed utility, which settles it.
+
+            Colour states, radius, height, padding and the click target are
+            untouched — only width and type change. */}
         <Button
           variant="white"
           size="lg"
-          className="w-fit self-end"
+          className="w-fit self-end max-md:w-full max-md:text-xs max-md:leading-[1.2] max-md:font-medium max-md:tracking-normal"
           onClick={() => setIsOpen(true)}
         >
           {t("buttons.partnerForm")}

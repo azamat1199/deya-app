@@ -24,7 +24,10 @@
     "allCatalog": "Весь каталог",
     "showMoreProducts": "Показать еще продукцию",
     "contactSales": "Связаться с отделом продаж",
-    "vacancies": "Вакансии"
+    "vacancies": "Вакансии",
+    "downloadCertificates": "Скачать сертификаты",
+    "downloadingProgress": "Скачивание {current} из {total}",
+    "downloadPartial": "Скачано {current} из {total}"
   },
   "categories": {
     "croissants": "Круассаны",

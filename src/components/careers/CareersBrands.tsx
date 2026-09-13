@@ -7,6 +7,8 @@ import { cn } from "@/lib/cn";
 import { getCompanies, type Company } from "@/lib/companies";
 import { isBlankRichText, sanitizeRichText } from "@/lib/sanitizeRichText";
 
+import { CAREERS_SECTION_HEADING } from "./sectionType";
+
 const RED_RUN = "подходящую вам должность";
 
 /**
@@ -197,7 +199,17 @@ export default async function CareersBrands() {
     <div className="py-10 lg:py-24">
       {/* One <h2>: the break onto two lines comes from the max-width, and the
           red run is an inline <span> inside the same element. */}
-      <h2 className="mx-auto max-w-[36ch] text-center text-balance font-light text-ink-900 text-[clamp(20px,1.85vw,28px)] leading-[1.3] tracking-[-0.01em]">
+      {/* The red run is an inline <span> carrying ONLY `text-brand-600` — a
+          colour, no type. It therefore inherits size, weight, leading and
+          tracking from this h2 and needs no class of its own; adding one would
+          duplicate the shared style for no effect. Verified on the rendered
+          span, not assumed. */}
+      <h2
+        className={cn(
+          "mx-auto max-w-[36ch] text-center text-balance font-light text-ink-900 text-[clamp(20px,1.85vw,28px)] leading-[1.3] tracking-[-0.01em]",
+          CAREERS_SECTION_HEADING,
+        )}
+      >
         {headingBefore}
         <span className="text-brand-600">{RED_RUN}</span>
         {headingAfter}

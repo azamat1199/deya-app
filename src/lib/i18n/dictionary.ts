@@ -25,6 +25,22 @@ export interface Dictionary {
     showMoreProducts: string;
     contactSales: string;
     vacancies: string;
+    /**
+     * The certificates section's button. SEPARATE from downloadCatalog, which
+     * still labels the two real catalogue downloads on /catalog and on the
+     * product detail page — this one no longer downloads the catalogue.
+     * WORDING IS PROVISIONAL: it needs the design owner's sign-off (see the
+     * report); Figma could not be opened to confirm it.
+     */
+    downloadCertificates: string;
+    /**
+     * Progress while the certificates download runs. Carries `{current}` and
+     * `{total}` placeholders, substituted at the call site — t() resolves keys
+     * to strings and does no interpolation of its own.
+     */
+    downloadingProgress: string;
+    /** Shown when some files did not arrive. Carries the same placeholders. */
+    downloadPartial: string;
   };
   categories: {
     croissants: string;

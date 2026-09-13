@@ -61,6 +61,14 @@
   /* 0.5px rule between content columns. Translucent black rather than a solid
      tint so it reads correctly over both the white and cream section bands. */
   --color-hairline: #00000059;
+
+  /* Height of the MOBILE cookie banner (the Figma mobile frame's 320 × 175
+     panel). Declared here rather than only in CookieConsent's class list
+     because the banner is position-fixed: it is not in anyone's flow, so a
+     page that has content under it has to reserve the room itself, and the
+     two numbers must not be allowed to drift. Consumed by CookieConsent and
+     by the hero rule further down this file. */
+  --cookie-banner-height: 175px;
 }
 
 @theme inline {
@@ -115,6 +123,54 @@
 @media (width >= 768px) {
   :root {
     --header-height: 5rem;
+  }
+}
+
+/* The mobile cookie banner is position-fixed over the bottom-right corner, so
+   it sits on top of whatever the page happens to have down there. On the home
+   hero that was the ПОСМОТРЕТЬ КАТАЛОГ button AND the slider's ‹ 01 — 02 ›
+   row, both of which the banner covered outright: the primary CTA was
+   unclickable and the carousel unnavigable for as long as the banner was up.
+   The two rules below lift that whole bottom cluster clear of it.
+
+   The banner strip is its own `bottom-5` inset (20px) plus its height; both
+   rules add a 12px gap on top of that, so the lowest thing in the cluster
+   clears the banner's top edge by 12px.
+
+     [data-above-cookie-banner]  an absolutely-positioned row (the slider
+                                 controls) — moved by its `bottom`.
+     [data-clears-cookie-banner] a box whose LAST FLOW CHILD has to clear the
+                                 cluster below it (the hero's mobile column,
+                                 whose last row is the button) — moved by
+                                 reserving padding. 3.5rem on top of the strip
+                                 is the 40px controls row plus a 16px gap. That
+                                 gap is 16 rather than the 24 the two keep when
+                                 the banner is down: with the banner up the
+                                 column has ~200px less to work with, and the
+                                 tighter rhythm is what keeps the button off
+                                 the description on a 640px-tall screen.
+
+   Mobile only. Above 768px the banner is the 478 × 130 desktop panel in the
+   corner and the desktop hero's CTA sits in a different row entirely, which it
+   has never overlapped.
+
+   Driven by `:has()` rather than React state on purpose. The banner is
+   server-rendered from the consent cookie (see the locale layout), so its
+   presence in the DOM already IS the state — the first paint is correct and
+   there is no post-hydration jump. Accepting unmounts the banner, the selector
+   stops matching, and the hero drops straight back to its own values.
+
+   Deliberately UNLAYERED. Tailwind v4 emits its utilities inside
+   `@layer utilities`, and unlayered rules beat every layered one regardless of
+   specificity — which is what lets these override the elements' own `pb-24`
+   and `bottom-8` without an `!important` or a specificity-hack selector. */
+@media (width < 768px) {
+  body:has([data-cookie-banner]) [data-above-cookie-banner] {
+    bottom: calc(var(--cookie-banner-height) + 2rem);
+  }
+
+  body:has([data-cookie-banner]) [data-clears-cookie-banner] {
+    padding-bottom: calc(var(--cookie-banner-height) + 2rem + 3.5rem);
   }
 }
 

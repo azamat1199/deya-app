@@ -3,8 +3,9 @@
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { Button, Slider } from "@/components/ui";
-import { useTranslation } from "@/lib/i18n/useTranslation";
+import { Slider } from "@/components/ui";
+
+import CertificatesDownloadButton from "./CertificatesDownloadButton";
 
 /** What the slider renders, whichever source filled it. */
 export interface CertificateCard {
@@ -15,16 +16,9 @@ export interface CertificateCard {
 
 export interface CertificatesGridProps {
   items: CertificateCard[];
-  /** Normalised https URL to the catalog PDF, or "" when none is uploaded. */
-  catalogFile: string;
 }
 
-export default function CertificatesGrid({
-  items,
-  catalogFile,
-}: CertificatesGridProps) {
-  const { t } = useTranslation();
-
+export default function CertificatesGrid({ items }: CertificatesGridProps) {
   return (
     <>
       <div className="relative mt-10">
@@ -99,25 +93,16 @@ export default function CertificatesGrid({
         />
       </div>
 
-      <div className="mt-10 flex justify-center">
-        {/* Passed through Button's own className prop, which cn() merges last
-            onto the root — no edit to the shared component. font-sans IS the
-            Roboto utility here: globals.css maps --font-sans to --font-roboto
-            and deliberately exposes no bare font-roboto class. */}
-        {/* Hidden when no catalog is uploaded — never href="" or "#".
-            NOTE: Button exposes no target/rel props, so this one opens in the
-            same tab; adding them would mean editing the shared Button. */}
-        {catalogFile && (
-          <Button
-            variant="primary"
-            size="lg"
-            href={catalogFile}
-            className="max-md:w-full max-md:font-sans max-md:font-medium max-md:text-[12px] max-md:leading-[1.2] max-md:tracking-normal max-md:text-center max-md:uppercase"
-          >
-            {t("buttons.downloadCatalog")}
-          </Button>
-        )}
-      </div>
+      {/* This button used to be the CATALOGUE download — an <a href> straight
+          to settings.catalog_file. It now downloads the certificates shown
+          above, one file each.
+
+          The catalogue download is NOT orphaned by that: `buttons.downloadCatalog`
+          still labels the same file on /catalog (ProductGrid) and on every
+          product detail page, both reading the same settings.catalog_file. So
+          this section is the third of three, not the only one. Raised in the
+          report all the same, since it is a user-visible change to this page. */}
+      <CertificatesDownloadButton items={items} />
     </>
   );
 }

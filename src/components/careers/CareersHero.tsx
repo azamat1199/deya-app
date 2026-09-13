@@ -82,23 +82,57 @@ export default function CareersHero({
             gap on a 640px-tall device. container-page puts all three on the
             same left edge as the logo, set once here. */}
         <div className="container-page relative z-10 grid h-full grid-rows-[auto_1fr_auto] pt-[calc(var(--header-height)_+_min(6vh,48px))] pb-[calc(30px_+_env(safe-area-inset-bottom))] md:hidden">
-          <h1 className="max-w-xs font-light text-white text-[clamp(30px,8.5vw,38px)] leading-[1.05] tracking-[-0.03em]">
+          {/* Roboto 300 / 34px / 105% / -3%. Everything but the size was
+              already right: font-light IS the 300, leading-[1.05] the 105%,
+              tracking-[-0.03em] the -3% (-1.02px at 34px). Only the clamp is
+              replaced — it bottomed out at 30.6px on a 360px frame.
+
+              34px is DELIBERATELY smaller than the 46px the about and partners
+              heroes use on mobile; it is this hero's own value, not a drift to
+              be reconciled with theirs.
+
+              Unprefixed classes are safe here: this whole block is `md:hidden`
+              and the desktop hero is the separate `md:flex` block below, so
+              nothing in here can reach desktop. */}
+          <h1 className="max-w-xs font-light text-white text-[34px] leading-[1.05] tracking-[-0.03em]">
             {title}
           </h1>
 
           <div aria-hidden="true" />
 
           <div>
-            <p className="font-normal text-white/90 text-[clamp(14px,3.9vw,16px)] leading-[1.4] tracking-[-0.02em]">
+            {/* Roboto 400 / 13px / 135% / 0. font-normal is already the 400;
+                the size, leading and tracking are all replaced — the previous
+                tracking was -0.02em and the spec asks for 0. */}
+            <p className="font-normal text-white/90 text-[13px] leading-[1.35] tracking-normal">
               {subtitle}
             </p>
+            {/* Roboto 500 / 12px / 120% / 0.
+                `text-[12px]` was already here and already wins over ui/Button's
+                size-lg `text-base` — measured at 12px before this change, so it
+                stays as it is.
+
+                The other three carry `max-md:` because they compete with the
+                Button's OWN classes and cn() is plain clsx, which keeps both:
+                  · font-semibold (BASE) beat a plain font-medium — Tailwind
+                    emits font-weight utilities in scale order, so 600 lands
+                    after 500. Measured: the button rendered 600 before this.
+                  · tracking-wide (BASE) would likewise beat a plain
+                    tracking-normal, since `wide` sorts after `normal`.
+                  · leading-[1.2] replaces the 1.5 ratio text-base pairs with
+                    its size (18px before, 14.4px now).
+                A variant sorts after every unprefixed utility, which settles
+                all three. The element only exists below md anyway.
+
+                Width, height (52px), padding, radius, colour states and the
+                link target are untouched — type only. */}
             <Button
               variant="white"
               size="lg"
               href={ctaHref}
               external={ctaExternal}
               fullWidth
-              className="mt-[26px] h-[52px] text-[12px] tracking-[0.05em]"
+              className="mt-[26px] h-[52px] text-[12px] max-md:leading-[1.2] max-md:font-medium max-md:tracking-normal"
             >
               {vacanciesLabel}
             </Button>

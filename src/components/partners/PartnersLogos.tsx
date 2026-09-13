@@ -2,6 +2,7 @@ import { partnerLogos } from "@/content/partners";
 import { getPartners, type Partner } from "@/lib/partners";
 
 import MarqueeRow, { type MarqueeItem } from "./MarqueeRow";
+import { PARTNERS_SECTION_HEADING } from "./sectionType";
 
 /**
  * The hand-authored partners, kept only as the fallback — never in the live
@@ -65,9 +66,7 @@ export default async function PartnersLogos() {
 
   return (
     <div className="py-16 lg:py-24">
-      <h2 className="text-center text-2xl font-normal text-ink-900 md:text-3xl">
-        Наши партнёры
-      </h2>
+      <h2 className={PARTNERS_SECTION_HEADING}>Наши партнёры</h2>
 
       <div className="relative mt-10 space-y-4">
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-linear-to-r from-white to-transparent" />

@@ -4,7 +4,11 @@ import CertificatesGrid, {
 import { certificates, certificatesContent } from "@/content/certificates";
 import { IMAGES } from "@/content/images";
 import { getCertificates, type Certificate } from "@/lib/certificates";
-import { getSettings } from "@/lib/settings";
+
+import {
+  PARTNERS_SECTION_DESCRIPTION,
+  PARTNERS_SECTION_HEADING,
+} from "./sectionType";
 
 /**
  * The hand-authored certificates, kept only as the fallback — never in the
@@ -33,14 +37,7 @@ function toCertificateCard(
   };
 }
 
-export interface CertificatesSectionProps {
-  /** Needed only so the settings fetch can send Accept-Language. */
-  locale: string;
-}
-
-export default async function CertificatesSection({
-  locale,
-}: CertificatesSectionProps) {
+export default async function CertificatesSection() {
   // An async server component so it can await the fetch and honour
   // `next: { revalidate: 300 }`; the slider and the i18n hook live in the
   // client child, which can do neither.
@@ -72,21 +69,16 @@ export default async function CertificatesSection({
     );
   }
 
-  // Memoised by Next against the same call in the locale layout — still one
-  // network request per render.
-  const settings = await getSettings(locale);
-  const catalogFile = settings?.catalog_file ?? "";
-
   return (
     <div className="py-16 lg:py-24">
-      <h2 className="text-center text-2xl font-normal text-ink-900 md:text-3xl">
+      <h2 className={PARTNERS_SECTION_HEADING}>
         {certificatesContent.heading}
       </h2>
-      <p className="mx-auto mt-4 max-w-2xl text-center text-ink-500">
+      <p className={PARTNERS_SECTION_DESCRIPTION}>
         {certificatesContent.description}
       </p>
 
-      <CertificatesGrid items={items} catalogFile={catalogFile} />
+      <CertificatesGrid items={items} />
     </div>
   );
 }

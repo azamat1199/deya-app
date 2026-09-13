@@ -25,8 +25,16 @@ type ContactFormValues = {
   consentMarketing: boolean;
 };
 
+// `duration-200 ease-in-out` is the project's standard state transition —
+// ui/Button, ui/FormField, Header and the cookie banner all use it, and these
+// fields were the odd ones out on Tailwind's bare 150ms default. Duration only:
+// no colour here changes, deliberately. The Figma three-state input treatment
+// is built on low-opacity WHITE (border, placeholder, fill), which works on the
+// footer's red but is invisible on these fields — they are white on white, a
+// measured contrast ratio of 1.00. See the report; flagged rather than
+// substituted with different values.
 const INPUT_CLASSES =
-  "w-full rounded-md bg-white px-4 py-3.5 text-sm text-ink-900 outline-none transition-colors placeholder:text-ink-500 focus:ring-1 focus:ring-ink-900";
+  "w-full rounded-md bg-white px-4 py-3.5 text-sm text-ink-900 outline-none transition-colors duration-200 ease-in-out placeholder:text-ink-500 focus:ring-1 focus:ring-ink-900";
 const INPUT_ERROR_CLASSES = "ring-1 ring-brand-600";
 const REQUIRED_MESSAGE = "Это поле обязательно для заполнения";
 const EMAIL_INVALID_MESSAGE = "Введите корректный e-mail";
@@ -168,7 +176,7 @@ export default function ContactForm() {
               : undefined)
           }
           rowClassName={cn(
-            "flex items-center rounded-md bg-white transition-colors focus-within:ring-1 focus-within:ring-ink-900",
+            "flex items-center rounded-md bg-white transition-colors duration-200 ease-in-out focus-within:ring-1 focus-within:ring-ink-900",
             phoneTouched && !phoneValid && phoneDisplay && INPUT_ERROR_CLASSES,
           )}
           prefixClassName="shrink-0 py-3.5 pl-4 text-sm text-ink-700"
