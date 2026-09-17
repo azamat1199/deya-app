@@ -262,7 +262,22 @@ export default async function HomePage({ params }: HomePageProps) {
       )}
 
       {statItems.length > 0 && (
-        <Section bg="white" containerWidth="home">
+        // containerWidth="page" — NOT "home" — so this section's copy lands on
+        // the same vertical axis as the header's Deya logo. Both now resolve to
+        // the very same `.container-page` class the Header uses
+        // (max-w-1600 / px-5 / md:px-8 / lg:px-10), rather than the "home"
+        // container's max-w-1440 / px-5 / md:px-10 / lg:px-20. That is the whole
+        // fix: no offset, no negative margin, just one container definition
+        // shared with the header, so the two cannot drift apart.
+        //
+        // The gap it closes grows with the viewport — measured 0px at 360
+        // (both px-5), 8px at 768, 40px at 1280 and 120px at 1920, where the
+        // two different max-widths centre at different insets.
+        //
+        // AboutPreview's stats band is unaffected: it breaks out full-bleed
+        // (w-screen / -mx-[50vw]) and re-applies its own 1440 container inside,
+        // so it stays where it is.
+        <Section bg="white" containerWidth="page">
           <AboutPreview locale={locale as Locale} stats={statItems} />
         </Section>
       )}
