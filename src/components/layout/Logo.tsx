@@ -26,7 +26,7 @@ export default function Logo({
       )}
     >
       <Image
-        src="/logo.svg"
+        src="/logo.png"
         alt="Deya"
         width={65}
         height={65}

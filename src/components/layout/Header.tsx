@@ -120,7 +120,7 @@ export default function Header({ settings }: HeaderProps) {
             aria-label="Deya — на главную"
           >
             <Image
-              src="/logo.svg"
+              src="/logo.png"
               alt="Deya"
               width={102}
               height={102}
