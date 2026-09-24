@@ -211,7 +211,6 @@ export default async function HomePage({ params }: HomePageProps) {
     ? home.stats.map((stat) => toStatItem(stat, fallbackNotes))
     : staticStats;
 
-  console.log(statItems);
   const categoryTiles: CategoryGridItem[] = home
     ? home.categories.map(toCategoryTile)
     : homeCategories.map((category) => ({

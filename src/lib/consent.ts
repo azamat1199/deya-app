@@ -38,11 +38,6 @@ export interface ConsentRecord {
   categories: Record<ConsentCategory, boolean>;
 }
 
-export const NON_ESSENTIAL_CATEGORIES: readonly ConsentCategory[] = [
-  "analytics",
-  "marketing",
-];
-
 function record(status: ConsentStatus, nonEssential: boolean): ConsentRecord {
   return {
     v: CONSENT_VERSION,
@@ -58,15 +53,6 @@ function record(status: ConsentStatus, nonEssential: boolean): ConsentRecord {
 
 export function acceptAll(): ConsentRecord {
   return record("accepted", true);
-}
-
-/**
- * Unused by the current banner — the design has no Reject button. Kept so the
- * "reject" path is defined in one place the day that button is added, instead
- * of being invented then.
- */
-export function rejectAll(): ConsentRecord {
-  return record("rejected", false);
 }
 
 function isConsentRecord(value: unknown): value is ConsentRecord {

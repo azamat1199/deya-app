@@ -1,12 +1,3 @@
-import { IMAGES } from "./images";
-
-export const partnersContent = {
-  heading: "Как стать партнёром?",
-  description:
-    "Если вы поставщик сырья или желаете приобрести нашу продукцию, заполните форму ниже по кнопке и мы свяжемся с вами в ближайшее время.",
-  image: IMAGES.historyChocolate,
-} as const;
-
 // Real partner names + links from the old site. Logo images aren't wired in
 // yet (the source folder is a Google Drive link this tool can't browse) —
 // each tile shows the real name/link so nothing here is fabricated.
