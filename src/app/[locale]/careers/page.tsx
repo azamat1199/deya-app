@@ -51,11 +51,29 @@ export default async function CareersPage({ params }: CareersPageProps) {
 
   const dictionary = await getDictionary(locale);
 
+  // These three requests are independent — none feeds another — so they go out
+  // together rather than as three serial round-trips to the API.
+  //
+  // allSettled, not all: each result keeps its own fallback further down, and
+  // one failing request must not take the other two with it. Starting the
+  // promises and awaiting them separately would do the same thing, but a
+  // rejection arriving before its await would surface as an unhandled
+  // rejection; allSettled attaches every handler up front.
+  const [bannersResult, valuesResult, productInfoResult] = await Promise.allSettled([
+    getBanners(locale),
+    getCareerValues(locale),
+    getProductInfo(locale),
+  ]);
+
   // Above the fold, so server-side only: a useEffect would flash an empty hero
   // on every load, and this API sends no Access-Control-Allow-Origin, so a
   // browser fetch could not succeed anyway. getBanners never rejects — it logs
-  // its own failure with `cause` and answers [] — so there is nothing to catch.
-  const carrierBanner = pickBanner(await getBanners(locale), "carrier");
+  // its own failure with `cause` and answers [] — so the rejected branch here
+  // is unreachable in practice and exists only to narrow the type.
+  const carrierBanner = pickBanner(
+    bannersResult.status === "fulfilled" ? bannersResult.value : [],
+    "carrier",
+  );
 
   // Fetched HERE rather than inside CareersAbout. That component is
   // "use client" (Slider's renderSlide is a function prop), and a browser fetch
@@ -65,10 +83,10 @@ export default async function CareersPage({ params }: CareersPageProps) {
   // is cached per locale.
   let values: CareerValue[] = [];
   let fetchError: unknown = null;
-  try {
-    values = await getCareerValues(locale);
-  } catch (error) {
-    fetchError = error;
+  if (valuesResult.status === "fulfilled") {
+    values = valuesResult.value;
+  } else {
+    fetchError = valuesResult.reason;
   }
 
   // An empty array counts as no answer: stale copy beats an empty grid on a
@@ -111,10 +129,10 @@ export default async function CareersPage({ params }: CareersPageProps) {
   // fetched and rendered independently.
   let productInfo: ProductInfoItem[] = [];
   let productInfoError: unknown = null;
-  try {
-    productInfo = await getProductInfo(locale);
-  } catch (error) {
-    productInfoError = error;
+  if (productInfoResult.status === "fulfilled") {
+    productInfo = productInfoResult.value;
+  } else {
+    productInfoError = productInfoResult.reason;
   }
 
   if (productInfoError) {
