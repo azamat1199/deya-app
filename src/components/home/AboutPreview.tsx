@@ -13,9 +13,27 @@ export interface AboutPreviewProps {
    *  failed. No default: the page owns the fallback, so a missing prop is a
    *  bug rather than a silent revert to mock content. */
   stats: StatItem[];
+  /**
+   * The three CMS-editable texts, from GET /api/v1/banners/ — `about_title`,
+   * `about` and `sub_main` respectively (the type names do not describe the
+   * content; see lib/mainText.ts). Each is "" when the CMS has no value for
+   * the active locale, and the static copy below stands in.
+   *
+   * Optional so the component keeps working exactly as before wherever it is
+   * rendered without them.
+   */
+  headingText?: string;
+  leftParagraph?: string;
+  rightParagraph?: string;
 }
 
-export default function AboutPreview({ locale, stats }: AboutPreviewProps) {
+export default function AboutPreview({
+  locale,
+  stats,
+  headingText,
+  leftParagraph,
+  rightParagraph,
+}: AboutPreviewProps) {
   const {
     eyebrow,
     heading,
@@ -26,6 +44,13 @@ export default function AboutPreview({ locale, stats }: AboutPreviewProps) {
     factoryImage,
   } = homeContent.about;
 
+  // CMS value when there is one, the existing static copy otherwise. `||`, not
+  // `??`: an empty string from the CMS means "nothing authored for this
+  // locale" and must fall through, which `??` would not do.
+  const headingCopy = headingText || heading;
+  const leftCopy = leftParagraph || paragraphs[0];
+  const rightCopy = rightParagraph || paragraphs[1];
+
   return (
     <div className="py-[10px] lg:py-[10px]">
       <ScrollReveal direction="up">
@@ -34,19 +59,19 @@ export default function AboutPreview({ locale, stats }: AboutPreviewProps) {
             {eyebrow}
           </p>
           <h2 className="mb-8 max-w-2xl text-2xl leading-snug font-light text-ink-900 lg:mb-12 lg:text-4xl">
-            {heading}
+            {headingCopy}
           </h2>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-12 lg:gap-24">
             <p className="text-sm leading-relaxed text-ink-700 lg:text-base">
               {withEmphasis(
-                paragraphs[0],
+                leftCopy,
                 paragraphHighlights,
                 "font-semibold text-ink-900",
               )}
             </p>
             <div className="space-y-6">
               <p className="text-sm leading-relaxed text-ink-700 lg:text-base">
-                {paragraphs[1]}
+                {rightCopy}
               </p>
               <Link
                 href={`/${locale}${linkHref}`}

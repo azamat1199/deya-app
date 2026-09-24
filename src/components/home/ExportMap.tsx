@@ -356,9 +356,19 @@ export interface ExportMapProps {
    *  section is genuinely empty or the request failed — keeps every marker on
    *  its static label; see withApiLabels. */
   regions: ExportRegion[];
+  /**
+   * The heading, from GET /api/v1/banners/ type "sub_main_map" (the type name
+   * does not describe the content; see lib/mainText.ts). "" when the CMS has
+   * nothing for the active locale, and the static copy stands in.
+   *
+   * Carries real "\n" characters — the h2 below is `whitespace-pre-line`, so
+   * the authored line breaks are what shape it. Passing it through a prop does
+   * not touch them.
+   */
+  headingText?: string;
 }
 
-export default function ExportMap({ regions }: ExportMapProps) {
+export default function ExportMap({ regions, headingText }: ExportMapProps) {
   const { t } = useTranslation();
   const [isPartnerFormOpen, setIsPartnerFormOpen] = useState(false);
   const diagramRef = useRef<HTMLDivElement>(null);
@@ -449,7 +459,7 @@ export default function ExportMap({ regions }: ExportMapProps) {
               longest authored line ("и вкус в более чем 25 стран", 27 chars)
               from wrapping, so the heading stays exactly four lines. */}
           <h2 className="relative z-10 max-w-120 text-[1.375rem] leading-tight font-light whitespace-pre-line text-ink-900 md:text-3xl lg:max-w-[34ch] lg:text-4xl lg:leading-(--h2-line-height) xl:text-5xl">
-            {homeContent.exportMap.heading}
+            {headingText || homeContent.exportMap.heading}
           </h2>
         </ScrollReveal>
 

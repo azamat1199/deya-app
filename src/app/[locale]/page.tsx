@@ -20,6 +20,7 @@ import { featuredProducts } from "@/content/products";
 import { stats as staticStats } from "@/content/stats";
 import type { Slide, StatItem } from "@/content/types";
 import { getBanners, type Banner } from "@/lib/banners";
+import { getMainTexts } from "@/lib/mainText";
 import {
   getHome,
   type HomeCategory,
@@ -181,6 +182,12 @@ export default async function HomePage({ params }: HomePageProps) {
   ]);
   const mainBanners = banners.filter((banner) => banner.type === "main");
 
+  // The four CMS texts for AboutPreview and ExportMap, read out of the SAME
+  // `banners` array fetched above — no second request to /api/v1/banners/.
+  // Each is "" when the CMS has nothing for this locale, and the component
+  // falls back to its existing static copy.
+  const mainTexts = getMainTexts(banners, locale as Locale);
+
   // null means the REQUEST failed, and every section falls back to its static
   // content at once — getHome has already logged the one error with its cause.
   // An empty array from a SUCCESSFUL response is not a failure: it means the
@@ -204,6 +211,7 @@ export default async function HomePage({ params }: HomePageProps) {
     ? home.stats.map((stat) => toStatItem(stat, fallbackNotes))
     : staticStats;
 
+  console.log(statItems);
   const categoryTiles: CategoryGridItem[] = home
     ? home.categories.map(toCategoryTile)
     : homeCategories.map((category) => ({
@@ -278,7 +286,13 @@ export default async function HomePage({ params }: HomePageProps) {
         // (w-screen / -mx-[50vw]) and re-applies its own 1440 container inside,
         // so it stays where it is.
         <Section bg="white" containerWidth="page">
-          <AboutPreview locale={locale as Locale} stats={statItems} />
+          <AboutPreview
+            locale={locale as Locale}
+            stats={statItems}
+            headingText={mainTexts.aboutTitle}
+            leftParagraph={mainTexts.about}
+            rightParagraph={mainTexts.subMain}
+          />
         </Section>
       )}
 
@@ -310,24 +324,24 @@ export default async function HomePage({ params }: HomePageProps) {
         className="overflow-x-clip"
         style={{ backgroundColor: "var(--color-cream-50)" }}
       >
-        <ExportMap regions={exportRegions} />
+        <ExportMap regions={exportRegions} headingText={mainTexts.subMainMap} />
       </Section>
 
       {/* Hidden outright when there are no posts, rather than falling through
           to NewsTeaser's own `emptyLabel` state — that branch stays in the
           component for its other callers. */}
       {teaserItems.length > 0 && (
-      <Section bg="cream50" containerWidth="page">
-        <NewsTeaser
-          items={teaserItems}
-          locale={locale as Locale}
-          heading={dictionary.home.newsTeaser.heading}
-          allNewsHref={`/${locale}/blog`}
-          allNewsLabel={dictionary.buttons.allNews}
-          readMoreLabel={dictionary.buttons.readMore}
-          emptyLabel={dictionary.home.newsTeaser.empty}
-        />
-      </Section>
+        <Section bg="cream50" containerWidth="page">
+          <NewsTeaser
+            items={teaserItems}
+            locale={locale as Locale}
+            heading={dictionary.home.newsTeaser.heading}
+            allNewsHref={`/${locale}/blog`}
+            allNewsLabel={dictionary.buttons.allNews}
+            readMoreLabel={dictionary.buttons.readMore}
+            emptyLabel={dictionary.home.newsTeaser.empty}
+          />
+        </Section>
       )}
     </>
   );
