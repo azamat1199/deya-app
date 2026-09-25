@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { Badge, type BadgeVariant } from "@/components/ui";
+import Badge, { type BadgeVariant } from "@/components/ui/Badge";
 import { cn } from "@/lib/cn";
 
 /**

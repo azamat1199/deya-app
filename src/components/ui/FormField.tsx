@@ -9,25 +9,33 @@ export interface FormFieldProps<TFormValues extends FieldValues> {
   name: Path<TFormValues>;
   type?: FormFieldType;
   required?: boolean;
+  /** react-hook-form validation messages. Passed in by the caller (which
+   *  already holds t() via useTranslation()) rather than hardcoded here —
+   *  this component is generic and locale-agnostic. */
+  requiredMessage?: string;
+  emailInvalidMessage?: string;
   placeholder?: string;
   error?: string;
   register: UseFormRegister<TFormValues>;
   className?: string;
 }
 
-const REQUIRED_MESSAGE = "Это поле обязательно для заполнения";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const EMAIL_INVALID_MESSAGE = "Введите корректный e-mail";
 
 function buildRegisterOptions<TFormValues extends FieldValues>(
   type: FormFieldType,
   required: boolean,
+  requiredMessage: string | undefined,
+  emailInvalidMessage: string | undefined,
 ): RegisterOptions<TFormValues, Path<TFormValues>> {
   const options: RegisterOptions<TFormValues, Path<TFormValues>> = {
-    required: required ? REQUIRED_MESSAGE : false,
+    required: required ? (requiredMessage ?? true) : false,
   };
   if (type === "email") {
-    options.pattern = { value: EMAIL_PATTERN, message: EMAIL_INVALID_MESSAGE };
+    options.pattern = {
+      value: EMAIL_PATTERN,
+      message: emailInvalidMessage ?? "",
+    };
   }
   return options;
 }
@@ -40,12 +48,19 @@ export default function FormField<TFormValues extends FieldValues>({
   name,
   type = "text",
   required = false,
+  requiredMessage,
+  emailInvalidMessage,
   placeholder,
   error,
   register,
   className,
 }: FormFieldProps<TFormValues>) {
-  const registerOptions = buildRegisterOptions<TFormValues>(type, required);
+  const registerOptions = buildRegisterOptions<TFormValues>(
+    type,
+    required,
+    requiredMessage,
+    emailInvalidMessage,
+  );
   const borderClass = error ? "border-brand-600" : "border-line-200";
 
   return (

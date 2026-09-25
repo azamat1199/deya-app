@@ -3,8 +3,7 @@ import { notFound } from "next/navigation";
 
 import ContactForm from "@/components/contacts/ContactForm";
 import ContactInfo from "@/components/contacts/ContactInfo";
-import { Section } from "@/components/ui";
-import { contactsContent } from "@/content/contacts";
+import Section from "@/components/ui/Section";
 import { isLocale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import { getSettings } from "@/lib/settings";
@@ -31,6 +30,7 @@ export default async function ContactsPage({ params }: ContactsPageProps) {
   // logs its own failure with the cause and returns null, which ContactInfo
   // reads as "use the static values".
   const settings = await getSettings(locale);
+  const dictionary = await getDictionary(locale);
 
   return (
     // The logo block hangs past the header bar, so the page starts below the
@@ -51,7 +51,7 @@ export default async function ContactsPage({ params }: ContactsPageProps) {
       {/* 24ch is what breaks it after "нами" — a width, not a <br>, so it
           re-breaks if the type scale ever moves. */}
       <h1 className="max-w-[24ch] text-3xl font-normal text-ink-900 lg:text-4xl">
-        {contactsContent.heading}
+        {dictionary.contacts.heading}
       </h1>
 
       <div className="mt-10 mb-10 grid gap-8 lg:grid-cols-2">

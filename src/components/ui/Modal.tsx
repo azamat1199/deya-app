@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 
+import { useTranslation } from "@/lib/i18n/useTranslation";
 import { useFocusTrap } from "@/lib/useFocusTrap";
 
 export interface ModalProps {
@@ -20,6 +21,7 @@ export default function Modal({
   title,
   children,
 }: ModalProps) {
+  const { t } = useTranslation();
   const panelRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -58,7 +60,7 @@ export default function Modal({
           >
             <button
               type="button"
-              aria-label="Close"
+              aria-label={t("a11y.closeModal")}
               onClick={onClose}
               className="absolute right-4 top-4 rounded-full p-1 text-ink-500 hover:bg-light hover:text-[#DA1F26] hover:cursor-pointer"
             >

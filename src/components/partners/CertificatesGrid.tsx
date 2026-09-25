@@ -3,7 +3,8 @@
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { Slider } from "@/components/ui";
+import Slider from "@/components/ui/Slider";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 import CertificatesDownloadButton from "./CertificatesDownloadButton";
 
@@ -19,6 +20,7 @@ export interface CertificatesGridProps {
 }
 
 export default function CertificatesGrid({ items }: CertificatesGridProps) {
+  const { t } = useTranslation();
   return (
     <>
       <div className="relative mt-10">
@@ -71,7 +73,7 @@ export default function CertificatesGrid({ items }: CertificatesGridProps) {
               {canScrollPrev && (
                 <button
                   type="button"
-                  aria-label="Предыдущий слайд"
+                  aria-label={t("a11y.prevSlide")}
                   onClick={scrollPrev}
                   className="absolute top-1/2 left-0 z-10 flex  -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[3px] bg-brand-600 text-white transition-colors hover:bg-brand-700 w-7.5 h-7.5"
                 >
@@ -81,7 +83,7 @@ export default function CertificatesGrid({ items }: CertificatesGridProps) {
               {canScrollNext && (
                 <button
                   type="button"
-                  aria-label="Следующий слайд"
+                  aria-label={t("a11y.nextSlide")}
                   onClick={scrollNext}
                   className="absolute top-1/2 right-0 z-10 flex  translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[3px] bg-brand-600 text-white transition-colors hover:bg-brand-700 w-7.5 h-7.5"
                 >

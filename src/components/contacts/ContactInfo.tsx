@@ -19,10 +19,12 @@ export interface ContactInfoProps {
 
 export default function ContactInfo({ settings }: ContactInfoProps) {
   const { t } = useTranslation();
-  const { hotline, email, hours, social, address } = contactsContent;
+  const { hotline, email, hours, address } = contactsContent;
 
-  // Each value falls back individually, so one empty API field cannot blank a
-  // whole column. Labels are not in the payload and stay static.
+  // Each VALUE falls back individually, so one empty API field cannot blank a
+  // whole column — this is genuine fallback data, kept as-is. Labels are not
+  // in the payload; they are always-shown UI chrome, so they read from the
+  // dictionary instead (see the calls to t() below) rather than this file.
   const phoneRaw = settings?.hotline || settings?.phone || "";
   // Spaced for display; the href stays digits-only E.164.
   const phoneValue = phoneRaw ? formatForDisplay(phoneRaw) : hotline.value;
@@ -36,8 +38,10 @@ export default function ContactInfo({ settings }: ContactInfoProps) {
   // rather than preserved as a dead link.
   const mapUrl = settings?.yandex_map_url ?? "";
   const socialLinks = [
-    { label: "Instagram", href: settings?.instagram_url ?? "" },
-    { label: social.links[1]?.label ?? "Telegram", href: settings?.telegram_url ?? "" },
+    { label: t("a11y.instagram"), href: settings?.instagram_url ?? "" },
+    // "Telegram канал", not the bare brand name — this is a visible link
+    // label on the contacts card, which is why it has its own key.
+    { label: t("contacts.telegramChannel"), href: settings?.telegram_url ?? "" },
   ].filter((link) => link.href);
 
   return (
@@ -53,7 +57,7 @@ export default function ContactInfo({ settings }: ContactInfoProps) {
         <div className="space-y-11">
           {phoneValue && phoneHref && (
             <div>
-              <p className="text-sm text-ink-500">{hotline.label}</p>
+              <p className="text-sm text-ink-500">{t("footer.hotline")}</p>
               <a
                 href={phoneHref}
                 className="mt-2 block text-lg text-ink-900 hover:text-brand-600"
@@ -64,14 +68,14 @@ export default function ContactInfo({ settings }: ContactInfoProps) {
           )}
 
           <div>
-            <p className="text-sm text-ink-500">{hours.label}</p>
+            <p className="text-sm text-ink-500">{t("contacts.workingHours")}</p>
             <p className="mt-2 whitespace-pre-line text-lg text-ink-900">
               {hoursValue}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-ink-500">{address.label}</p>
+            <p className="text-sm text-ink-500">{t("contacts.addressTitle")}</p>
             {/* 34ch breaks it after the postcode instead of orphaning «А». */}
             <p className="mt-2 max-w-[34ch] text-lg text-ink-900">
               {addressValue}
@@ -96,7 +100,7 @@ export default function ContactInfo({ settings }: ContactInfoProps) {
         <div className="space-y-11">
           {emailValue && (
             <div>
-              <p className="text-sm text-ink-500">{email.label}</p>
+              <p className="text-sm text-ink-500">{t("form.emailShortLabel")}</p>
               <a
                 href={`mailto:${emailValue}`}
                 className="mt-2 block text-lg text-ink-900 hover:text-brand-600"
@@ -108,7 +112,7 @@ export default function ContactInfo({ settings }: ContactInfoProps) {
 
           {socialLinks.length > 0 && (
             <div>
-              <p className="text-sm text-ink-500">{social.label}</p>
+              <p className="text-sm text-ink-500">{t("contacts.socialTitle")}</p>
               <div className="mt-2 space-y-1">
                 {socialLinks.map((link) => (
                   <a

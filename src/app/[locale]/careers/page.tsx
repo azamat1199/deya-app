@@ -10,7 +10,7 @@ import CareersCulture from "@/components/careers/CareersCulture";
 import CareersGrowth from "@/components/careers/CareersGrowth";
 import CareersHero from "@/components/careers/CareersHero";
 import CareersJoinCta from "@/components/careers/CareersJoinCta";
-import { Section } from "@/components/ui";
+import Section from "@/components/ui/Section";
 import { IMAGES } from "@/content/images";
 import { getBanners, pickBanner } from "@/lib/banners";
 import { getCareerValues, type CareerValue } from "@/lib/careerValues";
@@ -197,7 +197,7 @@ export default async function CareersPage({ params }: CareersPageProps) {
 
       <CareersAbout tiles={aboutTiles} />
       <Section bg="white" containerWidth="home">
-        <CareersJoinCta />
+        <CareersJoinCta locale={locale} />
       </Section>
     </>
   );

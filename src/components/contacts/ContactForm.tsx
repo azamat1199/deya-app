@@ -4,8 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { useForm, useWatch } from "react-hook-form";
 
-import { Button, Checkbox, PhoneInput } from "@/components/ui";
-import { contactsContent } from "@/content/contacts";
+import Button from "@/components/ui/Button";
+import Checkbox from "@/components/ui/Checkbox";
+import PhoneInput from "@/components/ui/PhoneInput";
 import { cn } from "@/lib/cn";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import {
@@ -36,8 +37,6 @@ type ContactFormValues = {
 const INPUT_CLASSES =
   "w-full rounded-md bg-white px-4 py-3.5 text-sm text-ink-900 outline-none transition-colors duration-200 ease-in-out placeholder:text-ink-500 focus:ring-1 focus:ring-ink-900";
 const INPUT_ERROR_CLASSES = "ring-1 ring-brand-600";
-const REQUIRED_MESSAGE = "Это поле обязательно для заполнения";
-const EMAIL_INVALID_MESSAGE = "Введите корректный e-mail";
 
 export default function ContactForm() {
   const { t, locale } = useTranslation();
@@ -77,7 +76,7 @@ export default function ContactForm() {
     // the markup already renders, so no new error UI appears.
     const email = values.email.trim();
     if (!isValidEmail(email)) {
-      setError("email", { message: EMAIL_INVALID_MESSAGE });
+      setError("email", { message: t("form.emailInvalid") });
       return;
     }
 
@@ -135,7 +134,7 @@ export default function ContactForm() {
       <div className="space-y-4">
         <div>
           <input
-            {...register("name", { required: REQUIRED_MESSAGE })}
+            {...register("name", { required: t("form.required") })}
             placeholder={t("form.namePlaceholder")}
             aria-invalid={Boolean(errors.name)}
             className={cn(INPUT_CLASSES, errors.name && INPUT_ERROR_CLASSES)}
@@ -147,8 +146,11 @@ export default function ContactForm() {
           <input
             type="email"
             {...register("email", {
-              required: REQUIRED_MESSAGE,
-              pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: EMAIL_INVALID_MESSAGE },
+              required: t("form.required"),
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: t("form.emailInvalid"),
+              },
             })}
             placeholder={t("form.emailPlaceholder")}
             aria-invalid={Boolean(errors.email)}
@@ -195,25 +197,26 @@ export default function ContactForm() {
         <Checkbox<ContactFormValues>
           name="consentPersonalData"
           required
+          requiredMessage={t("form.required")}
           register={register}
           error={errors.consentPersonalData?.message}
           label={
             <>
-              {contactsContent.form.consentPrefix}{" "}
+              {t("form.consentPersonalDataPrefix")}{" "}
               <Link
                 href={`/${locale}/personal-data-consent`}
                 className="underline hover:text-brand-600"
                 onClick={(event) => event.stopPropagation()}
               >
-                {contactsContent.form.consentLinkText}
+                {t("form.consentLinkText")}
               </Link>{" "}
-              {contactsContent.form.consentMiddle}{" "}
+              {t("form.consentMiddle")}{" "}
               <Link
                 href={`/${locale}/privacy-policy`}
                 className="underline hover:text-brand-600"
                 onClick={(event) => event.stopPropagation()}
               >
-                {contactsContent.form.privacyLinkText}
+                {t("form.consentPrivacyLinkText")}
               </Link>
             </>
           }
@@ -222,7 +225,10 @@ export default function ContactForm() {
         <Checkbox<ContactFormValues>
           name="consentMarketing"
           register={register}
-          label={contactsContent.form.marketingConsent}
+          // contacts.*, not form.consentMarketing: this form's marketing
+          // consent is worded differently from the partner form's, and both
+          // wordings are the ones already shipped.
+          label={t("contacts.marketingConsent")}
         />
       </div>
 

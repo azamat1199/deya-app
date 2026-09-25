@@ -10,7 +10,8 @@ import NewsListCard, {
   NEWS_LIST_CELL_CLASSES,
   NEWS_LIST_GRID_CLASSES,
 } from "@/components/news/NewsListCard";
-import { ScrollReveal, Slider } from "@/components/ui";
+import ScrollReveal from "@/components/ui/ScrollReveal";
+import Slider from "@/components/ui/Slider";
 import { cn } from "@/lib/cn";
 import type { NewsTeaserItem, NewsTeaserProps } from "./NewsTeaser.types";
 

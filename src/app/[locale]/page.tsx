@@ -12,7 +12,8 @@ import FeaturedProducts, {
 import HeroSlider from "@/components/home/HeroSlider";
 import NewsTeaser from "@/components/home/NewsTeaser";
 import type { NewsTeaserItem } from "@/components/home/NewsTeaser.types";
-import { Section, ScrollReveal } from "@/components/ui";
+import ScrollReveal from "@/components/ui/ScrollReveal";
+import Section from "@/components/ui/Section";
 import { homeCategories } from "@/content/categories";
 import { IMAGES } from "@/content/images";
 import { newsPosts } from "@/content/news";
@@ -306,6 +307,7 @@ export default async function HomePage({ params }: HomePageProps) {
             <CategoryGrid
               locale={locale as Locale}
               toCatalogLabel={dictionary.buttons.toCatalog}
+              goToCategoryLabel={dictionary.catalog.goToCategory}
               categories={categoryTiles}
             />
           </ScrollReveal>

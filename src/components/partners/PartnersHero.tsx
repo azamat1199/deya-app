@@ -1,12 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 
-import PartnerForm from "@/components/forms/PartnerForm";
-import { Button, Modal } from "@/components/ui";
+import Button from "@/components/ui/Button";
+import Modal from "@/components/ui/Modal";
 import { cn } from "@/lib/cn";
 import { useTranslation } from "@/lib/i18n/useTranslation";
+
+// Loaded on demand: this form lives inside a Modal that only mounts when the
+// user opens it, and it is the entry point to libphonenumber-js's metadata and
+// react-hook-form. Importing it statically put both on the critical path of a
+// page where no phone field is ever shown. Measured, not assumed — see the
+// optimization report.
+const PartnerForm = dynamic(() => import("@/components/forms/PartnerForm"), {
+  ssr: false,
+});
 
 export interface PartnersHeroProps {
   /**

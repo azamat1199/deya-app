@@ -73,7 +73,7 @@ export default function NewsletterForm() {
   return (
     <form onSubmit={onSubmit} noValidate className="space-y-3">
       <label htmlFor="newsletter-email" className="sr-only">
-        E-mail
+        {t("form.emailShortLabel")}
       </label>
 
       {/* The composite is built from the two elements' OWN edges now, not from
@@ -144,7 +144,7 @@ export default function NewsletterForm() {
         <input
           id="newsletter-email"
           type="email"
-          placeholder="E-mail"
+          placeholder={t("form.emailShortLabel")}
           className="h-[35px] w-full min-w-0 rounded-l-[3.75px] rounded-r-none border-[0.75px] border-white/50 bg-transparent px-4 py-0 text-sm text-white outline-none transition-colors duration-200 ease-in-out placeholder:text-white/70 hover:border-white/80 hover:placeholder:text-white/90 focus:bg-white/25 focus-visible:ring-2 focus-visible:ring-white"
           {...register("email", {
             required: true,

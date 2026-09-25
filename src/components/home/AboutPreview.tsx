@@ -1,10 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { ScrollReveal, Stat } from "@/components/ui";
+import ScrollReveal from "@/components/ui/ScrollReveal";
+import Stat from "@/components/ui/Stat";
 import { homeContent } from "@/content/home";
 import type { StatItem } from "@/content/types";
 import type { Locale } from "@/lib/i18n/config";
+import { getDictionary } from "@/lib/i18n/getDictionary";
 import { withEmphasis } from "@/lib/withEmphasis";
 
 export interface AboutPreviewProps {
@@ -27,19 +29,18 @@ export interface AboutPreviewProps {
   rightParagraph?: string;
 }
 
-export default function AboutPreview({
+export default async function AboutPreview({
   locale,
   stats,
   headingText,
   leftParagraph,
   rightParagraph,
 }: AboutPreviewProps) {
+  const dictionary = await getDictionary(locale);
   const {
-    eyebrow,
     heading,
     paragraphs,
     paragraphHighlights,
-    linkLabel,
     linkHref,
     factoryImage,
   } = homeContent.about;
@@ -56,7 +57,7 @@ export default function AboutPreview({
       <ScrollReveal direction="up">
         <div className="pt-16 pb-12 lg:pt-32 lg:pb-16">
           <p className="mb-4 text-xs font-normal tracking-[0.2em] text-ink-400 uppercase">
-            {eyebrow}
+            {dictionary.home.aboutEyebrow}
           </p>
           <h2 className="mb-8 max-w-2xl text-2xl leading-snug font-light text-ink-900 lg:mb-12 lg:text-4xl">
             {headingCopy}
@@ -77,7 +78,7 @@ export default function AboutPreview({
                 href={`/${locale}${linkHref}`}
                 className="inline-block text-sm font-medium tracking-wide text-ink-900 uppercase underline decoration-1 underline-offset-4 transition-colors hover:text-brand-600"
               >
-                {linkLabel}
+                {dictionary.home.aboutLinkLabel}
               </Link>
             </div>
           </div>
@@ -89,7 +90,7 @@ export default function AboutPreview({
           <div className="relative  overflow-hidden h-[500px] md:h-[600px] lg:h-[800px] xl:h-[800px]">
             <Image
               src={factoryImage}
-              alt="Кондитерская фабрика Deya"
+              alt={dictionary.home.aboutFactoryAlt}
               fill
               sizes="100vw"
               className="object-fill max-md:top-[120px]! max-md:h-[380px]! max-md:bottom-auto!"

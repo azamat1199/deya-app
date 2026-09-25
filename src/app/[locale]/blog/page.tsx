@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import BlogGrid, { type BlogGridPost } from "@/components/blog/BlogGrid";
-import { Section } from "@/components/ui";
+import Section from "@/components/ui/Section";
 import { blogContent } from "@/content/blog";
 import { newsPosts } from "@/content/news";
 import { IMAGES } from "@/content/images";

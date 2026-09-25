@@ -52,7 +52,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
             ref={panelRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Mobile navigation"
+            aria-label={t("a11y.mobileNav")}
             className="relative flex h-full w-full flex-col overflow-y-auto bg-white px-6 py-6"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
@@ -63,7 +63,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
               <Logo href={`/${locale}`} />
               <button
                 type="button"
-                aria-label="Close menu"
+                aria-label={t("a11y.closeMenu")}
                 onClick={onClose}
                 className="rounded-full p-1 hover:bg-light"
               >
@@ -105,14 +105,14 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
                 <div className="flex gap-3">
                   <a
                     href="#"
-                    aria-label="Telegram"
+                    aria-label={t("a11y.telegram")}
                     className="flex h-11 w-11 items-center justify-center rounded-md bg-brand-600 text-white transition-colors hover:bg-brand-700"
                   >
                     <TelegramIcon width={20} height={20} />
                   </a>
                   <a
                     href="#"
-                    aria-label="Instagram"
+                    aria-label={t("a11y.instagram")}
                     className="flex h-11 w-11 items-center justify-center rounded-md bg-brand-600 text-white transition-colors hover:bg-brand-700"
                   >
                     <InstagramIcon width={20} height={20} />

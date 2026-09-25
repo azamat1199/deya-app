@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 
-import { Badge } from "@/components/ui";
+import Badge from "@/components/ui/Badge";
 import type { Product } from "@/content/types";
 import { cn } from "@/lib/cn";
 

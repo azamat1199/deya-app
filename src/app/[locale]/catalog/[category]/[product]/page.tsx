@@ -7,14 +7,14 @@ import ProductGallery from "@/components/catalog/ProductGallery";
 import RecommendedProducts, {
   type RecommendedItem,
 } from "@/components/catalog/RecommendedProducts";
-import { Section } from "@/components/ui";
+import Section from "@/components/ui/Section";
 import { IMAGES } from "@/content/images";
 import type { Product, ProductVariantOption } from "@/content/types";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import type { Dictionary } from "@/lib/i18n/dictionary";
-import { badgeLabel } from "@/lib/badges";
 import { getSettings } from "@/lib/settings";
+import { badgeLabel } from "@/lib/badges";
 import {
   getProduct,
   getRelatedProducts,
@@ -27,8 +27,6 @@ import {
 type ProductPageProps = {
   params: Promise<{ locale: string; category: string; product: string }>;
 };
-
-const UNIT_LABELS: Record<string, string> = { kg: "кг", g: "г" };
 
 /** The design shows four recommendations; a longer list is cut to that. */
 const RECOMMENDED_LIMIT = 4;
@@ -59,11 +57,25 @@ function formatDecimal(value: string): string {
   return parsed.toLocaleString("ru-RU", { maximumFractionDigits: 3 });
 }
 
-function formatWeight(weight: ProductWeight): string {
-  const unit = UNIT_LABELS[weight.unit.toLowerCase()] ?? weight.unit;
+function formatWeight(
+  weight: ProductWeight,
+  product: Dictionary["product"],
+): string {
+  const unitLabels: Record<string, string> = {
+    kg: product.unitKg,
+    g: product.unitG,
+  };
+  const unit = unitLabels[weight.unit.toLowerCase()] ?? weight.unit;
   return `${formatDecimal(weight.value)} ${unit}`;
 }
 
+// BLOCKED pending the user's pluralization decision (see the i18n report):
+// the three Russian forms below are correct for /ru but wrong for /uz (which
+// has no plural cases — always "oy") and for /en ("month"/"months"). Proposed
+// replacement: `product.months.{one,few,many,other}` selected with
+// `new Intl.PluralRules(locale).select(count)`, verified to reproduce this
+// function's output identically for every n in 0..200. Left untouched until
+// that is approved.
 function pluralMonths(count: number): string {
   const mod100 = count % 100;
   const mod10 = count % 10;
@@ -97,31 +109,39 @@ function toFlavorOptions(detail: ProductDetail): ProductVariantOption[] {
  * option points back at this same product and therefore renders as the active
  * chip. The values are real; only the link target is absent from the payload.
  */
-function toWeightOptions(detail: ProductDetail): ProductVariantOption[] {
+function toWeightOptions(
+  detail: ProductDetail,
+  product: Dictionary["product"],
+): ProductVariantOption[] {
   return detail.weights.map((weight) => ({
-    label: formatWeight(weight),
+    label: formatWeight(weight, product),
     slug: detail.slug,
   }));
 }
 
-/** Row labels stay the Russian copy the page already shipped; only the values
- *  are live. A field the payload omits drops its row rather than showing blank. */
-function toCharacteristics(detail: ProductDetail) {
+/** Row labels come from the dictionary; only the values are live. A field the
+ *  payload omits drops its row rather than showing blank. */
+function toCharacteristics(
+  detail: ProductDetail,
+  product: Dictionary["product"],
+) {
   const rows: { label: string; value: string }[] = [];
   if (detail.box_weight) {
     rows.push({
-      label: "Вес ящика",
-      value: `${formatDecimal(detail.box_weight)} кг`,
+      label: product.boxWeight,
+      value: `${formatDecimal(detail.box_weight)} ${product.unitKg}`,
     });
   }
   if (detail.shelf_life_months !== null) {
     rows.push({
-      label: "Срок хранения",
+      label: product.shelfLife,
+      // pluralMonths() is intentionally untouched here — see the block
+      // comment on its definition.
       value: `${detail.shelf_life_months} ${pluralMonths(detail.shelf_life_months)}`,
     });
   }
   if (detail.code) {
-    rows.push({ label: "Код товара", value: detail.code });
+    rows.push({ label: product.code, value: detail.code });
   }
   return rows;
 }
@@ -135,6 +155,7 @@ function toCharacteristics(detail: ProductDetail) {
 function toDisplayProduct(
   detail: ProductDetail,
   badges: Dictionary["catalog"]["badges"],
+  product: Dictionary["product"],
 ): Product {
   // filter(Boolean) drops any empty URL here, in the DATA LAYER, so an empty
   // string can never reach next/image. When the payload carries no usable
@@ -144,8 +165,8 @@ function toDisplayProduct(
   const gallery = detail.images.map((image) => image.image).filter(Boolean);
   const primary = gallery[0] ?? IMAGES.placeholder;
   const flavorOptions = toFlavorOptions(detail);
-  const weightOptions = toWeightOptions(detail);
-  const characteristics = toCharacteristics(detail);
+  const weightOptions = toWeightOptions(detail, product);
+  const characteristics = toCharacteristics(detail, product);
 
   return {
     slug: detail.slug,
@@ -176,7 +197,10 @@ export async function generateMetadata({
     detail = null;
   }
 
-  if (!detail) return { title: "Товар не найден — DEYA" };
+  if (!detail) {
+    const dictionary = await getDictionary(locale);
+    return { title: dictionary.meta.productNotFound };
+  }
 
   return {
     title: `${detail.name} — DEYA`,
@@ -197,7 +221,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
   if (!detail) notFound();
 
   const dictionary = await getDictionary(locale as Locale);
-  const found = toDisplayProduct(detail, dictionary.catalog.badges);
+  const found = toDisplayProduct(
+    detail,
+    dictionary.catalog.badges,
+    dictionary.product,
+  );
 
   // Related products, keyed off THIS page's route param — never derived from
   // anything else. Fetched here because RecommendedProducts is "use client" and
@@ -279,7 +307,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           {found.flavorOptions && found.flavorOptions.length > 0 && (
             <div className="mt-8">
               <h3 className="mb-3 text-xs font-semibold tracking-wide text-ink-500 uppercase">
-                Вкус
+                {dictionary.product.flavorHeading}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {found.flavorOptions.map((option) => {
@@ -305,7 +333,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           {found.weightOptions && found.weightOptions.length > 0 && (
             <div className="mt-8">
               <h3 className="mb-3 text-xs font-semibold tracking-wide text-ink-500 uppercase">
-                Вес товара
+                {dictionary.product.weightHeading}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {found.weightOptions.map((option) => {
@@ -333,7 +361,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           {found.characteristics && found.characteristics.length > 0 && (
             <div className="mt-8">
               <h3 className="mb-3 text-xs font-semibold tracking-wide text-ink-500 uppercase">
-                Характеристики продукта
+                {dictionary.product.characteristicsHeading}
               </h3>
               <dl className="divide-y divide-line-200 text-sm">
                 {found.characteristics.map((item) => (
@@ -372,6 +400,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       {recommended.length > 0 && (
         <RecommendedProducts
           locale={locale as Locale}
+          heading={dictionary.product.recommendedHeading}
           allCatalogLabel={dictionary.buttons.allCatalog}
           items={recommended}
         />

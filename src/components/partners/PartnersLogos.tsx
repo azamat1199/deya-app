@@ -1,4 +1,6 @@
 import { partnerLogos } from "@/content/partners";
+import type { Locale } from "@/lib/i18n/config";
+import { getDictionary } from "@/lib/i18n/getDictionary";
 import { getPartners, type Partner } from "@/lib/partners";
 
 import MarqueeRow, { type MarqueeItem } from "./MarqueeRow";
@@ -29,7 +31,13 @@ function toMarqueeItem(partner: Partner): MarqueeItem {
   };
 }
 
-export default async function PartnersLogos() {
+export interface PartnersLogosProps {
+  locale: Locale;
+}
+
+export default async function PartnersLogos({ locale }: PartnersLogosProps) {
+  const dictionary = await getDictionary(locale);
+
   // An async server component so it can await the fetch and honour
   // `next: { revalidate: 300 }`; the marquee's rAF loop lives in the client
   // child, which can do neither.
@@ -66,7 +74,7 @@ export default async function PartnersLogos() {
 
   return (
     <div className="py-16 lg:py-24">
-      <h2 className={PARTNERS_SECTION_HEADING}>Наши партнёры</h2>
+      <h2 className={PARTNERS_SECTION_HEADING}>{dictionary.partners.logosTitle}</h2>
 
       <div className="relative mt-10 space-y-4">
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-linear-to-r from-white to-transparent" />

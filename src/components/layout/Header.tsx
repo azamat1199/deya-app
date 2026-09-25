@@ -7,11 +7,10 @@ import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 
 import { InstagramIcon, TelegramIcon } from "@/components/icons/SocialIcons";
-import { AnimatedLink } from "@/components/ui";
+import AnimatedLink from "@/components/ui/AnimatedLink";
 import { cn } from "@/lib/cn";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { NAV_ITEMS } from "@/lib/nav";
-import { formatForDisplay } from "@/lib/phone";
 import { telHref, type Settings } from "@/lib/settings";
 
 import LanguageSwitch from "./LanguageSwitch";
@@ -45,15 +44,20 @@ export interface HeaderProps {
    * shipped with — the header must never lose its contact button.
    */
   settings: Settings | null;
+  /** The hotline already formatted for display, from the server layout.
+   *  Formatting it here would drag libphonenumber-js's metadata into the
+   *  client bundle of every page — see the note in Layout.tsx. Empty string
+   *  when settings carried no number; the dictionary value stands in. */
+  hotlineText: string;
 }
 
-export default function Header({ settings }: HeaderProps) {
+export default function Header({ settings, hotlineText }: HeaderProps) {
   const { t, locale } = useTranslation();
 
-  // Spaced for display, digits-only E.164 for the href — reusing the same
-  // formatter the phone input work introduced rather than hand-writing it.
+  // Spaced for display (done on the server, see HeaderProps), digits-only
+  // E.164 for the href. telHref is a plain regex and carries no library.
   const hotlineRaw = settings?.hotline || settings?.phone || "";
-  const hotlineText = hotlineRaw ? formatForDisplay(hotlineRaw) : t("common.phone");
+  const hotline = hotlineText || t("common.phone");
   const hotlineHref = telHref(hotlineRaw) || `tel:${t("common.phoneRaw")}`;
   const telegramUrl = settings?.telegram_url ?? "";
   const instagramUrl = settings?.instagram_url ?? "";
@@ -117,11 +121,11 @@ export default function Header({ settings }: HeaderProps) {
           <Link
             href={`/${locale}`}
             className="relative block h-full w-(--header-height) shrink-0"
-            aria-label="Deya — на главную"
+            aria-label={t("a11y.homeLink")}
           >
             <Image
               src="/logo.png"
-              alt="Deya"
+              alt={t("a11y.logoAlt")}
               width={102}
               height={102}
               // max-w-none: preflight's `img { max-width: 100% }` would
@@ -158,7 +162,7 @@ export default function Header({ settings }: HeaderProps) {
                   href={telegramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Telegram"
+                  aria-label={t("a11y.telegram")}
                   className="transition-opacity hover:opacity-70"
                 >
                   <TelegramIcon width={18} height={18} />
@@ -169,7 +173,7 @@ export default function Header({ settings }: HeaderProps) {
                   href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Instagram"
+                  aria-label={t("a11y.instagram")}
                   className="transition-opacity hover:opacity-70"
                 >
                   <InstagramIcon width={18} height={18} />
@@ -177,7 +181,7 @@ export default function Header({ settings }: HeaderProps) {
               )}
             </div>
 
-            {hotlineText && hotlineHref && (
+            {hotline && hotlineHref && (
               <a
                 href={hotlineHref}
                 // Red → white inversion on hover, per the design. Hover, click
@@ -189,14 +193,14 @@ export default function Header({ settings }: HeaderProps) {
                 // would otherwise vanish into it. See the PR note.
                 className="hidden rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white ring-brand-600 transition-colors duration-200 ease-in-out hover:bg-white hover:text-ink-900 hover:ring-1 focus-visible:bg-white focus-visible:text-ink-900 focus-visible:ring-2 focus-visible:outline-none active:bg-white active:text-ink-900 active:ring-1 lg:inline-flex lg:items-center"
               >
-                {hotlineText}
+                {hotline}
               </a>
             )}
           </div>
           <button
             type="button"
             className="flex items-center justify-center md:hidden"
-            aria-label="Open menu"
+            aria-label={t("a11y.openMenu")}
             onClick={() => setMobileOpen(true)}
           >
             <Menu size={26} />

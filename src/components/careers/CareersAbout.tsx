@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 
-import { Slider } from "@/components/ui";
+import Slider from "@/components/ui/Slider";
 import { careersContent } from "@/content/careers";
 
 export interface AboutTile {

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import CertificatesSection from "@/components/partners/CertificatesSection";
 import PartnersHero from "@/components/partners/PartnersHero";
 import PartnersLogos from "@/components/partners/PartnersLogos";
-import { Section } from "@/components/ui";
+import Section from "@/components/ui/Section";
 import { IMAGES } from "@/content/images";
 import { getBanners, pickBanner } from "@/lib/banners";
 import { isLocale } from "@/lib/i18n/config";
@@ -47,8 +47,8 @@ export default async function PartnersPage({ params }: PartnersPageProps) {
         />
       )}
       <Section bg="white" containerWidth="home">
-        <PartnersLogos />
-        <CertificatesSection />
+        <PartnersLogos locale={locale} />
+        <CertificatesSection locale={locale} />
       </Section>
     </>
   );

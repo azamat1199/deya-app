@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ScrollReveal } from "@/components/ui";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 import type { LegalDocument } from "@/lib/legalDocuments";
 import type { Locale } from "@/lib/i18n/config";
 

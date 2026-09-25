@@ -1,135 +1,193 @@
 {
-  "nav": {
-    "about": "About Us",
-    "products": "Products",
-    "partners": "For Partners",
-    "careers": "Careers",
-    "news": "News",
-    "contacts": "Contacts"
-  },
-  "buttons": {
-    "viewCatalog": "View Catalog",
-    "toCatalog": "To Catalog",
-    "sendRequest": "Send Request",
-    "downloadCatalog": "Download Catalog",
-    "readMore": "Read More",
-    "send": "Send",
-    "showMoreNews": "Show More News",
-    "backToList": "Back",
-    "backToHome": "Back to Home",
-    "allNews": "All News",
-    "openInYandexMap": "Open in Yandex Maps",
-    "partnerForm": "Partner Application Form",
-    "becomePartner": "Become a Partner",
-    "allCatalog": "Full Catalog",
-    "showMoreProducts": "Show More Products",
-    "contactSales": "Contact Sales Department",
-    "vacancies": "Vacancies",
-    "downloadCertificates": "Download Certificates",
-    "downloadingProgress": "Downloading {current} of {total}",
-    "downloadPartial": "Downloaded {current} of {total}"
-  },
-  "categories": {
-    "croissants": "Croissants",
-    "waffles": "Waffles",
-    "waferCandies": "Wafer Candies",
-    "candies": "Candies",
-    "cookies": "Cookies"
-  },
-  "footer": {
-    "navigation": "Navigation",
-    "products": "Products",
-    "address": "Address",
-    "addressValue": "Deya Confectionery Factory, LLC\nRepublic of Uzbekistan, 130100, Jizzakh",
-    "newsletter": "Newsletter",
-    "newsletterText": "Subscribe to news and special offers from DEYA",
-    "newsletterConsent": "By submitting your email address, you agree that DEYA may send you news and special offers. You understand that DEYA may use your information in accordance with its",
-    "contacts": "Contacts",
-    "hotline": "Hotline",
-    "documents": "Documents",
-    "privacyPolicy": "Privacy Policy",
-    "consent": "Personal Data Processing Consent",
-    "workingHours": "Working Hours",
-    "workingHoursValue": "Monday — Saturday\n9:00 AM – 6:00 PM",
-    "copyright": "© 2012-2025 DEYA.UZ | All rights reserved",
-    "designCredit": "Design",
-    "devCredit": "Development"
-  },
-  "form": {
-    "namePlaceholder": "Name",
-    "emailPlaceholder": "Email address",
-    "phonePlaceholder": "+998-71-2346785",
-    "messagePlaceholder": "Message",
-    "consentPersonalDataPrefix": "I confirm that I have read and give my",
-    "consentLinkText": "Consent to the Processing of My Personal Data",
-    "consentMiddle": "in accordance with the terms set out in the",
-    "consentPrivacyLinkText": "Privacy Policy",
-    "privacyPolicyLinkText": "Privacy Policy",
-    "consentMarketing": "I agree to receive news and special offers from DEYA",
-    "emailInvalid": "Please enter a valid email",
-    "newsletterSuccess": "Thank you! You are now subscribed.",
-    "success": "Thank you! Your request has been sent.",
-    "error": "Something went wrong. Please try again.",
-    "rateLimited": "Too many submission attempts. Please try again in a minute.",
-    "rateLimitedWithSeconds": "Too many submission attempts. Please try again in {seconds}s.",
-    "phoneInvalid": "Enter a valid phone number for the selected country"
-  },
-  "legal": {
-    "unavailable": "This document is temporarily unavailable."
-  },
-  "cookies": {
-    "message": "We use cookies to improve how the site works, to analyse how it is used, and to make your experience more convenient. By continuing to use the site, you agree to the use of cookies in accordance with the",
-    "policyLink": "Privacy Policy",
-    "messageSuffix": ".",
-    "accept": "Accept",
-    "ariaLabel": "Cookie usage notice"
-  },
-  "common": {
-    "phone": "+998 (55) 151 55 55",
-    "phoneRaw": "+998551515555",
-    "eng": "ENG",
-    "rus": "RUS"
-  },
-  "about": {
-    "history": {
-      "title": "The Deya story",
-      "timelineLabel": "Deya history timeline",
-      "years": {
-        "y1994": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
-        "y1996": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
-        "y1998": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
-        "y2001": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
-        "y2003": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
-        "y2009": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
-        "y2014": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
-        "y2016": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
-        "y2021": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
-        "y2022": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
-        "y2026": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality."
-      }
-    }
-  },
-  "home": {
-    "placeholderTitle": "DEYA Confectionery Factory",
-    "newsTeaser": {
-      "heading": "News from DEYA",
-      "empty": "No news yet — please check back soon."
-    },
-    "exportMap": {
-      "mapLabel": "Map of Deya export destinations",
-      "truckAlt": "Deya logistics",
-      "modalTitle": "How to become a partner?"
-    }
-  },
-  "blog": {
-    "otherArticles": "Other articles"
-  },
-  "catalog": {
-    "empty": "No products in this category yet.",
-    "badges": {
-      "new": "New",
-      "bestseller": "Bestseller",
-      "discount": "Discount"
-    }
+ "nav": {
+  "about": "About Us",
+  "products": "Products",
+  "partners": "For Partners",
+  "careers": "Careers",
+  "news": "News",
+  "contacts": "Contacts"
+ },
+ "buttons": {
+  "viewCatalog": "View Catalog",
+  "toCatalog": "To Catalog",
+  "sendRequest": "Send Request",
+  "downloadCatalog": "Download Catalog",
+  "readMore": "Read More",
+  "send": "Send",
+  "showMoreNews": "Show More News",
+  "backToList": "Back",
+  "backToHome": "Back to Home",
+  "allNews": "All News",
+  "openInYandexMap": "Open in Yandex Maps",
+  "partnerForm": "Partner Application Form",
+  "becomePartner": "Become a Partner",
+  "allCatalog": "Full Catalog",
+  "showMoreProducts": "Show More Products",
+  "contactSales": "Contact Sales Department",
+  "vacancies": "Vacancies",
+  "downloadCertificates": "Download Certificates",
+  "downloadingProgress": "Downloading {current} of {total}",
+  "downloadPartial": "Downloaded {current} of {total}"
+ },
+ "categories": {
+  "croissants": "Croissants",
+  "waffles": "Waffles",
+  "waferCandies": "Wafer Candies",
+  "candies": "Candies",
+  "cookies": "Cookies"
+ },
+ "footer": {
+  "navigation": "Navigation",
+  "products": "Products",
+  "address": "Address",
+  "addressValue": "Deya Confectionery Factory, LLC\nRepublic of Uzbekistan, 130100, Jizzakh",
+  "newsletter": "Newsletter",
+  "newsletterText": "Subscribe to news and special offers from DEYA",
+  "newsletterConsent": "By submitting your email address, you agree that DEYA may send you news and special offers. You understand that DEYA may use your information in accordance with its",
+  "contacts": "Contacts",
+  "hotline": "Hotline",
+  "documents": "Documents",
+  "privacyPolicy": "Privacy Policy",
+  "consent": "Personal Data Processing Consent",
+  "workingHours": "Working Hours",
+  "workingHoursValue": "Monday — Saturday\n9:00 AM – 6:00 PM",
+  "copyright": "© 2012-2025 DEYA.UZ | All rights reserved",
+  "designCredit": "Design",
+  "devCredit": "Development"
+ },
+ "form": {
+  "namePlaceholder": "Name",
+  "emailPlaceholder": "Email address",
+  "phonePlaceholder": "+998-71-2346785",
+  "messagePlaceholder": "Message",
+  "consentPersonalDataPrefix": "I confirm that I have read and give my",
+  "consentLinkText": "Consent to the Processing of My Personal Data",
+  "consentMiddle": "in accordance with the terms set out in the",
+  "consentPrivacyLinkText": "Privacy Policy",
+  "privacyPolicyLinkText": "Privacy Policy",
+  "consentMarketing": "I agree to receive news and special offers from DEYA",
+  "emailInvalid": "Please enter a valid email",
+  "newsletterSuccess": "Thank you! You are now subscribed.",
+  "success": "Thank you! Your request has been sent.",
+  "error": "Something went wrong. Please try again.",
+  "rateLimited": "Too many submission attempts. Please try again in a minute.",
+  "rateLimitedWithSeconds": "Too many submission attempts. Please try again in {seconds}s.",
+  "phoneInvalid": "Enter a valid phone number for the selected country",
+  "required": "This field is required",
+  "emailShortLabel": "Email"
+ },
+ "legal": {
+  "unavailable": "This document is temporarily unavailable."
+ },
+ "cookies": {
+  "message": "We use cookies to improve how the site works, to analyse how it is used, and to make your experience more convenient. By continuing to use the site, you agree to the use of cookies in accordance with the",
+  "policyLink": "Privacy Policy",
+  "messageSuffix": ".",
+  "accept": "Accept",
+  "ariaLabel": "Cookie usage notice"
+ },
+ "common": {
+  "phone": "+998 (55) 151 55 55",
+  "phoneRaw": "+998551515555",
+  "eng": "ENG",
+  "rus": "RUS"
+ },
+ "about": {
+  "history": {
+   "title": "The Deya story",
+   "timelineLabel": "Deya history timeline",
+   "years": {
+    "y1994": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+    "y1996": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+    "y1998": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+    "y2001": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+    "y2003": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+    "y2009": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+    "y2014": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+    "y2016": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+    "y2021": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+    "y2022": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
+    "y2026": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality."
+   }
   }
+ },
+ "home": {
+  "placeholderTitle": "DEYA Confectionery Factory",
+  "newsTeaser": {
+   "heading": "News from DEYA",
+   "empty": "No news yet — please check back soon."
+  },
+  "exportMap": {
+   "mapLabel": "Map of Deya export destinations",
+   "truckAlt": "Deya logistics",
+   "modalTitle": "How to become a partner?"
+  },
+  "aboutEyebrow": "ABOUT THE FACTORY",
+  "aboutLinkLabel": "More about the factory",
+  "aboutFactoryAlt": "Deya confectionery factory"
+ },
+ "blog": {
+  "otherArticles": "Other articles"
+ },
+ "catalog": {
+  "empty": "No products in this category yet.",
+  "badges": {
+   "new": "New",
+   "bestseller": "Bestseller",
+   "discount": "Discount"
+  },
+  "goToCategory": "Go to catalog: {category}",
+  "recommendedHeading": "You may also like"
+ },
+ "meta": {
+  "siteTitle": "DEYA — Confectionery Factory",
+  "siteDescription": "Deya confectionery factory — making croissants, waffles, sweets and biscuits since 1994. Exported to 25+ countries.",
+  "articleNotFound": "Article not found — DEYA",
+  "productNotFound": "Product not found — DEYA"
+ },
+ "product": {
+  "unitKg": "kg",
+  "unitG": "g",
+  "boxWeight": "Box weight",
+  "shelfLife": "Shelf life",
+  "code": "Product code",
+  "flavorHeading": "Flavor",
+  "weightHeading": "Weight",
+  "characteristicsHeading": "Product specifications",
+  "recommendedHeading": "You may also like"
+ },
+ "a11y": {
+  "homeLink": "Deya — to the homepage",
+  "prevSlide": "Previous slide",
+  "nextSlide": "Next slide",
+  "openMenu": "Open menu",
+  "closeMenu": "Close menu",
+  "mobileNav": "Mobile navigation",
+  "closeModal": "Close",
+  "searchCountry": "Search country",
+  "countryPlaceholder": "+998 / Uzbekistan",
+  "telegram": "Telegram",
+  "instagram": "Instagram",
+  "logoAlt": "Deya"
+ },
+ "contacts": {
+  "heading": "Get in touch the way that suits you",
+  "workingHours": "Working hours",
+  "socialTitle": "Find us on social media",
+  "telegramChannel": "Telegram channel",
+  "addressTitle": "Our address",
+  "addressValue": "Republic of Uzbekistan, 130100, Jizzakh, industrial zone «A»",
+  "marketingConsent": "I agree to receive news and special offers from DEYA"
+ },
+ "partners": {
+  "logosTitle": "Our partners",
+  "certificatesTitle": "Certificates and awards",
+  "certificatesDescription": "Our products undergo strict control and meet the highest international quality standards — as confirmed by the certificates we hold."
+ },
+ "careers": {
+  "joinTitle": "Want to work at Deya?",
+  "joinParagraph": "The company's rapid growth means new vacancies open all the time, so we are always looking for dedicated colleagues to join our team.",
+  "joinHighlight": "Join us and get the chance to reach your professional and personal goals.",
+  "joinButton": "Join Deya"
+ }
 }

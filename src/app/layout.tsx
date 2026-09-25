@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import { headers } from "next/headers";
 
-import { defaultLocale } from "@/lib/i18n/config";
+import { defaultLocale, isLocale, type Locale } from "@/lib/i18n/config";
+import { getDictionary } from "@/lib/i18n/getDictionary";
 
 import "./globals.css";
 
@@ -23,11 +24,22 @@ const roboto = Roboto({
   variable: "--font-roboto",
 });
 
-export const metadata: Metadata = {
-  title: "DEYA — Кондитерская фабрика",
-  description:
-    "Кондитерская фабрика Deya — производство круассанов, вафель, конфет и печенья с 1994 года. Экспорт в 25+ стран.",
-};
+// Not per-request static metadata: this is the app-wide fallback Next merges
+// under whatever a route's own generateMetadata returns, so it still needs the
+// visitor's locale. x-locale comes from the proxy the same way the component
+// below reads it — there is no other way to reach the request here.
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers();
+  const localeHeader = headersList.get("x-locale");
+  const locale: Locale =
+    localeHeader && isLocale(localeHeader) ? localeHeader : defaultLocale;
+  const dictionary = await getDictionary(locale);
+
+  return {
+    title: dictionary.meta.siteTitle,
+    description: dictionary.meta.siteDescription,
+  };
+}
 
 export default async function RootLayout({
   children,

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 
 import BlogBlocks, { type KeyedBlogBlock } from "@/components/blog/BlogBlocks";
 import OtherArticles from "@/components/blog/OtherArticles";
-import { Section } from "@/components/ui";
+import Section from "@/components/ui/Section";
 import { formatPostDate } from "@/lib/formatDate";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
@@ -63,7 +63,10 @@ export async function generateMetadata({
   } catch {
     post = null;
   }
-  if (!post) return { title: "Статья не найдена — DEYA" };
+  if (!post) {
+    const dictionary = await getDictionary(locale);
+    return { title: dictionary.meta.articleNotFound };
+  }
 
   return {
     title: `${post.title} — DEYA`,

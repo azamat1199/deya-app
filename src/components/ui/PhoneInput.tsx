@@ -4,6 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { CountryCode } from "libphonenumber-js";
 
 import { cn } from "@/lib/cn";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 import {
   countryOptions,
   DEFAULT_COUNTRY,
@@ -64,6 +65,7 @@ export default function PhoneInput({
   id,
   ariaInvalid,
 }: PhoneInputProps) {
+  const { t } = useTranslation();
   const [country, setCountry] = useState<CountryCode>(DEFAULT_COUNTRY);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -230,13 +232,13 @@ export default function PhoneInput({
                 setActiveIndex(0);
               }}
               onKeyDown={onSearchKeyDown}
-              aria-label="Search country"
+              aria-label={t("a11y.searchCountry")}
               aria-controls={listboxId}
               aria-activedescendant={
                 filtered[activeIndex] ? optionId(activeIndex) : undefined
               }
               className="w-full border-b border-line-200 px-3 py-2 text-sm text-ink-900 outline-none placeholder:text-ink-500"
-              placeholder="+998 / Uzbekistan"
+              placeholder={t("a11y.countryPlaceholder")}
             />
             <ul
               ref={listRef}

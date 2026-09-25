@@ -1,7 +1,10 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
 import { cn } from "@/lib/cn";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export interface LogoProps {
   href: string;
@@ -14,6 +17,7 @@ export default function Logo({
   className,
   variant = "badge",
 }: LogoProps) {
+  const { t } = useTranslation();
   return (
     <Link
       href={href}
@@ -27,7 +31,7 @@ export default function Logo({
     >
       <Image
         src="/logo.png"
-        alt="Deya"
+        alt={t("a11y.logoAlt")}
         width={65}
         height={65}
         priority

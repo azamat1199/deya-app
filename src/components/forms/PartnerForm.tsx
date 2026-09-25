@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useForm, useWatch } from "react-hook-form";
 
-import { Button, Checkbox, FormField, PhoneInput } from "@/components/ui";
+import Button from "@/components/ui/Button";
+import Checkbox from "@/components/ui/Checkbox";
+import FormField from "@/components/ui/FormField";
+import PhoneInput from "@/components/ui/PhoneInput";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import {
   API_FIELD_TO_FORM,
@@ -209,6 +212,7 @@ export default function PartnerForm({
         label={t("form.namePlaceholder")}
         name="name"
         required
+        requiredMessage={t("form.required")}
         register={register}
         error={errors.name?.message}
       />
@@ -217,6 +221,8 @@ export default function PartnerForm({
         name="email"
         type="email"
         required
+        requiredMessage={t("form.required")}
+        emailInvalidMessage={t("form.emailInvalid")}
         register={register}
         error={errors.email?.message}
       />
@@ -255,6 +261,7 @@ export default function PartnerForm({
       <Checkbox<PartnerFormValues>
         name="consentPersonalData"
         required
+        requiredMessage={t("form.required")}
         register={register}
         error={errors.consentPersonalData?.message}
         label={

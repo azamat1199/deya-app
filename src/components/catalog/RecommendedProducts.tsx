@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
-import type { BadgeVariant } from "@/components/ui";
+import type { BadgeVariant } from "@/components/ui/Badge";
 import type { Locale } from "@/lib/i18n/config";
 import { cn } from "@/lib/cn";
 
@@ -23,11 +23,13 @@ export interface RecommendedItem {
 export interface RecommendedProductsProps {
   locale: Locale;
   items: RecommendedItem[];
+  heading: string;
   allCatalogLabel: string;
 }
 
 export default function RecommendedProducts({
   locale,
+  heading,
   allCatalogLabel,
   items,
 }: RecommendedProductsProps) {
@@ -83,7 +85,7 @@ export default function RecommendedProducts({
       <div className="flex items-end justify-between gap-4">
         {/* Larger on mobile than on desktop, per the two references. */}
         <h2 className="text-[32px] leading-tight font-normal text-ink-900 lg:text-[28px]">
-          Мы также рекомендуем
+          {heading}
         </h2>
 
         <Link

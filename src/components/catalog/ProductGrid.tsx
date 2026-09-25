@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { Button, ScrollReveal } from "@/components/ui";
+import Button from "@/components/ui/Button";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 import { catalogProducts } from "@/content/catalog";
 import type { Product } from "@/content/types";
 import type { Category } from "@/lib/categories";

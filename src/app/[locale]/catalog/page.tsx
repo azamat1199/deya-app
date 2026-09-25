@@ -7,7 +7,7 @@ import CategoryBanner, {
 import { homeCategories } from "@/content/categories";
 import { IMAGES } from "@/content/images";
 import ProductGrid from "@/components/catalog/ProductGrid";
-import { Section } from "@/components/ui";
+import Section from "@/components/ui/Section";
 import { getCategories, type Category } from "@/lib/categories";
 import { getProducts, type Product as ApiProduct } from "@/lib/products";
 import { getSettings } from "@/lib/settings";

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Button } from "@/components/ui";
+import Button from "@/components/ui/Button";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 
 import type { CertificateCard } from "./CertificatesGrid";

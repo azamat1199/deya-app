@@ -9,6 +9,12 @@ import { isBlankRichText, sanitizeRichText } from "@/lib/sanitizeRichText";
 
 import { CAREERS_SECTION_HEADING } from "./sectionType";
 
+// NOT display text and deliberately NOT translated: this is a MATCHING KEY.
+// The heading is split on this exact substring so the middle run can be
+// wrapped in the red <span> below — translating it would simply stop it
+// matching, leaving the heading whole and unhighlighted. The consequence is
+// known and accepted: on /uz and /en the heading renders in one colour,
+// because the text there is not Russian. See the i18n report.
 const RED_RUN = "подходящую вам должность";
 
 /**
@@ -190,7 +196,9 @@ export default async function CareersBrands() {
   // even line widths, and "…Deya и" / "найдите…" is the more even split. A
   // no-break space welds "и" to "найдите" so that split is unavailable, which
   // leaves the intended break after "Deya". A rendering concern, not a copy
-  // change: the string in careers.ts stays plain.
+  // change: the string in careers.ts stays plain. Russian-specific like
+  // RED_RUN above, and deliberately not translated for the same reason: on
+  // /uz and /en it simply finds nothing and leaves the heading untouched.
   const [headingBefore, headingAfter] = heading
     .replace("и найдите", "и\u00A0найдите")
     .split(RED_RUN);

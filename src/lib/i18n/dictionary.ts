@@ -93,6 +93,11 @@ export interface Dictionary {
      *  call site. Not a project-wide i18n templating convention — scoped to
      *  this one string, since nothing else here needs interpolation. */
     rateLimitedWithSeconds: string;
+    required: string;
+    /** Short label for the narrow newsletter field and its sr-only label —
+     *  deliberately shorter than emailPlaceholder ("Электронная почта"),
+     *  which the roomier contact/partner forms use. */
+    emailShortLabel: string;
   };
   legal: {
     /** Shown on /privacy-policy or /personal-data-consent when the API
@@ -150,6 +155,9 @@ export interface Dictionary {
       truckAlt: string;
       modalTitle: string;
     };
+    aboutEyebrow: string;
+    aboutLinkLabel: string;
+    aboutFactoryAlt: string;
   };
   blog: {
     /** Heading of the related-posts section on a post's detail page. */
@@ -169,6 +177,59 @@ export interface Dictionary {
       bestseller: string;
       discount: string;
     };
+    goToCategory: string;
+    recommendedHeading: string;
+  };
+  meta: {
+    siteTitle: string;
+    siteDescription: string;
+    articleNotFound: string;
+    productNotFound: string;
+  };
+  product: {
+    unitKg: string;
+    unitG: string;
+    boxWeight: string;
+    shelfLife: string;
+    code: string;
+    flavorHeading: string;
+    weightHeading: string;
+    characteristicsHeading: string;
+    recommendedHeading: string;
+  };
+  a11y: {
+    homeLink: string;
+    prevSlide: string;
+    nextSlide: string;
+    openMenu: string;
+    closeMenu: string;
+    mobileNav: string;
+    closeModal: string;
+    searchCountry: string;
+    countryPlaceholder: string;
+    telegram: string;
+    instagram: string;
+    logoAlt: string;
+  };
+  contacts: {
+    heading: string;
+    workingHours: string;
+    socialTitle: string;
+    telegramChannel: string;
+    addressTitle: string;
+    addressValue: string;
+    marketingConsent: string;
+  };
+  partners: {
+    logosTitle: string;
+    certificatesTitle: string;
+    certificatesDescription: string;
+  };
+  careers: {
+    joinTitle: string;
+    joinParagraph: string;
+    joinHighlight: string;
+    joinButton: string;
   };
 }
 

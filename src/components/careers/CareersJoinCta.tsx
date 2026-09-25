@@ -1,12 +1,24 @@
-import { Button } from "@/components/ui";
-import { careersContent } from "@/content/careers";
+import Button from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
+import type { Locale } from "@/lib/i18n/config";
+import { getDictionary } from "@/lib/i18n/getDictionary";
 
 import { CAREERS_BODY_13, CAREERS_SECTION_HEADING } from "./sectionType";
 
-export default function CareersJoinCta() {
-  const { heading, paragraph, paragraphHighlight, buttonLabel } =
-    careersContent.joinCta;
+export interface CareersJoinCtaProps {
+  locale: Locale;
+}
+
+export default async function CareersJoinCta({ locale }: CareersJoinCtaProps) {
+  // This block is always rendered — it is not a fallback for any API call —
+  // so its copy belongs in the dictionary rather than content/careers.ts.
+  const dictionary = await getDictionary(locale);
+  const {
+    joinTitle: heading,
+    joinParagraph: paragraph,
+    joinHighlight: paragraphHighlight,
+    joinButton: buttonLabel,
+  } = dictionary.careers;
 
   return (
     // text-center on this wrapper is what centres the heading, the paragraph

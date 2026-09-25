@@ -1,7 +1,8 @@
 import Link from "next/link";
 
 import ProductCard from "@/components/products/ProductCard";
-import { ScrollReveal, type BadgeVariant } from "@/components/ui";
+import type { BadgeVariant } from "@/components/ui/Badge";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 import type { Locale } from "@/lib/i18n/config";
 
 /** One card, already resolved to what ProductCard takes. */

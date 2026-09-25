@@ -9,6 +9,7 @@ import {
   type RefObject,
 } from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import {
   motion,
   useInView,
@@ -16,8 +17,9 @@ import {
   type Variants,
 } from "framer-motion";
 
-import PartnerForm from "@/components/forms/PartnerForm";
-import { Button, Modal, ScrollReveal } from "@/components/ui";
+import Button from "@/components/ui/Button";
+import Modal from "@/components/ui/Modal";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 import {
   exportMapDesktop,
   exportMapMobile,
@@ -26,6 +28,15 @@ import {
 import { homeContent } from "@/content/home";
 import type { ExportMapConfig } from "@/content/types";
 import { useTranslation } from "@/lib/i18n/useTranslation";
+
+// Loaded on demand: this form lives inside a Modal that only mounts when the
+// user opens it, and it is the entry point to libphonenumber-js's metadata and
+// react-hook-form. Importing it statically put both on the critical path of a
+// page where no phone field is ever shown. Measured, not assumed — see the
+// optimization report.
+const PartnerForm = dynamic(() => import("@/components/forms/PartnerForm"), {
+  ssr: false,
+});
 
 const LINE_DURATION = 1.1;
 /** Gap between consecutive spokes starting to draw. */

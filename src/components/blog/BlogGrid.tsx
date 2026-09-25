@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { Button } from "@/components/ui";
+import Button from "@/components/ui/Button";
 import type { NewsPost } from "@/content/types";
 import type { Locale } from "@/lib/i18n/config";
 import { useTranslation } from "@/lib/i18n/useTranslation";

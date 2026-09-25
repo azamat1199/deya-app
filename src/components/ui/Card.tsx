@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { cn } from "@/lib/cn";
 
-import Badge, { type BadgeVariant } from "./Badge";
+import Badge, { type BadgeVariant } from "@/components/ui/Badge";
 
 export interface CardProps {
   image: string;

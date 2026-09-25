@@ -1,9 +1,11 @@
 import CertificatesGrid, {
   type CertificateCard,
 } from "@/components/partners/CertificatesGrid";
-import { certificates, certificatesContent } from "@/content/certificates";
+import { certificates } from "@/content/certificates";
 import { IMAGES } from "@/content/images";
 import { getCertificates, type Certificate } from "@/lib/certificates";
+import type { Locale } from "@/lib/i18n/config";
+import { getDictionary } from "@/lib/i18n/getDictionary";
 
 import {
   PARTNERS_SECTION_DESCRIPTION,
@@ -37,7 +39,15 @@ function toCertificateCard(
   };
 }
 
-export default async function CertificatesSection() {
+export interface CertificatesSectionProps {
+  locale: Locale;
+}
+
+export default async function CertificatesSection({
+  locale,
+}: CertificatesSectionProps) {
+  const dictionary = await getDictionary(locale);
+
   // An async server component so it can await the fetch and honour
   // `next: { revalidate: 300 }`; the slider and the i18n hook live in the
   // client child, which can do neither.
@@ -72,10 +82,10 @@ export default async function CertificatesSection() {
   return (
     <div className="py-16 lg:py-24">
       <h2 className={PARTNERS_SECTION_HEADING}>
-        {certificatesContent.heading}
+        {dictionary.partners.certificatesTitle}
       </h2>
       <p className={PARTNERS_SECTION_DESCRIPTION}>
-        {certificatesContent.description}
+        {dictionary.partners.certificatesDescription}
       </p>
 
       <CertificatesGrid items={items} />

@@ -6,6 +6,7 @@ import { useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/cn";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export type SliderPaginationStyle = "dots" | "progress";
 
@@ -97,6 +98,7 @@ export default function Slider<T>({
   className,
   renderControls,
 }: SliderProps<T>) {
+  const { t } = useTranslation();
   const { slidesPerView: activeSlidesPerView, gap: activeGap } =
     useResponsiveSlideConfig({ slidesPerView, gap }, breakpoints);
 
@@ -286,7 +288,7 @@ export default function Slider<T>({
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    aria-label="Previous slide"
+                    aria-label={t("a11y.prevSlide")}
                     onClick={scrollPrev}
                     disabled={!loop && !canScrollPrev}
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-line-300 text-ink-900 transition-colors duration-200 hover:border-brand-600 hover:text-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
@@ -295,7 +297,7 @@ export default function Slider<T>({
                   </button>
                   <button
                     type="button"
-                    aria-label="Next slide"
+                    aria-label={t("a11y.nextSlide")}
                     onClick={scrollNext}
                     disabled={!loop && !canScrollNext}
                     className="flex h-10 w-10 items-center justify-center rounded-full border border-line-300 text-ink-900 transition-colors duration-200 hover:border-brand-600 hover:text-brand-600 disabled:cursor-not-allowed disabled:opacity-40"

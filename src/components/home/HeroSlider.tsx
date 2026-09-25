@@ -4,9 +4,12 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { Badge, Button, Slider } from "@/components/ui";
+import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
+import Slider from "@/components/ui/Slider";
 import type { Slide } from "@/content/types";
 import { cn } from "@/lib/cn";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export interface HeroSliderProps {
   slides: Slide[];
@@ -60,6 +63,7 @@ function AutoplayProgress({
 }
 
 export default function HeroSlider({ slides }: HeroSliderProps) {
+  const { t } = useTranslation();
   return (
     <div className="relative h-screen w-full overflow-hidden bg-ink-900">
       <Slider
@@ -206,7 +210,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
               >
                 <button
                   type="button"
-                  aria-label="Previous slide"
+                  aria-label={t("a11y.prevSlide")}
                   onClick={scrollPrev}
                   disabled={!canScrollPrev}
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/40 transition-colors duration-200 hover:border-white disabled:cursor-not-allowed disabled:opacity-40"
@@ -234,7 +238,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
 
                 <button
                   type="button"
-                  aria-label="Next slide"
+                  aria-label={t("a11y.nextSlide")}
                   onClick={scrollNext}
                   disabled={!canScrollNext}
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/40 transition-colors duration-200 hover:border-white disabled:cursor-not-allowed disabled:opacity-40"
@@ -261,7 +265,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                   <div className="flex items-center gap-4 text-white">
                     <button
                       type="button"
-                      aria-label="Previous slide"
+                      aria-label={t("a11y.prevSlide")}
                       onClick={scrollPrev}
                       disabled={!canScrollPrev}
                       className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 transition-colors duration-200 hover:border-white disabled:cursor-not-allowed disabled:opacity-40"
@@ -289,7 +293,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
 
                     <button
                       type="button"
-                      aria-label="Next slide"
+                      aria-label={t("a11y.nextSlide")}
                       onClick={scrollNext}
                       disabled={!canScrollNext}
                       className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 transition-colors duration-200 hover:border-white disabled:cursor-not-allowed disabled:opacity-40"

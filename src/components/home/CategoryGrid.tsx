@@ -18,6 +18,10 @@ export interface CategoryGridItem {
 export interface CategoryGridProps {
   locale: Locale;
   toCatalogLabel: string;
+  /** Screen-reader name for each tile's link. Carries a literal "{category}"
+   *  token, replaced per tile below — the tile's own title is the only part
+   *  that varies, and t() does no interpolation of its own. */
+  goToCategoryLabel: string;
   /** From GET /api/v1/home/ `categories[]`, already sorted by sort_order, or
    *  the static set when that request failed. */
   categories: CategoryGridItem[];
@@ -29,6 +33,7 @@ const GRADIENT =
 export default function CategoryGrid({
   locale,
   toCatalogLabel,
+  goToCategoryLabel,
   categories,
 }: CategoryGridProps) {
   return (
@@ -41,7 +46,7 @@ export default function CategoryGrid({
           <Link
             key={category.id}
             href={`/${locale}/catalog?category=${category.slug}`}
-            aria-label={`Перейти в каталог: ${category.title}`}
+            aria-label={goToCategoryLabel.replace("{category}", category.title)}
             className="group relative aspect-4/3 overflow-hidden max-md:aspect-square lg:aspect-square"
           >
             <Image

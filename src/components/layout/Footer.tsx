@@ -2,11 +2,10 @@
 
 import { InstagramIcon, TelegramIcon } from "@/components/icons/SocialIcons";
 import NewsletterForm from "@/components/forms/NewsletterForm";
-import { AnimatedLink } from "@/components/ui";
+import AnimatedLink from "@/components/ui/AnimatedLink";
 import type { Category } from "@/lib/categories";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { NAV_ITEMS } from "@/lib/nav";
-import { formatForDisplay } from "@/lib/phone";
 import { telHref, type Settings } from "@/lib/settings";
 
 /** The column is a short teaser, not the full catalog — the grid is one click away. */
@@ -25,9 +24,18 @@ export interface FooterProps {
    * then shows its heading alone rather than a hardcoded list.
    */
   categories: Category[];
+  /** The hotline already formatted for display, from the server layout.
+   *  Formatting it here would drag libphonenumber-js's metadata into the
+   *  client bundle of every page — see the note in Layout.tsx. Empty string
+   *  when settings carried no number; the dictionary value stands in. */
+  hotlineText: string;
 }
 
-export default function Footer({ settings, categories }: FooterProps) {
+export default function Footer({
+  settings,
+  categories,
+  hotlineText,
+}: FooterProps) {
   const { t, locale } = useTranslation();
 
   // Already ordered by `sort_order` (then `id` for ties) inside getCategories,
@@ -40,7 +48,7 @@ export default function Footer({ settings, categories }: FooterProps) {
   const email = settings?.email || "info@deya.uz";
   const hotlineRaw = settings?.hotline || settings?.phone || "";
   // Spaced for display; the href below stays digits-only E.164.
-  const hotline = hotlineRaw ? formatForDisplay(hotlineRaw) : t("common.phone");
+  const hotline = hotlineText || t("common.phone");
   const hotlineHref = telHref(hotlineRaw) || `tel:${t("common.phoneRaw")}`;
   const address = settings?.address || t("footer.addressValue");
   const workHours = settings?.work_hours || t("footer.workingHoursValue");
@@ -172,7 +180,7 @@ export default function Footer({ settings, categories }: FooterProps) {
                   href={telegramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Telegram"
+                  aria-label={t("a11y.telegram")}
                   className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-brand-600 transition-colors duration-200 ease-in-out hover:text-ink-900 focus-visible:text-ink-900 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-600 focus-visible:outline-none active:text-ink-900"
                 >
                   <TelegramIcon width={18} height={18} />
@@ -183,7 +191,7 @@ export default function Footer({ settings, categories }: FooterProps) {
                   href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Instagram"
+                  aria-label={t("a11y.instagram")}
                   className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-brand-600 transition-colors duration-200 ease-in-out hover:text-ink-900 focus-visible:text-ink-900 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand-600 focus-visible:outline-none active:text-ink-900"
                 >
                   <InstagramIcon width={18} height={18} />

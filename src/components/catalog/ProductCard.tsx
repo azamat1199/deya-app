@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { Badge } from "@/components/ui";
+import Badge from "@/components/ui/Badge";
 import type { Product } from "@/content/types";
 
 export interface ProductCardProps {

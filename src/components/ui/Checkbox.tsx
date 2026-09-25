@@ -11,17 +11,21 @@ export interface CheckboxProps<TFormValues extends FieldValues> {
   label: ReactNode;
   name: Path<TFormValues>;
   required?: boolean;
+  /** The react-hook-form validation message when `required` is true and the
+   *  box is left unchecked. Passed in rather than hardcoded here so this
+   *  generic, locale-agnostic component never has to know the active
+   *  locale — the caller already does, via useTranslation(). */
+  requiredMessage?: string;
   error?: string;
   register: UseFormRegister<TFormValues>;
   className?: string;
 }
 
-const REQUIRED_MESSAGE = "Это поле обязательно для заполнения";
-
 export default function Checkbox<TFormValues extends FieldValues>({
   label,
   name,
   required = false,
+  requiredMessage,
   error,
   register,
   className,
@@ -33,7 +37,9 @@ export default function Checkbox<TFormValues extends FieldValues>({
           type="checkbox"
           className="peer sr-only"
           aria-invalid={Boolean(error)}
-          {...register(name, { required: required ? REQUIRED_MESSAGE : false })}
+          {...register(name, {
+            required: required ? (requiredMessage ?? true) : false,
+          })}
         />
         {/* Checkmark is white on a white/transparent box, so it's naturally
             invisible until peer-checked turns the box brand red for contrast —
