@@ -270,21 +270,9 @@ function isWeight(value: unknown): value is ProductWeight {
   return typeof candidate.value === "string" && typeof candidate.unit === "string";
 }
 
-/**
- * The API's badge is a bare string ("new"); Badge takes text plus a variant.
- * Lives here rather than in a component so the card grid and the detail page
- * can share one mapping instead of keeping their own copies.
- */
-export function badgeLabel(
-  badge: string | null,
-): { text: string; variant: "new" | "hit" } | undefined {
-  if (!badge) return undefined;
-  const known: Record<string, { text: string; variant: "new" | "hit" }> = {
-    new: { text: "Новинка", variant: "new" },
-    hit: { text: "Хит продаж", variant: "hit" },
-  };
-  return known[badge.toLowerCase()] ?? { text: badge, variant: "new" };
-}
+// badgeLabel now lives in lib/badges.ts, which is the single badge vocabulary
+// for both the client grid and the server pages. The version that stood here
+// hardcoded Russian and knew the wrong key set — see the comment there.
 
 /**
  * A single product by slug.

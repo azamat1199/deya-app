@@ -12,9 +12,10 @@ import { IMAGES } from "@/content/images";
 import type { Product, ProductVariantOption } from "@/content/types";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
+import type { Dictionary } from "@/lib/i18n/dictionary";
+import { badgeLabel } from "@/lib/badges";
 import { getSettings } from "@/lib/settings";
 import {
-  badgeLabel,
   getProduct,
   getRelatedProducts,
   productImageUrl,
@@ -40,13 +41,14 @@ const RECOMMENDED_LIMIT = 4;
 function toRecommendedItem(
   related: ApiProduct,
   locale: string,
+  badges: Dictionary["catalog"]["badges"],
 ): RecommendedItem {
   return {
     key: related.id,
     title: related.name,
     image: productImageUrl(related),
     href: `/${locale}/catalog/${related.category.slug}/${related.slug}`,
-    badge: badgeLabel(related.badge),
+    badge: badgeLabel(related.badge, badges),
   };
 }
 
@@ -130,7 +132,10 @@ function toCharacteristics(detail: ProductDetail) {
  * when the API has nothing for them, which is exactly what the conditional
  * blocks already test — no invented values, no deleted markup.
  */
-function toDisplayProduct(detail: ProductDetail): Product {
+function toDisplayProduct(
+  detail: ProductDetail,
+  badges: Dictionary["catalog"]["badges"],
+): Product {
   // filter(Boolean) drops any empty URL here, in the DATA LAYER, so an empty
   // string can never reach next/image. When the payload carries no usable
   // image at all — /products/glazer/ returns `images: []` — the existing
@@ -147,7 +152,7 @@ function toDisplayProduct(detail: ProductDetail): Product {
     categorySlug: detail.category.slug,
     title: detail.name,
     image: primary,
-    badge: badgeLabel(detail.badge),
+    badge: badgeLabel(detail.badge, badges),
     description: detail.description || undefined,
     gallery: gallery.length > 0 ? gallery : undefined,
     flavorOptions: flavorOptions.length > 0 ? flavorOptions : undefined,
@@ -191,7 +196,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const detail = await getProduct(product);
   if (!detail) notFound();
 
-  const found = toDisplayProduct(detail);
+  const dictionary = await getDictionary(locale as Locale);
+  const found = toDisplayProduct(detail, dictionary.catalog.badges);
 
   // Related products, keyed off THIS page's route param — never derived from
   // anything else. Fetched here because RecommendedProducts is "use client" and
@@ -214,9 +220,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const recommended = related
     .slice(0, RECOMMENDED_LIMIT)
-    .map((item) => toRecommendedItem(item, locale));
-
-  const dictionary = await getDictionary(locale as Locale);
+    .map((item) => toRecommendedItem(item, locale, dictionary.catalog.badges));
   const categoryLabel = detail.category.name;
 
   // Memoised by Next against the same call in the locale layout, so this is

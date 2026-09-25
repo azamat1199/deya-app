@@ -30,7 +30,8 @@ import {
 } from "@/lib/home";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
-import { badgeLabel } from "@/lib/products";
+import type { Dictionary } from "@/lib/i18n/dictionary";
+import { badgeLabel } from "@/lib/badges";
 
 type HomePageProps = {
   params: Promise<{ locale: string }>;
@@ -134,6 +135,7 @@ function toCategoryTile(category: HomeCategory): CategoryGridItem {
 function toFeaturedCard(
   product: HomeFeaturedProduct,
   locale: string,
+  badges: Dictionary["catalog"]["badges"],
 ): FeaturedProductItem {
   return {
     id: product.id,
@@ -141,9 +143,10 @@ function toFeaturedCard(
     title: product.name,
     image: product.main_image?.image || IMAGES.placeholder,
     href: `/${locale}/catalog/${product.category.slug}/${product.slug}`,
-    // Shared with the catalog grid rather than a second copy of the mapping.
-    // Returns undefined for a null/unknown badge, so no chip is rendered.
-    badge: badgeLabel(product.badge),
+    // The one shared badge vocabulary in lib/badges.ts, the same map the
+    // catalogue grid uses. Returns undefined for a null or unrecognised
+    // badge, so no chip is rendered rather than a raw API value.
+    badge: badgeLabel(product.badge, badges),
   };
 }
 
@@ -221,7 +224,9 @@ export default async function HomePage({ params }: HomePageProps) {
       }));
 
   const featuredCards: FeaturedProductItem[] = home
-    ? home.featured_products.map((product) => toFeaturedCard(product, locale))
+    ? home.featured_products.map((product) =>
+        toFeaturedCard(product, locale, dictionary.catalog.badges),
+      )
     : featuredProducts.map((product) => ({
         id: product.slug,
         title: product.title,
