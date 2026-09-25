@@ -12,6 +12,7 @@ import type { Locale } from "@/lib/i18n/config";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { cn } from "@/lib/cn";
 import type { TranslationKey } from "@/lib/i18n/dictionary";
+import { badgeTranslationKey } from "@/lib/badges";
 
 import ProductCard from "./ProductCard";
 import {
@@ -45,51 +46,16 @@ interface FilterTab {
 }
 
 /**
- * The API's badge is a bare lowercase string, while Badge takes text +
- * variant. Verified against the live endpoint: the field is `badge` and the
- * only values it emits are "new", "bestseller", "discount" and "" — never
- * "hit", which is what the previous map was keyed on.
- *
- * That mismatch is why chips rendered inconsistently: "new" hit the map and
- * showed hardcoded Russian, while "bestseller" and "discount" missed it and
- * fell through to a branch that passed the RAW API STRING through as the
- * label, which Badge's `uppercase` turned into "BESTSELLER" / "DISCOUNT".
- * Every label now resolves through the dictionary instead, so all three
- * switch with the site language.
- *
- * `new` and `hit` are the same red chip in Badge — the variant here carries
- * no visual difference, only intent.
- */
-const BADGE_KEYS: Record<
-  string,
-  { key: TranslationKey; variant: "new" | "hit" }
-> = {
-  new: { key: "catalog.badges.new", variant: "new" },
-  bestseller: { key: "catalog.badges.bestseller", variant: "hit" },
-  discount: { key: "catalog.badges.discount", variant: "hit" },
-};
-
-/**
- * An empty/absent badge renders no chip. So does an UNRECOGNISED one — it is
- * reported rather than shown, because the old pass-the-raw-string behaviour is
- * exactly the untranslated-label bug being fixed here. A new CMS value
- * therefore needs a dictionary key before it can appear.
+ * The badge vocabulary lives in lib/badges.ts, shared with the server pages
+ * (home, product detail) so there is one map, not two. An empty or
+ * unrecognised value renders no chip; badges.ts logs the unrecognised case.
  */
 function toBadge(
   badge: string | null,
   t: (key: TranslationKey) => string,
 ): Product["badge"] {
-  const value = badge?.trim().toLowerCase();
-  if (!value) return undefined;
-
-  const entry = BADGE_KEYS[value];
-  if (!entry) {
-    console.warn(
-      `[ProductGrid] unmapped badge value ${JSON.stringify(badge)} — no chip rendered. Add a catalog.badges.* key and map it in BADGE_KEYS.`,
-    );
-    return undefined;
-  }
-
+  const entry = badgeTranslationKey(badge);
+  if (!entry) return undefined;
   return { text: t(entry.key), variant: entry.variant };
 }
 
