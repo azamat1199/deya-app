@@ -35,6 +35,14 @@ export default function MarqueeRow({ items, direction, pxPerSecond = 35 }: Marqu
   const trackRef = useRef<HTMLDivElement>(null);
   const pausedRef = useRef(false);
   const offsetRef = useRef(0);
+  // One copy's width, measured by the sizing effect below. The animation loop
+  // reads THIS, never scrollWidth: reading layout right after the previous
+  // frame's transform write forced a synchronous layout on every frame, which
+  // was the whole of /partners' ~1s Total Blocking Time. The value only
+  // changes when the copy count, the item count or the element's size changes
+  // — tiles are fixed-width (w-45), so late-loading logos cannot change it —
+  // and each of those re-runs measure().
+  const copyWidthRef = useRef(0);
   const [copies, setCopies] = useState(MIN_COPIES);
 
   // How many copies of the row it takes to outrun the viewport. Derived from
@@ -51,6 +59,7 @@ export default function MarqueeRow({ items, direction, pxPerSecond = 35 }: Marqu
 
     function measure() {
       const oneCopy = track!.scrollWidth / copies;
+      copyWidthRef.current = oneCopy;
       if (oneCopy <= 0) return;
       // +1 so a full copy always follows the one being scrolled out of view.
       const needed = Math.max(
@@ -63,6 +72,9 @@ export default function MarqueeRow({ items, direction, pxPerSecond = 35 }: Marqu
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(wrapper);
+    // The track too, so any change to its own width re-measures and the cached
+    // copy width can never go stale.
+    observer.observe(track);
     return () => observer.disconnect();
   }, [copies, items.length]);
 
@@ -77,8 +89,9 @@ export default function MarqueeRow({ items, direction, pxPerSecond = 35 }: Marqu
       const dt = (now - last) / 1000;
       last = now;
       // Wraps after ONE copy, not half the track — that is what keeps the seam
-      // invisible for any copy count.
-      const oneCopy = track!.scrollWidth / copies;
+      // invisible for any copy count. Cached, never measured here — see
+      // copyWidthRef.
+      const oneCopy = copyWidthRef.current;
 
       if (!pausedRef.current && oneCopy > 0) {
         // Unchanged: px per second, so more copies never alter the speed.
