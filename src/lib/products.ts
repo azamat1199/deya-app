@@ -1,5 +1,5 @@
 import { IMAGES } from "@/content/images";
-import { apiOrigin, mediaImageUrl, readJson } from "@/lib/api";
+import { apiOrigin, listRows, mediaImageUrl, readJson } from "@/lib/api";
 import { isCategory, type Category } from "@/lib/categories";
 
 /**
@@ -136,6 +136,26 @@ export function productImageUrl(product: Product): string {
   return product.main_image?.image || IMAGES.placeholder;
 }
 
+/**
+ * CMS принимает любой тип файла, и фотографии, загруженные как .svg, —
+ * повторяющаяся проблема: next/image не умеет ресайзить и пережимать SVG,
+ * поэтому оптимизатор отдаёт файл как есть НА ЛЮБОЙ запрошенной ширине.
+ * Один 270KB «снимок» уезжает на карточку трижды вместо ~30KB.
+ *
+ * Только сообщает. Картинка продолжает показываться — предупреждение,
+ * которое прячет товар, хуже сэкономленного веса.
+ */
+function warnIfSvg(url: string, productName: string, field: string): string {
+  if (url.toLowerCase().split("?")[0].endsWith(".svg")) {
+    console.warn(
+      `[products] "${productName}" ${field}: SVG (${url.split("/").pop()}). ` +
+        `next/image не ресайзит SVG — файл отдаётся целиком на любой ширине. ` +
+        `Перезалейте в CMS как JPEG или PNG.`,
+    );
+  }
+  return url;
+}
+
 function toProduct(value: unknown, origin: string): Product {
   const raw = value as Record<string, unknown>;
   const category = raw.category as Category;
@@ -157,7 +177,14 @@ function toProduct(value: unknown, origin: string): Product {
     // photograph" is real information; productImageUrl above is what turns it
     // into a renderable src.
     main_image: image
-      ? { ...image, image: mediaImageUrl(image.image, origin) }
+      ? {
+          ...image,
+          image: warnIfSvg(
+            mediaImageUrl(image.image, origin),
+            raw.name as string,
+            "main_image",
+          ),
+        }
       : null,
   };
 }
@@ -256,12 +283,13 @@ export async function getRelatedProducts(slug: string): Promise<Product[]> {
   }
 
   const body: unknown = await readJson(response, url);
-  if (!Array.isArray(body)) {
-    throw new Error(`GET ${url} did not return an array`);
+  // Bare array OR a DRF `results` envelope — see listRows().
+  const rows = listRows(body, url);
+  if (rows === null) {
+    throw new Error(`GET ${url} did not return an array or a results envelope`);
   }
-
   // Order is the backend's — this endpoint carries no sort field.
-  return body.filter(isProduct).map((row) => toProduct(row, origin));
+  return rows.filter(isProduct).map((row) => toProduct(row, origin));
 }
 
 function isWeight(value: unknown): value is ProductWeight {
@@ -322,7 +350,11 @@ export async function getProduct(slug: string): Promise<ProductDetail | null> {
   const images = Array.isArray(raw.images)
     ? raw.images.filter(isProductImage).map((image) => ({
         ...image,
-        image: mediaImageUrl(image.image, origin),
+        image: warnIfSvg(
+          mediaImageUrl(image.image, origin),
+          raw.name as string,
+          `images[id=${image.id}]`,
+        ),
       }))
     : [];
 

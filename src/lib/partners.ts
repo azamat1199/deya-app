@@ -1,4 +1,4 @@
-import { apiOrigin, mediaUrl, readJson } from "@/lib/api";
+import { apiOrigin, listRows, mediaUrl, readJson } from "@/lib/api";
 
 /**
  * GET /api/v1/partners/
@@ -45,6 +45,25 @@ function isPartner(value: unknown): value is Partner {
  * non-2xx status or a missing base URL throw — the caller decides whether to
  * fall back.
  */
+/**
+ * KNOWN GAP, DELIBERATELY NOT FIXED — this note stands for six functions, not
+ * just this one: getPartners, getCompanies, getCertificates, getProducts,
+ * getRelatedProducts and getProduct all fetch WITHOUT a `?lang=` parameter and
+ * take no locale argument, so /uz and /en get whatever the backend calls its
+ * default.
+ *
+ * Measured before deciding: the API returns byte-identical Russian for
+ * ?lang=ru, ?lang=uz and ?lang=en on every one of these endpoints — names,
+ * titles and descriptions alike. The control case proves it is not about the
+ * parameter: /api/v1/career-values/ IS called with the locale and still
+ * answers the same Russian for all three. The CMS simply holds no
+ * translations.
+ *
+ * So threading the locale through today would change not one rendered
+ * character. It becomes a real bug the day the backend starts serving
+ * translations — at which point these six need the locale, and this comment is
+ * the reminder of where to look.
+ */
 export async function getPartners(): Promise<Partner[]> {
   const origin = apiOrigin();
   const url = `${origin}${PARTNERS_PATH}`;
@@ -61,14 +80,15 @@ export async function getPartners(): Promise<Partner[]> {
   }
 
   const body: unknown = await readJson(response, url);
-  if (!Array.isArray(body)) {
-    throw new Error(`GET ${url} did not return an array`);
+  // Bare array OR a DRF `results` envelope — see listRows().
+  const rows = listRows(body, url);
+  if (rows === null) {
+    throw new Error(`GET ${url} did not return an array or a results envelope`);
   }
-
   // A row without a usable id would produce a duplicate React key downstream,
   // so it is reported loudly rather than silently dropped. Logged once with the
   // first offender, not once per row.
-  const rejected = body.filter((row) => !isPartner(row));
+  const rejected = rows.filter((row) => !isPartner(row));
   if (rejected.length) {
     const missingId = rejected.filter(
       (row) =>
@@ -82,7 +102,7 @@ export async function getPartners(): Promise<Partner[]> {
     );
   }
 
-  return body.filter(isPartner).map((partner) => ({
+  return rows.filter(isPartner).map((partner) => ({
     ...partner,
     // Shared helper, never a local copy: these arrive over http:// and a
     // component must never see one.

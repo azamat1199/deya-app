@@ -30,11 +30,7 @@
   "downloadPartial": "Downloaded {current} of {total}"
  },
  "categories": {
-  "croissants": "Croissants",
-  "waffles": "Waffles",
-  "waferCandies": "Wafer Candies",
-  "candies": "Candies",
-  "cookies": "Cookies"
+  "waferCandies": "Wafer Candies"
  },
  "footer": {
   "navigation": "Navigation",
@@ -73,8 +69,8 @@
   "rateLimited": "Too many submission attempts. Please try again in a minute.",
   "rateLimitedWithSeconds": "Too many submission attempts. Please try again in {seconds}s.",
   "phoneInvalid": "Enter a valid phone number for the selected country",
-  "required": "Это поле обязательно для заполнения",
-  "emailShortLabel": "E-mail"
+  "required": "This field is required",
+  "emailShortLabel": "Email"
  },
  "legal": {
   "unavailable": "This document is temporarily unavailable."
@@ -94,7 +90,6 @@
  },
  "about": {
   "history": {
-   "title": "The Deya story",
    "timelineLabel": "Deya history timeline",
    "years": {
     "y1994": "It all began with a small oven and a dream.\nToday Deya is one of the leaders of Uzbekistan's confectionery industry, with a taste known and loved in many countries.\nIn 30 years we have gone from 12 m² to an international brand, keeping what matters most — soul, warmth and a commitment to quality.",
@@ -121,11 +116,11 @@
    "mapLabel": "Map of Deya export destinations",
    "truckAlt": "Deya logistics",
    "modalTitle": "How to become a partner?",
-   "factoryLabel": "ФАБРИКА DEYA"
+   "factoryLabel": "DEYA FACTORY"
   },
-  "aboutEyebrow": "О ФАБРИКЕ",
-  "aboutLinkLabel": "Подробнее о фабрике",
-  "aboutFactoryAlt": "Кондитерская фабрика Deya"
+  "aboutEyebrow": "ABOUT THE FACTORY",
+  "aboutLinkLabel": "More about the factory",
+  "aboutFactoryAlt": "Deya confectionery factory"
  },
  "blog": {
   "otherArticles": "Other articles"
@@ -137,58 +132,64 @@
    "bestseller": "Bestseller",
    "discount": "Discount"
   },
-  "goToCategory": "Перейти в каталог: {category}",
-  "recommendedHeading": "Мы также рекомендуем"
+  "goToCategory": "Go to catalog: {category}",
+  "recommendedHeading": "You may also like"
  },
  "meta": {
-  "siteTitle": "DEYA — Кондитерская фабрика",
-  "siteDescription": "Кондитерская фабрика Deya — производство круассанов, вафель, конфет и печенья с 1994 года. Экспорт в 25+ стран.",
-  "articleNotFound": "Статья не найдена — DEYA",
-  "productNotFound": "Товар не найден — DEYA"
+  "siteTitle": "DEYA — Confectionery Factory",
+  "siteDescription": "Deya confectionery factory — making croissants, waffles, sweets and biscuits since 1994. Exported to 25+ countries.",
+  "articleNotFound": "Article not found — DEYA",
+  "productNotFound": "Product not found — DEYA"
  },
  "product": {
-  "unitKg": "кг",
-  "unitG": "г",
-  "boxWeight": "Вес ящика",
-  "shelfLife": "Срок хранения",
-  "code": "Код товара",
-  "flavorHeading": "Вкус",
-  "weightHeading": "Вес товара",
-  "characteristicsHeading": "Характеристики продукта",
-  "recommendedHeading": "Мы также рекомендуем"
+  "unitKg": "kg",
+  "unitG": "g",
+  "boxWeight": "Box weight",
+  "shelfLife": "Shelf life",
+  "code": "Product code",
+  "flavorHeading": "Flavor",
+  "weightHeading": "Weight",
+  "characteristicsHeading": "Product specifications",
+  "recommendedHeading": "You may also like",
+  "months": {
+   "one": "month",
+   "few": "months",
+   "many": "months",
+   "other": "months"
+  }
  },
  "a11y": {
-  "homeLink": "Deya — на главную",
-  "prevSlide": "Предыдущий слайд",
-  "nextSlide": "Следующий слайд",
-  "openMenu": "Открыть меню",
-  "closeMenu": "Закрыть меню",
-  "mobileNav": "Мобильная навигация",
-  "closeModal": "Закрыть",
-  "searchCountry": "Поиск страны",
+  "homeLink": "Deya — to the homepage",
+  "prevSlide": "Previous slide",
+  "nextSlide": "Next slide",
+  "openMenu": "Open menu",
+  "closeMenu": "Close menu",
+  "mobileNav": "Mobile navigation",
+  "closeModal": "Close",
+  "searchCountry": "Search country",
   "countryPlaceholder": "+998 / Uzbekistan",
   "telegram": "Telegram",
   "instagram": "Instagram",
   "logoAlt": "Deya"
  },
  "contacts": {
-  "heading": "Свяжитесь с нами удобным способом",
-  "workingHours": "График работы",
-  "socialTitle": "Мы в социальных сетях",
-  "telegramChannel": "Telegram канал",
-  "addressTitle": "Наш адрес",
-  "addressValue": "Республика Узбекистан, 130100, г.Джизак, промышленная зона «А»",
-  "marketingConsent": "Я даю согласие на получение новостей и специальных предложений от DEYA"
+  "heading": "Get in touch the way that suits you",
+  "workingHours": "Working hours",
+  "socialTitle": "Find us on social media",
+  "telegramChannel": "Telegram channel",
+  "addressTitle": "Our address",
+  "addressValue": "Republic of Uzbekistan, 130100, Jizzakh, industrial zone «A»",
+  "marketingConsent": "I agree to receive news and special offers from DEYA"
  },
  "partners": {
-  "logosTitle": "Наши партнёры",
-  "certificatesTitle": "Сертификаты и награды",
-  "certificatesDescription": "Наша продукция проходит строгий контроль и соответствует самым высоким международным стандартам качества — это подтверждают полученные сертификаты."
+  "logosTitle": "Our partners",
+  "certificatesTitle": "Certificates and awards",
+  "certificatesDescription": "Our products undergo strict control and meet the highest international quality standards — as confirmed by the certificates we hold."
  },
  "careers": {
-  "joinTitle": "Хотите работать в Deya?",
-  "joinParagraph": "Стремительный рост компании означает постоянное появление новых вакансий, поэтому мы всегда ищем преданных своему делу коллег в нашу команду.",
-  "joinHighlight": "Присоединяйтесь к нам и получите возможность достичь своих профессиональных и личных целей.",
-  "joinButton": "Присоединиться к Deya"
+  "joinTitle": "Want to work at Deya?",
+  "joinParagraph": "The company's rapid growth means new vacancies open all the time, so we are always looking for dedicated colleagues to join our team.",
+  "joinHighlight": "Join us and get the chance to reach your professional and personal goals.",
+  "joinButton": "Join Deya"
  }
 }

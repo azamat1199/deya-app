@@ -30,7 +30,7 @@ export default function Logo({
       )}
     >
       <Image
-        src="/logo.png"
+        src="/logo.webp"
         alt={t("a11y.logoAlt")}
         width={65}
         height={65}

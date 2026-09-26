@@ -1,4 +1,4 @@
-import { apiOrigin, mediaUrl, readJson } from "@/lib/api";
+import { apiOrigin, listRows, mediaUrl, readJson } from "@/lib/api";
 
 /**
  * GET /api/v1/product-info/
@@ -67,14 +67,15 @@ export async function getProductInfo(locale: string): Promise<ProductInfoItem[]>
   }
 
   const body: unknown = await readJson(response, url);
-  if (!Array.isArray(body)) {
-    throw new Error(`GET ${url} did not return an array`);
+  // Bare array OR a DRF `results` envelope — see listRows().
+  const rows = listRows(body, url);
+  if (rows === null) {
+    throw new Error(`GET ${url} did not return an array or a results envelope`);
   }
-
   // A row without a usable id would produce a duplicate React key downstream,
   // so it is reported loudly rather than silently dropped. Logged once with the
   // first offender, not once per row.
-  const rejected = body.filter((row) => !isProductInfoItem(row));
+  const rejected = rows.filter((row) => !isProductInfoItem(row));
   if (rejected.length) {
     const missingId = rejected.filter(
       (row) =>
@@ -88,7 +89,7 @@ export async function getProductInfo(locale: string): Promise<ProductInfoItem[]>
     );
   }
 
-  return body
+  return rows
     .filter(isProductInfoItem)
     .map((item) => ({
       ...item,

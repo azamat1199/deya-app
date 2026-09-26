@@ -143,3 +143,52 @@ export async function readJson(
     throw new Error(`GET ${url} returned unparseable JSON`, { cause: error });
   }
 }
+
+/**
+ * The rows of a list endpoint, whichever of the two shapes it answers with.
+ *
+ * WHY THIS EXISTS. These endpoints used to return a bare JSON array. The
+ * backend then put DRF pagination in front of some of them, so the body became
+ * `{ count, next, previous, results }` — and every module that asserted
+ * `Array.isArray(body)` started throwing. The failure was invisible in the UI:
+ * each caller catches and falls back to its static content, so /partners and
+ * /careers quietly showed hand-authored placeholders instead of live CMS rows
+ * while logging one line on the server.
+ *
+ * Accepting BOTH shapes everywhere is the point. The endpoints are inconsistent
+ * with each other right now — /partners/, /companies/, /products/ and /posts/
+ * are paginated while /certificates/, /career-values/, /categories/, /banners/
+ * and /timeline/ are still bare arrays — and the next endpoint to be switched
+ * should not be able to break anything.
+ *
+ * PAGINATION IS NOT FOLLOWED HERE, deliberately. Every paginated endpoint
+ * currently answers `next: null`, i.e. one page holds everything. Walking
+ * `next` would turn one request into an unbounded loop inside a render; when a
+ * list genuinely outgrows its page, that belongs in the caller, which can
+ * decide on a page size and a limit. Instead a truncated list is REPORTED, so
+ * it cannot pass unnoticed the way the shape change did.
+ *
+ * Returns null when the body is neither shape, letting the caller keep its own
+ * error wording and its own fallback decision.
+ */
+export function listRows(body: unknown, url: string): unknown[] | null {
+  if (Array.isArray(body)) return body;
+
+  if (body !== null && typeof body === "object") {
+    const envelope = body as Record<string, unknown>;
+    if (Array.isArray(envelope.results)) {
+      const rows = envelope.results;
+      if (envelope.next) {
+        console.warn(
+          `[api] GET ${url} is paginated and has more pages (count=${String(
+            envelope.count,
+          )}, got ${rows.length}). Only the first page is used — raise the ` +
+            `page size or paginate in the caller.`,
+        );
+      }
+      return rows;
+    }
+  }
+
+  return null;
+}

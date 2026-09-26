@@ -1,4 +1,4 @@
-import { apiOrigin, mediaUrl, readJson } from "@/lib/api";
+import { apiOrigin, listRows, mediaUrl, readJson } from "@/lib/api";
 
 /**
  * GET /api/v1/career-values/
@@ -70,14 +70,15 @@ export async function getCareerValues(locale: string): Promise<CareerValue[]> {
   }
 
   const body: unknown = await readJson(response, url);
-  if (!Array.isArray(body)) {
-    throw new Error(`GET ${url} did not return an array`);
+  // Bare array OR a DRF `results` envelope — see listRows().
+  const rows = listRows(body, url);
+  if (rows === null) {
+    throw new Error(`GET ${url} did not return an array or a results envelope`);
   }
-
   // A row without a usable id would produce a duplicate React key downstream,
   // so it is reported loudly rather than silently dropped. Logged once with the
   // first offender, not once per row.
-  const rejected = body.filter((row) => !isCareerValue(row));
+  const rejected = rows.filter((row) => !isCareerValue(row));
   if (rejected.length) {
     const missingId = rejected.filter(
       (row) =>
@@ -91,7 +92,7 @@ export async function getCareerValues(locale: string): Promise<CareerValue[]> {
     );
   }
 
-  return body.filter(isCareerValue).map((value) => ({
+  return rows.filter(isCareerValue).map((value) => ({
     ...value,
     // Shared helper, never a local copy: these arrive over http:// and a
     // component must never see one. Empty stays empty so the caller can borrow

@@ -124,7 +124,7 @@ export default function Header({ settings, hotlineText }: HeaderProps) {
             aria-label={t("a11y.homeLink")}
           >
             <Image
-              src="/logo.png"
+              src="/logo.webp"
               alt={t("a11y.logoAlt")}
               width={102}
               height={102}

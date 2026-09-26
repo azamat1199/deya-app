@@ -1,0 +1,241 @@
+{
+  "_README": "Machine-translated uz/en values for 46 keys added in 65e0e66. NOT in production: the locale files carry the Russian text as a placeholder for these keys. After human review, copy approved values back into src/locales/{uz,en}/common.json. PRIORITY: contacts.marketingConsent is consent copy.",
+  "keys": {
+    "form.required": {
+      "ru": "Это поле обязательно для заполнения",
+      "uz_machine": "Bu maydonni to‘ldirish shart",
+      "en_machine": "This field is required"
+    },
+    "form.emailShortLabel": {
+      "ru": "E-mail",
+      "uz_machine": "E-mail",
+      "en_machine": "Email"
+    },
+    "home.aboutEyebrow": {
+      "ru": "О ФАБРИКЕ",
+      "uz_machine": "FABRIKA HAQIDA",
+      "en_machine": "ABOUT THE FACTORY"
+    },
+    "home.aboutLinkLabel": {
+      "ru": "Подробнее о фабрике",
+      "uz_machine": "Fabrika haqida batafsil",
+      "en_machine": "More about the factory"
+    },
+    "home.aboutFactoryAlt": {
+      "ru": "Кондитерская фабрика Deya",
+      "uz_machine": "Deya qandolat fabrikasi",
+      "en_machine": "Deya confectionery factory"
+    },
+    "catalog.goToCategory": {
+      "ru": "Перейти в каталог: {category}",
+      "uz_machine": "Katalogga o‘tish: {category}",
+      "en_machine": "Go to catalog: {category}"
+    },
+    "catalog.recommendedHeading": {
+      "ru": "Мы также рекомендуем",
+      "uz_machine": "Shuningdek tavsiya qilamiz",
+      "en_machine": "You may also like"
+    },
+    "meta.siteTitle": {
+      "ru": "DEYA — Кондитерская фабрика",
+      "uz_machine": "DEYA — qandolat fabrikasi",
+      "en_machine": "DEYA — Confectionery Factory"
+    },
+    "meta.siteDescription": {
+      "ru": "Кондитерская фабрика Deya — производство круассанов, вафель, конфет и печенья с 1994 года. Экспорт в 25+ стран.",
+      "uz_machine": "Deya qandolat fabrikasi — 1994 yildan beri kruassan, vafli, konfet va pechene ishlab chiqarish. 25 dan ortiq mamlakatga eksport.",
+      "en_machine": "Deya confectionery factory — making croissants, waffles, sweets and biscuits since 1994. Exported to 25+ countries."
+    },
+    "meta.articleNotFound": {
+      "ru": "Статья не найдена — DEYA",
+      "uz_machine": "Maqola topilmadi — DEYA",
+      "en_machine": "Article not found — DEYA"
+    },
+    "meta.productNotFound": {
+      "ru": "Товар не найден — DEYA",
+      "uz_machine": "Mahsulot topilmadi — DEYA",
+      "en_machine": "Product not found — DEYA"
+    },
+    "product.unitKg": {
+      "ru": "кг",
+      "uz_machine": "kg",
+      "en_machine": "kg"
+    },
+    "product.unitG": {
+      "ru": "г",
+      "uz_machine": "g",
+      "en_machine": "g"
+    },
+    "product.boxWeight": {
+      "ru": "Вес ящика",
+      "uz_machine": "Quti og‘irligi",
+      "en_machine": "Box weight"
+    },
+    "product.shelfLife": {
+      "ru": "Срок хранения",
+      "uz_machine": "Saqlash muddati",
+      "en_machine": "Shelf life"
+    },
+    "product.code": {
+      "ru": "Код товара",
+      "uz_machine": "Mahsulot kodi",
+      "en_machine": "Product code"
+    },
+    "product.flavorHeading": {
+      "ru": "Вкус",
+      "uz_machine": "Ta’m",
+      "en_machine": "Flavor"
+    },
+    "product.weightHeading": {
+      "ru": "Вес товара",
+      "uz_machine": "Mahsulot vazni",
+      "en_machine": "Weight"
+    },
+    "product.characteristicsHeading": {
+      "ru": "Характеристики продукта",
+      "uz_machine": "Mahsulot xususiyatlari",
+      "en_machine": "Product specifications"
+    },
+    "product.recommendedHeading": {
+      "ru": "Мы также рекомендуем",
+      "uz_machine": "Shuningdek tavsiya qilamiz",
+      "en_machine": "You may also like"
+    },
+    "a11y.homeLink": {
+      "ru": "Deya — на главную",
+      "uz_machine": "Deya — bosh sahifaga",
+      "en_machine": "Deya — to the homepage"
+    },
+    "a11y.prevSlide": {
+      "ru": "Предыдущий слайд",
+      "uz_machine": "Oldingi slayd",
+      "en_machine": "Previous slide"
+    },
+    "a11y.nextSlide": {
+      "ru": "Следующий слайд",
+      "uz_machine": "Keyingi slayd",
+      "en_machine": "Next slide"
+    },
+    "a11y.openMenu": {
+      "ru": "Открыть меню",
+      "uz_machine": "Menyuni ochish",
+      "en_machine": "Open menu"
+    },
+    "a11y.closeMenu": {
+      "ru": "Закрыть меню",
+      "uz_machine": "Menyuni yopish",
+      "en_machine": "Close menu"
+    },
+    "a11y.mobileNav": {
+      "ru": "Мобильная навигация",
+      "uz_machine": "Mobil navigatsiya",
+      "en_machine": "Mobile navigation"
+    },
+    "a11y.closeModal": {
+      "ru": "Закрыть",
+      "uz_machine": "Yopish",
+      "en_machine": "Close"
+    },
+    "a11y.searchCountry": {
+      "ru": "Поиск страны",
+      "uz_machine": "Mamlakatni qidirish",
+      "en_machine": "Search country"
+    },
+    "a11y.countryPlaceholder": {
+      "ru": "+998 / Uzbekistan",
+      "uz_machine": "+998 / O‘zbekiston",
+      "en_machine": "+998 / Uzbekistan"
+    },
+    "a11y.telegram": {
+      "ru": "Telegram",
+      "uz_machine": "Telegram",
+      "en_machine": "Telegram"
+    },
+    "a11y.instagram": {
+      "ru": "Instagram",
+      "uz_machine": "Instagram",
+      "en_machine": "Instagram"
+    },
+    "a11y.logoAlt": {
+      "ru": "Deya",
+      "uz_machine": "Deya",
+      "en_machine": "Deya"
+    },
+    "contacts.heading": {
+      "ru": "Свяжитесь с нами удобным способом",
+      "uz_machine": "Biz bilan qulay usulda bog‘laning",
+      "en_machine": "Get in touch the way that suits you"
+    },
+    "contacts.workingHours": {
+      "ru": "График работы",
+      "uz_machine": "Ish jadvali",
+      "en_machine": "Working hours"
+    },
+    "contacts.socialTitle": {
+      "ru": "Мы в социальных сетях",
+      "uz_machine": "Biz ijtimoiy tarmoqlarda",
+      "en_machine": "Find us on social media"
+    },
+    "contacts.telegramChannel": {
+      "ru": "Telegram канал",
+      "uz_machine": "Telegram kanali",
+      "en_machine": "Telegram channel"
+    },
+    "contacts.addressTitle": {
+      "ru": "Наш адрес",
+      "uz_machine": "Bizning manzilimiz",
+      "en_machine": "Our address"
+    },
+    "contacts.addressValue": {
+      "ru": "Республика Узбекистан, 130100, г.Джизак, промышленная зона «А»",
+      "uz_machine": "O‘zbekiston Respublikasi, 130100, Jizzax sh., «A» sanoat zonasi",
+      "en_machine": "Republic of Uzbekistan, 130100, Jizzakh, industrial zone «A»"
+    },
+    "contacts.marketingConsent": {
+      "ru": "Я даю согласие на получение новостей и специальных предложений от DEYA",
+      "uz_machine": "DEYA’dan yangiliklar va maxsus takliflar olishga roziman",
+      "en_machine": "I agree to receive news and special offers from DEYA"
+    },
+    "partners.logosTitle": {
+      "ru": "Наши партнёры",
+      "uz_machine": "Bizning hamkorlarimiz",
+      "en_machine": "Our partners"
+    },
+    "partners.certificatesTitle": {
+      "ru": "Сертификаты и награды",
+      "uz_machine": "Sertifikatlar va mukofotlar",
+      "en_machine": "Certificates and awards"
+    },
+    "partners.certificatesDescription": {
+      "ru": "Наша продукция проходит строгий контроль и соответствует самым высоким международным стандартам качества — это подтверждают полученные сертификаты.",
+      "uz_machine": "Mahsulotlarimiz qat’iy nazoratdan o‘tadi va sifat bo‘yicha eng yuqori xalqaro standartlarga javob beradi — buni olingan sertifikatlar tasdiqlaydi.",
+      "en_machine": "Our products undergo strict control and meet the highest international quality standards — as confirmed by the certificates we hold."
+    },
+    "careers.joinTitle": {
+      "ru": "Хотите работать в Deya?",
+      "uz_machine": "Deyada ishlashni xohlaysizmi?",
+      "en_machine": "Want to work at Deya?"
+    },
+    "careers.joinParagraph": {
+      "ru": "Стремительный рост компании означает постоянное появление новых вакансий, поэтому мы всегда ищем преданных своему делу коллег в нашу команду.",
+      "uz_machine": "Kompaniyaning jadal o‘sishi doimo yangi vakansiyalar paydo bo‘lishini anglatadi, shuning uchun biz jamoamizga o‘z ishiga sodiq hamkasblarni doimo izlaymiz.",
+      "en_machine": "The company's rapid growth means new vacancies open all the time, so we are always looking for dedicated colleagues to join our team."
+    },
+    "careers.joinHighlight": {
+      "ru": "Присоединяйтесь к нам и получите возможность достичь своих профессиональных и личных целей.",
+      "uz_machine": "Bizga qo‘shiling va kasbiy hamda shaxsiy maqsadlaringizga erishish imkoniyatini qo‘lga kiriting.",
+      "en_machine": "Join us and get the chance to reach your professional and personal goals."
+    },
+    "careers.joinButton": {
+      "ru": "Присоединиться к Deya",
+      "uz_machine": "Deyaga qo‘shilish",
+      "en_machine": "Join Deya"
+    },
+    "home.exportMap.factoryLabel": {
+      "ru": "ФАБРИКА DEYA",
+      "uz_candidate": "DEYA FABRIKASI",
+      "en_candidate": "DEYA FACTORY",
+      "note": "Added in the factory-label commit; candidates are machine suggestions, not reviewed."
+    }
+  }
+}

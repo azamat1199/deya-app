@@ -1,4 +1,4 @@
-import { apiOrigin, mediaUrl, readJson } from "@/lib/api";
+import { apiOrigin, listRows, mediaUrl, readJson } from "@/lib/api";
 
 /**
  * GET /api/v1/banners/
@@ -126,18 +126,20 @@ export async function getBanners(locale: string): Promise<Banner[]> {
     return [];
   }
 
-  if (!Array.isArray(body)) {
+  // Bare array OR a DRF `results` envelope — see listRows().
+  const list = listRows(body, url);
+  if (list === null) {
     console.error(
-      `[getBanners] GET ${url} did not return an array — got ${typeof body} | cause: (none)`,
+      `[getBanners] GET ${url} did not return an array or a results envelope — got ${typeof body} | cause: (none)`,
     );
     return [];
   }
 
-  const rows = body.filter(isBanner);
-  if (rows.length !== body.length) {
+  const rows = list.filter(isBanner);
+  if (rows.length !== list.length) {
     console.error(
-      `[getBanners] dropped ${body.length - rows.length} unusable row(s) — first offender:`,
-      JSON.stringify(body.find((row) => !isBanner(row))),
+      `[getBanners] dropped ${list.length - rows.length} unusable row(s) — first offender:`,
+      JSON.stringify(list.find((row) => !isBanner(row))),
       "| cause: (none)",
     );
   }

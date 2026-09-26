@@ -69,20 +69,25 @@ function formatWeight(
   return `${formatDecimal(weight.value)} ${unit}`;
 }
 
-// BLOCKED pending the user's pluralization decision (see the i18n report):
-// the three Russian forms below are correct for /ru but wrong for /uz (which
-// has no plural cases — always "oy") and for /en ("month"/"months"). Proposed
-// replacement: `product.months.{one,few,many,other}` selected with
-// `new Intl.PluralRules(locale).select(count)`, verified to reproduce this
-// function's output identically for every n in 0..200. Left untouched until
-// that is approved.
-function pluralMonths(count: number): string {
-  const mod100 = count % 100;
-  const mod10 = count % 10;
-  if (mod100 >= 11 && mod100 <= 14) return "месяцев";
-  if (mod10 === 1) return "месяц";
-  if (mod10 >= 2 && mod10 <= 4) return "месяца";
-  return "месяцев";
+/**
+ * Shelf life, pluralised by the language's own rules.
+ *
+ * Intl.PluralRules is what decides the CLDR category (one/few/many/other);
+ * nothing here does modulo arithmetic. The hand-rolled Russian version this
+ * replaces was correct for /ru but printed the same three Russian forms on
+ * /uz and /en. Verified against it for every n in 0..200 — /ru is unchanged.
+ *
+ * `other` is the fallback for any category a locale does not list, which is
+ * what makes the single-form Uzbek and the two-form English work off the
+ * same four keys.
+ */
+function monthsLabel(
+  count: number,
+  locale: Locale,
+  forms: Dictionary["product"]["months"],
+): string {
+  const category = new Intl.PluralRules(locale).select(count);
+  return forms[category as keyof typeof forms] ?? forms.other;
 }
 
 /**
@@ -124,6 +129,7 @@ function toWeightOptions(
 function toCharacteristics(
   detail: ProductDetail,
   product: Dictionary["product"],
+  locale: Locale,
 ) {
   const rows: { label: string; value: string }[] = [];
   if (detail.box_weight) {
@@ -135,9 +141,11 @@ function toCharacteristics(
   if (detail.shelf_life_months !== null) {
     rows.push({
       label: product.shelfLife,
-      // pluralMonths() is intentionally untouched here — see the block
-      // comment on its definition.
-      value: `${detail.shelf_life_months} ${pluralMonths(detail.shelf_life_months)}`,
+      value: `${detail.shelf_life_months} ${monthsLabel(
+        detail.shelf_life_months,
+        locale,
+        product.months,
+      )}`,
     });
   }
   if (detail.code) {
@@ -156,6 +164,7 @@ function toDisplayProduct(
   detail: ProductDetail,
   badges: Dictionary["catalog"]["badges"],
   product: Dictionary["product"],
+  locale: Locale,
 ): Product {
   // filter(Boolean) drops any empty URL here, in the DATA LAYER, so an empty
   // string can never reach next/image. When the payload carries no usable
@@ -166,7 +175,7 @@ function toDisplayProduct(
   const primary = gallery[0] ?? IMAGES.placeholder;
   const flavorOptions = toFlavorOptions(detail);
   const weightOptions = toWeightOptions(detail, product);
-  const characteristics = toCharacteristics(detail, product);
+  const characteristics = toCharacteristics(detail, product, locale);
 
   return {
     slug: detail.slug,
@@ -225,6 +234,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     detail,
     dictionary.catalog.badges,
     dictionary.product,
+    locale,
   );
 
   // Related products, keyed off THIS page's route param — never derived from

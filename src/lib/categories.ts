@@ -1,4 +1,4 @@
-import { apiOrigin, mediaImageUrl, readJson } from "@/lib/api";
+import { apiOrigin, listRows, mediaImageUrl, readJson } from "@/lib/api";
 
 /**
  * GET /api/v1/categories/
@@ -79,11 +79,12 @@ export async function getCategories(locale?: string): Promise<Category[]> {
   }
 
   const body: unknown = await readJson(response, url);
-  if (!Array.isArray(body)) {
-    throw new Error(`GET ${url} did not return an array`);
+  // Bare array OR a DRF `results` envelope — see listRows().
+  const rows = listRows(body, url);
+  if (rows === null) {
+    throw new Error(`GET ${url} did not return an array or a results envelope`);
   }
-
-  return body
+  return rows
     .filter(isCategory)
     .map((category) => ({
       ...category,

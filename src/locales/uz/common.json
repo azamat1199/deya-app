@@ -30,11 +30,7 @@
   "downloadPartial": "{total} tadan {current} tasi yuklab olindi"
  },
  "categories": {
-  "croissants": "Kruassanlar",
-  "waffles": "Vaflilar",
-  "waferCandies": "Vaflili konfetlar",
-  "candies": "Konfetlar",
-  "cookies": "Pechene"
+  "waferCandies": "Vaflili konfetlar"
  },
  "footer": {
   "navigation": "Navigatsiya",
@@ -73,7 +69,7 @@
   "rateLimited": "Yuborish urinishlari juda ko‘p. Bir daqiqadan so‘ng qayta urinib ko‘ring.",
   "rateLimitedWithSeconds": "Yuborish urinishlari juda ko‘p. {seconds} soniyadan so‘ng qayta urinib ko‘ring.",
   "phoneInvalid": "Tanlangan davlat uchun to‘g‘ri telefon raqamini kiriting",
-  "required": "Это поле обязательно для заполнения",
+  "required": "Bu maydonni to‘ldirish shart",
   "emailShortLabel": "E-mail"
  },
  "legal": {
@@ -94,7 +90,6 @@
  },
  "about": {
   "history": {
-   "title": "Deya tarixi",
    "timelineLabel": "Deya tarixi xronologiyasi",
    "years": {
     "y1994": "Hammasi kichik pech va orzudan boshlangan.\nBugun Deya — O‘zbekiston qandolat sanoatining yetakchilaridan biri, uning ta’mi dunyoning ko‘p mamlakatlarida tanilgan va sevib iste’mol qilinadi.\n30 yil ichida biz 12 m²dan xalqaro brendgacha yo‘l bosdik va eng muhimini — qalbni, iliqlikni va sifatga sadoqatni saqlab qoldik.",
@@ -121,11 +116,11 @@
    "mapLabel": "Deya eksport yo‘nalishlari xaritasi",
    "truckAlt": "Deya logistikasi",
    "modalTitle": "Qanday hamkor bo‘lish mumkin?",
-   "factoryLabel": "ФАБРИКА DEYA"
+   "factoryLabel": "DEYA FABRIKASI"
   },
-  "aboutEyebrow": "О ФАБРИКЕ",
-  "aboutLinkLabel": "Подробнее о фабрике",
-  "aboutFactoryAlt": "Кондитерская фабрика Deya"
+  "aboutEyebrow": "FABRIKA HAQIDA",
+  "aboutLinkLabel": "Fabrika haqida batafsil",
+  "aboutFactoryAlt": "Deya qandolat fabrikasi"
  },
  "blog": {
   "otherArticles": "Boshqa maqolalar"
@@ -137,58 +132,64 @@
    "bestseller": "Xit savdo",
    "discount": "Chegirma"
   },
-  "goToCategory": "Перейти в каталог: {category}",
-  "recommendedHeading": "Мы также рекомендуем"
+  "goToCategory": "Katalogga o‘tish: {category}",
+  "recommendedHeading": "Shuningdek tavsiya qilamiz"
  },
  "meta": {
-  "siteTitle": "DEYA — Кондитерская фабрика",
-  "siteDescription": "Кондитерская фабрика Deya — производство круассанов, вафель, конфет и печенья с 1994 года. Экспорт в 25+ стран.",
-  "articleNotFound": "Статья не найдена — DEYA",
-  "productNotFound": "Товар не найден — DEYA"
+  "siteTitle": "DEYA — qandolat fabrikasi",
+  "siteDescription": "Deya qandolat fabrikasi — 1994 yildan beri kruassan, vafli, konfet va pechene ishlab chiqarish. 25 dan ortiq mamlakatga eksport.",
+  "articleNotFound": "Maqola topilmadi — DEYA",
+  "productNotFound": "Mahsulot topilmadi — DEYA"
  },
  "product": {
-  "unitKg": "кг",
-  "unitG": "г",
-  "boxWeight": "Вес ящика",
-  "shelfLife": "Срок хранения",
-  "code": "Код товара",
-  "flavorHeading": "Вкус",
-  "weightHeading": "Вес товара",
-  "characteristicsHeading": "Характеристики продукта",
-  "recommendedHeading": "Мы также рекомендуем"
+  "unitKg": "kg",
+  "unitG": "g",
+  "boxWeight": "Quti og‘irligi",
+  "shelfLife": "Saqlash muddati",
+  "code": "Mahsulot kodi",
+  "flavorHeading": "Ta’m",
+  "weightHeading": "Mahsulot vazni",
+  "characteristicsHeading": "Mahsulot xususiyatlari",
+  "recommendedHeading": "Shuningdek tavsiya qilamiz",
+  "months": {
+   "one": "oy",
+   "few": "oy",
+   "many": "oy",
+   "other": "oy"
+  }
  },
  "a11y": {
-  "homeLink": "Deya — на главную",
-  "prevSlide": "Предыдущий слайд",
-  "nextSlide": "Следующий слайд",
-  "openMenu": "Открыть меню",
-  "closeMenu": "Закрыть меню",
-  "mobileNav": "Мобильная навигация",
-  "closeModal": "Закрыть",
-  "searchCountry": "Поиск страны",
-  "countryPlaceholder": "+998 / Uzbekistan",
+  "homeLink": "Deya — bosh sahifaga",
+  "prevSlide": "Oldingi slayd",
+  "nextSlide": "Keyingi slayd",
+  "openMenu": "Menyuni ochish",
+  "closeMenu": "Menyuni yopish",
+  "mobileNav": "Mobil navigatsiya",
+  "closeModal": "Yopish",
+  "searchCountry": "Mamlakatni qidirish",
+  "countryPlaceholder": "+998 / O‘zbekiston",
   "telegram": "Telegram",
   "instagram": "Instagram",
   "logoAlt": "Deya"
  },
  "contacts": {
-  "heading": "Свяжитесь с нами удобным способом",
-  "workingHours": "График работы",
-  "socialTitle": "Мы в социальных сетях",
-  "telegramChannel": "Telegram канал",
-  "addressTitle": "Наш адрес",
-  "addressValue": "Республика Узбекистан, 130100, г.Джизак, промышленная зона «А»",
-  "marketingConsent": "Я даю согласие на получение новостей и специальных предложений от DEYA"
+  "heading": "Biz bilan qulay usulda bog‘laning",
+  "workingHours": "Ish jadvali",
+  "socialTitle": "Biz ijtimoiy tarmoqlarda",
+  "telegramChannel": "Telegram kanali",
+  "addressTitle": "Bizning manzilimiz",
+  "addressValue": "O‘zbekiston Respublikasi, 130100, Jizzax sh., «A» sanoat zonasi",
+  "marketingConsent": "DEYA’dan yangiliklar va maxsus takliflar olishga roziman"
  },
  "partners": {
-  "logosTitle": "Наши партнёры",
-  "certificatesTitle": "Сертификаты и награды",
-  "certificatesDescription": "Наша продукция проходит строгий контроль и соответствует самым высоким международным стандартам качества — это подтверждают полученные сертификаты."
+  "logosTitle": "Bizning hamkorlarimiz",
+  "certificatesTitle": "Sertifikatlar va mukofotlar",
+  "certificatesDescription": "Mahsulotlarimiz qat’iy nazoratdan o‘tadi va sifat bo‘yicha eng yuqori xalqaro standartlarga javob beradi — buni olingan sertifikatlar tasdiqlaydi."
  },
  "careers": {
-  "joinTitle": "Хотите работать в Deya?",
-  "joinParagraph": "Стремительный рост компании означает постоянное появление новых вакансий, поэтому мы всегда ищем преданных своему делу коллег в нашу команду.",
-  "joinHighlight": "Присоединяйтесь к нам и получите возможность достичь своих профессиональных и личных целей.",
-  "joinButton": "Присоединиться к Deya"
+  "joinTitle": "Deyada ishlashni xohlaysizmi?",
+  "joinParagraph": "Kompaniyaning jadal o‘sishi doimo yangi vakansiyalar paydo bo‘lishini anglatadi, shuning uchun biz jamoamizga o‘z ishiga sodiq hamkasblarni doimo izlaymiz.",
+  "joinHighlight": "Bizga qo‘shiling va kasbiy hamda shaxsiy maqsadlaringizga erishish imkoniyatini qo‘lga kiriting.",
+  "joinButton": "Deyaga qo‘shilish"
  }
 }

@@ -1,4 +1,4 @@
-import { apiOrigin, mediaImageUrl, readJson } from "@/lib/api";
+import { apiOrigin, listRows, mediaImageUrl, readJson } from "@/lib/api";
 
 /**
  * GET /api/v1/companies/
@@ -58,13 +58,14 @@ export async function getCompanies(): Promise<Company[]> {
   }
 
   const body: unknown = await readJson(response, url);
-  if (!Array.isArray(body)) {
-    throw new Error(`GET ${url} did not return an array`);
+  // Bare array OR a DRF `results` envelope — see listRows().
+  const rows = listRows(body, url);
+  if (rows === null) {
+    throw new Error(`GET ${url} did not return an array or a results envelope`);
   }
-
   // mediaUrl, not a bare passthrough: the payload's absolute URLs arrive over
   // http:// and the component must never see one.
-  return body.filter(isCompany).map((company) => ({
+  return rows.filter(isCompany).map((company) => ({
     ...company,
     image: mediaImageUrl(company.image, origin),
   }));

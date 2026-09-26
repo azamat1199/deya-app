@@ -1,4 +1,4 @@
-import { apiOrigin, mediaImageUrl, readJson } from "@/lib/api";
+import { apiOrigin, listRows, mediaImageUrl, readJson } from "@/lib/api";
 
 /**
  * GET /api/v1/timeline/
@@ -69,14 +69,15 @@ export async function getTimeline(locale: string): Promise<TimelineEntry[]> {
   }
 
   const body: unknown = await readJson(response, url);
-  if (!Array.isArray(body)) {
-    throw new Error(`GET ${url} did not return an array`);
+  // Bare array OR a DRF `results` envelope — see listRows().
+  const rows = listRows(body, url);
+  if (rows === null) {
+    throw new Error(`GET ${url} did not return an array or a results envelope`);
   }
-
   // A row without a usable id would produce an undefined React key downstream,
   // so it is reported loudly rather than dropped in silence. Logged once with
   // the first offender, not once per row.
-  const rejected = body.filter((row) => !isTimelineEntry(row));
+  const rejected = rows.filter((row) => !isTimelineEntry(row));
   if (rejected.length) {
     console.error(
       `[getTimeline] dropped ${rejected.length} unusable row(s) — first offender:`,
@@ -84,7 +85,7 @@ export async function getTimeline(locale: string): Promise<TimelineEntry[]> {
     );
   }
 
-  return body
+  return rows
     .filter(isTimelineEntry)
     .map((entry) => ({
       ...entry,

@@ -42,12 +42,13 @@ export interface Dictionary {
     /** Shown when some files did not arrive. Carries the same placeholders. */
     downloadPartial: string;
   };
+  /**
+   * Only `waferCandies` is left: the other four were removed as orphans —
+   * category names come from /api/v1/categories/, so nothing read them.
+   * This one is unused too and is a candidate for the same treatment.
+   */
   categories: {
-    croissants: string;
-    waffles: string;
     waferCandies: string;
-    candies: string;
-    cookies: string;
   };
   footer: {
     navigation: string;
@@ -124,7 +125,6 @@ export interface Dictionary {
   };
   about: {
     history: {
-      title: string;
       timelineLabel: string;
       /** One paragraph per timeline year. */
       years: {
@@ -199,6 +199,21 @@ export interface Dictionary {
     weightHeading: string;
     characteristicsHeading: string;
     recommendedHeading: string;
+    /**
+     * Shelf life in months, keyed by CLDR plural category rather than by a
+     * flat list of forms: the categories a language actually uses differ.
+     * Russian needs one/few/many, English one/other, Uzbek none at all — its
+     * four entries deliberately carry the same word, so the three locale
+     * files keep identical key sets.
+     *
+     * Selected with Intl.PluralRules, never by hand-rolled modulo arithmetic.
+     */
+    months: {
+      one: string;
+      few: string;
+      many: string;
+      other: string;
+    };
   };
   a11y: {
     homeLink: string;

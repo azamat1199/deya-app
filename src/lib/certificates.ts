@@ -1,4 +1,4 @@
-import { apiOrigin, mediaImageUrl, mediaUrl, readJson } from "@/lib/api";
+import { apiOrigin, listRows, mediaImageUrl, mediaUrl, readJson } from "@/lib/api";
 
 /**
  * GET /api/v1/certificates/
@@ -53,14 +53,15 @@ export async function getCertificates(): Promise<Certificate[]> {
   }
 
   const body: unknown = await readJson(response, url);
-  if (!Array.isArray(body)) {
-    throw new Error(`GET ${url} did not return an array`);
+  // Bare array OR a DRF `results` envelope — see listRows().
+  const rows = listRows(body, url);
+  if (rows === null) {
+    throw new Error(`GET ${url} did not return an array or a results envelope`);
   }
-
   // `file` gets the same treatment as `image`: it is not fed to next/image, but
   // an http:// href on an https:// page is still mixed content once anything
   // fetches it.
-  return body.filter(isCertificate).map((certificate) => ({
+  return rows.filter(isCertificate).map((certificate) => ({
     ...certificate,
     image: mediaImageUrl(certificate.image, origin),
     file: mediaUrl(certificate.file, origin),

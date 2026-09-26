@@ -21,6 +21,23 @@ const roboto = Roboto({
   style: ["normal", "italic"],
   axes: ["wdth"],
   display: "swap",
+  // The italic faces are only used by the founder quote on /about and by
+  // [&_em]:italic on the legal pages, but next/font preloads every declared
+  // style on every page — measured at 104.7KB of italic (latin 68.8 + cyrillic
+  // 35.9) on routes with no italic text at all.
+  //
+  // This does NOT drop the italic faces: `style` still declares them, the
+  // @font-face rules are still emitted, and /about still renders a real italic
+  // rather than a synthesised oblique. It only stops them being PRELOADED, so
+  // the browser fetches an italic file when it actually meets italic text.
+  //
+  // The flag is per font call, not per style, so the upright faces lose their
+  // preload too and are discovered after the CSS is parsed. `display: swap`
+  // means no invisible text, at the cost of a possible brief fallback flash on
+  // a cold cache. Splitting italic into a second Roboto() call would give it a
+  // different family name, and `font-style: italic` on the base family would
+  // then synthesise an oblique — which is why it is not done that way.
+  preload: false,
   variable: "--font-roboto",
 });
 
