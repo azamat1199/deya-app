@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 
 import BlogGrid, { type BlogGridPost } from "@/components/blog/BlogGrid";
 import Section from "@/components/ui/Section";
-import { blogContent } from "@/content/blog";
 import { newsPosts } from "@/content/news";
 import { IMAGES } from "@/content/images";
 import { isLocale, type Locale } from "@/lib/i18n/config";
@@ -99,7 +98,7 @@ export default async function BlogPage({ params }: BlogPageProps) {
     <Section bg="white" containerWidth="page">
       <div className="flex justify-center">
         <h1 className="mt-14 text-3xl font-normal text-ink-900 lg:text-4xl">
-          {blogContent.heading}
+          {dictionary.home.newsTeaser.heading}
         </h1>
       </div>
       <div className="mt-10 lg:mt-14">
