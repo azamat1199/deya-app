@@ -18,7 +18,7 @@ export const exportMapDesktop: ExportMapConfig = {
   dotRadius: 5,
   // Hub label sits *below* the hub: at +4 it collided with the spoke running
   // up-right to East Asia.
-  factory: { label: "ФАБРИКА DEYA", x: 947, y: 200, anchor: "start", labelDx: 12, labelDy: 20 },
+  factory: { x: 947, y: 200, anchor: "start", labelDx: 12, labelDy: 20 },
   regions: [
     { id: "central-asia", label: "ЦЕНТРАЛЬНАЯ АЗИЯ", x: 990, y: 48, anchor: "start", labelDx: 8, labelDy: 16 },
     // Pulled in from the right edge: at 1200px this label needs ~124 viewBox
@@ -37,7 +37,7 @@ export const exportMapTablet: ExportMapConfig = {
   viewBox: "0 0 900 500",
   fontSize: 12,
   dotRadius: 5,
-  factory: { label: "ФАБРИКА DEYA", x: 630, y: 250, anchor: "start", labelDx: 12, labelDy: 22 },
+  factory: { x: 630, y: 250, anchor: "start", labelDx: 12, labelDy: 22 },
   regions: [
     { id: "central-asia", label: "ЦЕНТРАЛЬНАЯ АЗИЯ", x: 700, y: 70, anchor: "start", labelDx: 8, labelDy: -12 },
     // Pushed right so the label starts past x=700: the hub→Central Asia spoke
@@ -61,7 +61,7 @@ export const exportMapMobile: ExportMapConfig = {
   // is no labelDx that fits 119 units between 264 and the 380 edge.
   fontSize: 9,
   dotRadius: 4,
-  factory: { label: "ФАБРИКА DEYA", x: 252, y: 202, anchor: "start", labelDx: 10, labelDy: 12 },
+  factory: { x: 252, y: 202, anchor: "start", labelDx: 10, labelDy: 12 },
   regions: [
     { id: "central-asia", label: "ЦЕНТРАЛЬНАЯ АЗИЯ", x: 284, y: 26, anchor: "middle", labelDx: 0, labelDy: -13 },
     { id: "transcaucasia", label: "ЗАКАВКАЗЬЕ", x: 155, y: 100, anchor: "middle", labelDx: 0, labelDy: -14 },

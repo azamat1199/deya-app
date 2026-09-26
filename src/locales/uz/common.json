@@ -120,7 +120,8 @@
   "exportMap": {
    "mapLabel": "Deya eksport yo‘nalishlari xaritasi",
    "truckAlt": "Deya logistikasi",
-   "modalTitle": "Qanday hamkor bo‘lish mumkin?"
+   "modalTitle": "Qanday hamkor bo‘lish mumkin?",
+   "factoryLabel": "ФАБРИКА DEYA"
   },
   "aboutEyebrow": "О ФАБРИКЕ",
   "aboutLinkLabel": "Подробнее о фабрике",

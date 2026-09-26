@@ -182,6 +182,7 @@ function MapSvg({
   animate,
   className,
 }: MapSvgProps) {
+  const { t } = useTranslation();
   const { viewBox, factory, regions, fontSize, dotRadius } = config;
   const svgRef = useRef<SVGSVGElement>(null);
   const [, , vbWidth, vbHeight] = viewBox.split(" ").map(Number);
@@ -279,7 +280,7 @@ function MapSvg({
         className="font-medium uppercase"
         variants={variants.hubLabel}
       >
-        {factory.label}
+        {t("home.exportMap.factoryLabel")}
       </motion.text>
     </motion.svg>
   );
@@ -489,7 +490,7 @@ export default function ExportMap({ regions, headingText }: ExportMapProps) {
             <div className="sr-only">
               <p>{t("home.exportMap.mapLabel")}</p>
               <ul>
-                <li>{desktopConfig.factory.label}</li>
+                <li>{t("home.exportMap.factoryLabel")}</li>
                 {/* An unlabelled marker contributes no list item — a blank one
                     would be announced as an empty bullet. */}
                 {desktopConfig.regions

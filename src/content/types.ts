@@ -89,7 +89,8 @@ export interface ExportMapConfig {
    * in a different position in each layout (mid-right on desktop/tablet,
    * bottom-centre on mobile) and its label must dodge the spokes. */
   factory: {
-    label: string;
+    // No label here: the hub's name is UI copy, not coordinates, so it comes
+    // from the dictionary (home.exportMap.factoryLabel) in every locale.
     x: number;
     y: number;
     anchor?: MapPoint["anchor"];

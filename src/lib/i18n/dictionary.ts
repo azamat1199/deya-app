@@ -154,6 +154,9 @@ export interface Dictionary {
       mapLabel: string;
       truckAlt: string;
       modalTitle: string;
+      /** The hub marker's name on the map and in its screen-reader list.
+       *  The SVG uppercases it in CSS; the list reads it as stored. */
+      factoryLabel: string;
     };
     aboutEyebrow: string;
     aboutLinkLabel: string;

@@ -120,7 +120,8 @@
   "exportMap": {
    "mapLabel": "Map of Deya export destinations",
    "truckAlt": "Deya logistics",
-   "modalTitle": "How to become a partner?"
+   "modalTitle": "How to become a partner?",
+   "factoryLabel": "ФАБРИКА DEYA"
   },
   "aboutEyebrow": "О ФАБРИКЕ",
   "aboutLinkLabel": "Подробнее о фабрике",
