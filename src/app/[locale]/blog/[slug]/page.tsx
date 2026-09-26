@@ -168,6 +168,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <OtherArticles
         locale={locale as Locale}
         currentSlug={post.slug}
+        posts={post.other_posts}
         heading={dictionary.blog.otherArticles}
         allNewsLabel={dictionary.buttons.allNews}
         readMoreLabel={dictionary.buttons.readMore}

@@ -35,10 +35,12 @@ export interface PostBlock {
 export interface PostDetail extends PostSummary {
   blocks: PostBlock[];
   /**
-   * Documented as "string" — it is actually an ARRAY. Every observed post
-   * returns `[]`, so the element shape is still unknown and nothing renders it.
+   * The backend's own "other articles" for this post, already resolved for the
+   * requested locale and excluding the post itself. Documented as "string" — it
+   * is actually an ARRAY of post summaries (id, title, slug, excerpt, cover,
+   * published_at), validated with the same rules as the list endpoint.
    */
-  other_posts: unknown[];
+  other_posts: PostSummary[];
 }
 
 const POSTS_PATH = "/api/v1/posts/";
@@ -214,11 +216,11 @@ export async function getPost(
     // sort_order values stay stable.
     .sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
 
-  // Logged so its real shape is on record; still not rendered anywhere.
-  const otherPosts = Array.isArray(raw.other_posts) ? raw.other_posts : [];
-  console.info(
-    `[getPost] other_posts is ${Array.isArray(raw.other_posts) ? "an array" : typeof raw.other_posts} of length ${otherPosts.length}${otherPosts.length ? ` — first element keys: ${Object.keys(otherPosts[0] as object).join(", ")}` : " (no samples yet)"}`,
-  );
+  // Same shape and same validation as a list row, so a malformed element is
+  // dropped rather than reaching OtherArticles without an id or a slug.
+  const otherPosts = (Array.isArray(raw.other_posts) ? raw.other_posts : [])
+    .filter(isUsableSummary)
+    .map((row) => toSummary(row, origin));
 
   return {
     ...toSummary(raw, origin),

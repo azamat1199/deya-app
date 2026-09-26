@@ -8,14 +8,20 @@ import NewsListCard, {
   NEWS_LIST_CELL_CLASSES,
   NEWS_LIST_GRID_CLASSES,
 } from "@/components/news/NewsListCard";
-import { newsPosts } from "@/content/news";
 import { cn } from "@/lib/cn";
 import type { Locale } from "@/lib/i18n/config";
+import type { PostSummary } from "@/lib/posts";
 
 export interface OtherArticlesProps {
   locale: Locale;
   /** The post being read — never offered back to the reader. */
   currentSlug: string;
+  /**
+   * The post's own `other_posts` from the API, fetched on the server with the
+   * post itself. Used to be the static sample list in content/news.ts, which
+   * showed the same four Russian mock articles on every post in every locale.
+   */
+  posts: PostSummary[];
   heading: string;
   allNewsLabel: string;
   readMoreLabel: string;
@@ -71,22 +77,28 @@ const ALL_NEWS_IN_SLIDE =
 export default function OtherArticles({
   locale,
   currentSlug,
+  posts,
   heading,
   allNewsLabel,
   readMoreLabel,
 }: OtherArticlesProps) {
-  // Filter first, then sort, then take: sorting a copy keeps the exported
-  // array's order intact for every other consumer. If fewer than four remain
-  // the grid simply renders fewer cells — the column count is fixed, so the
-  // cards never stretch to fill.
+  // Filter first, then sort, then take: sorting a copy keeps the prop's order
+  // intact. The backend already excludes the current post; the filter stays as
+  // a guard. If fewer than four remain the grid simply renders fewer cells —
+  // the column count is fixed, so the cards never stretch to fill.
   const related = useMemo(
     () =>
-      newsPosts
+      posts
         .filter((post) => post.slug !== currentSlug)
         .slice()
-        .sort((a, b) => b.date.localeCompare(a.date))
+        .sort((a, b) => {
+          const left = Date.parse(b.published_at);
+          const right = Date.parse(a.published_at);
+          if (Number.isNaN(left) || Number.isNaN(right)) return 0;
+          return left - right;
+        })
         .slice(0, RELATED_COUNT),
-    [currentSlug],
+    [posts, currentSlug],
   );
 
   const trackRef = useRef<HTMLDivElement>(null);
@@ -174,7 +186,7 @@ export default function OtherArticles({
             <NewsListCard
               id={post.slug}
               href={`/${locale}/blog/${post.slug}`}
-              date={post.date}
+              date={post.published_at}
               title={post.title}
               excerpt={post.excerpt}
               locale={locale}
