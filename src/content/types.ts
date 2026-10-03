@@ -69,9 +69,20 @@ export interface NewsPost {
   blocks: BlogBlock[];
 }
 
+/** The six export-map markers. Also the dictionary keys under
+ *  home.exportMap.regions, so a marker's fallback label is looked up by it. */
+export type ExportRegionSlug =
+  | "central-asia"
+  | "east-asia"
+  | "transcaucasia"
+  | "america"
+  | "south-asia"
+  | "middle-east";
+
 export interface MapPoint {
-  id: string;
-  label: string;
+  // No label here: the name is copy, not coordinates. It comes from the API's
+  // export_regions (matched by id) or, failing that, from the dictionary.
+  id: ExportRegionSlug;
   /** Position in the map's own SVG viewBox coordinate space. */
   x: number;
   y: number;

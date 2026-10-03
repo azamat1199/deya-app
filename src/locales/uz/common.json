@@ -116,7 +116,15 @@
    "mapLabel": "Deya eksport yo‘nalishlari xaritasi",
    "truckAlt": "Deya logistikasi",
    "modalTitle": "Qanday hamkor bo‘lish mumkin?",
-   "factoryLabel": "DEYA FABRIKASI"
+   "factoryLabel": "DEYA FABRIKASI",
+   "regions": {
+    "central-asia": "MARKAZIY OSIYO",
+    "east-asia": "SHARQIY OSIYO",
+    "transcaucasia": "JANUBIY KAVKAZ",
+    "america": "AMERIKA",
+    "south-asia": "JANUBIY OSIYO",
+    "middle-east": "YAQIN SHARQ"
+   }
   },
   "aboutEyebrow": "FABRIKA HAQIDA",
   "aboutLinkLabel": "Fabrika haqida batafsil",

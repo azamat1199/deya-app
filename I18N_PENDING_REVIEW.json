@@ -236,6 +236,42 @@
       "uz_candidate": "DEYA FABRIKASI",
       "en_candidate": "DEYA FACTORY",
       "note": "Added in the factory-label commit; candidates are machine suggestions, not reviewed."
+    },
+    "home.exportMap.regions.central-asia": {
+      "ru": "ЦЕНТРАЛЬНАЯ АЗИЯ",
+      "uz_machine": "MARKAZIY OSIYO",
+      "en_machine": "CENTRAL ASIA",
+      "note": "IN PRODUCTION (unlike the _README's default): shipped as the map's fallback label on /uz and /en until a native speaker reviews it. Shown only when the API has no translated name for this region."
+    },
+    "home.exportMap.regions.east-asia": {
+      "ru": "ВОСТОЧНАЯ АЗИЯ",
+      "uz_machine": "SHARQIY OSIYO",
+      "en_machine": "EAST ASIA",
+      "note": "IN PRODUCTION (unlike the _README's default): shipped as the map's fallback label on /uz and /en until a native speaker reviews it. Shown only when the API has no translated name for this region."
+    },
+    "home.exportMap.regions.transcaucasia": {
+      "ru": "ЗАКАВКАЗЬЕ",
+      "uz_machine": "JANUBIY KAVKAZ",
+      "en_machine": "SOUTH CAUCASUS",
+      "note": "IN PRODUCTION (unlike the _README's default): shipped as the map's fallback label on /uz and /en until a native speaker reviews it. Shown only when the API has no translated name for this region."
+    },
+    "home.exportMap.regions.america": {
+      "ru": "АМЕРИКА",
+      "uz_machine": "AMERIKA",
+      "en_machine": "AMERICA",
+      "note": "IN PRODUCTION (unlike the _README's default): shipped as the map's fallback label on /uz and /en until a native speaker reviews it. Shown only when the API has no translated name for this region."
+    },
+    "home.exportMap.regions.south-asia": {
+      "ru": "ЮЖНАЯ АЗИЯ",
+      "uz_machine": "JANUBIY OSIYO",
+      "en_machine": "SOUTH ASIA",
+      "note": "IN PRODUCTION (unlike the _README's default): shipped as the map's fallback label on /uz and /en until a native speaker reviews it. Shown only when the API has no translated name for this region."
+    },
+    "home.exportMap.regions.middle-east": {
+      "ru": "БЛИЖНИЙ ВОСТОК",
+      "uz_machine": "YAQIN SHARQ",
+      "en_machine": "MIDDLE EAST",
+      "note": "IN PRODUCTION (unlike the _README's default): shipped as the map's fallback label on /uz and /en until a native speaker reviews it. Shown only when the API has no translated name for this region."
     }
   }
 }

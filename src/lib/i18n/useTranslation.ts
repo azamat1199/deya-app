@@ -1,5 +1,7 @@
 "use client";
 
+import { useCallback } from "react";
+
 import { useI18nContext } from "./DictionaryProvider";
 import type { TranslationKey } from "./dictionary";
 
@@ -15,10 +17,15 @@ function resolvePath(source: unknown, path: string): unknown {
 export function useTranslation() {
   const { dictionary, locale } = useI18nContext();
 
-  function t(key: TranslationKey): string {
-    const value = resolvePath(dictionary, key);
-    return typeof value === "string" ? value : key;
-  }
+  // Stable per dictionary, so callers can list `t` as a memo/effect
+  // dependency without recomputing on every render.
+  const t = useCallback(
+    (key: TranslationKey): string => {
+      const value = resolvePath(dictionary, key);
+      return typeof value === "string" ? value : key;
+    },
+    [dictionary],
+  );
 
   return { t, locale };
 }

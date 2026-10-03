@@ -116,7 +116,15 @@
    "mapLabel": "Map of Deya export destinations",
    "truckAlt": "Deya logistics",
    "modalTitle": "How to become a partner?",
-   "factoryLabel": "DEYA FACTORY"
+   "factoryLabel": "DEYA FACTORY",
+   "regions": {
+    "central-asia": "CENTRAL ASIA",
+    "east-asia": "EAST ASIA",
+    "transcaucasia": "SOUTH CAUCASUS",
+    "america": "AMERICA",
+    "south-asia": "SOUTH ASIA",
+    "middle-east": "MIDDLE EAST"
+   }
   },
   "aboutEyebrow": "ABOUT THE FACTORY",
   "aboutLinkLabel": "More about the factory",

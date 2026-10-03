@@ -1,3 +1,5 @@
+import type { ExportRegionSlug } from "@/content/types";
+
 export interface Dictionary {
   nav: {
     about: string;
@@ -157,6 +159,10 @@ export interface Dictionary {
       /** The hub marker's name on the map and in its screen-reader list.
        *  The SVG uppercases it in CSS; the list reads it as stored. */
       factoryLabel: string;
+      /** Region marker names, keyed by marker slug. The fallback for when the
+       *  API sends no name for a marker, or only the untranslated Russian one
+       *  on /uz and /en. Uppercased in CSS like factoryLabel. */
+      regions: Record<ExportRegionSlug, string>;
     };
     aboutEyebrow: string;
     aboutLinkLabel: string;

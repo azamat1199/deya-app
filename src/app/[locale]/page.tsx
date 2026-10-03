@@ -236,15 +236,15 @@ export default async function HomePage({ params }: HomePageProps) {
         badge: product.badge,
       }));
 
-  // An empty array is what ExportMap treats as "no data" — it then keeps the
-  // static labels rather than drawing an unlabelled map. That is deliberate and
-  // agreed, but it is the one case where content/regions.ts reaches the screen,
-  // so it is logged here. A failed request is already logged by getHome, with
+  // An empty array is what ExportMap treats as "no data" — every marker then
+  // shows its dictionary label (home.exportMap.regions) rather than a CMS
+  // name. That is deliberate and agreed, but it hides the CMS entirely, so it
+  // is logged here. A failed request is already logged by getHome, with
   // its cause; this covers the successful-but-empty case it cannot see.
   const exportRegions = home ? home.export_regions : [];
   if (home && home.export_regions.length === 0) {
     console.error(
-      `[HomePage] /api/v1/home/ returned an EMPTY export_regions array on /${locale} — the map is falling back to the static labels in content/regions.ts. Populate the regions in the CMS.`,
+      `[HomePage] /api/v1/home/ returned an EMPTY export_regions array on /${locale} — the map is falling back to the dictionary labels (home.exportMap.regions). Populate the regions in the CMS.`,
     );
   }
 

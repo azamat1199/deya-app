@@ -1,4 +1,19 @@
-import type { ExportMapConfig } from "./types";
+import type { ExportMapConfig, ExportRegionSlug } from "./types";
+
+/**
+ * Which GET /api/v1/home/ `export_regions[].id` each marker shows. This is the
+ * ONLY link between the API and the map: regions are matched by id, never by
+ * name, because the name is translated per locale and would stop matching the
+ * moment the CMS gained a uz or en value. Live ids, checked against the API.
+ */
+export const EXPORT_REGION_API_IDS: Record<ExportRegionSlug, number> = {
+  "south-asia": 2,
+  "middle-east": 3,
+  america: 4,
+  transcaucasia: 5,
+  "central-asia": 6,
+  "east-asia": 7,
+};
 
 // Three hand-tuned coordinate sets, one per breakpoint. Do NOT stretch one set
 // with CSS: the SVG box ratio and the viewBox ratio must always be identical
@@ -20,14 +35,14 @@ export const exportMapDesktop: ExportMapConfig = {
   // up-right to East Asia.
   factory: { x: 947, y: 200, anchor: "start", labelDx: 12, labelDy: 20 },
   regions: [
-    { id: "central-asia", label: "ЦЕНТРАЛЬНАЯ АЗИЯ", x: 990, y: 48, anchor: "start", labelDx: 8, labelDy: 16 },
+    { id: "central-asia", x: 990, y: 48, anchor: "start", labelDx: 8, labelDy: 16 },
     // Pulled in from the right edge: at 1200px this label needs ~124 viewBox
     // units and would otherwise run past the 1321-unit frame.
-    { id: "east-asia", label: "ВОСТОЧНАЯ АЗИЯ", x: 1160, y: 140, anchor: "start", labelDx: 8, labelDy: 16 },
-    { id: "transcaucasia", label: "ЗАКАВКАЗЬЕ", x: 440, y: 80, anchor: "end", labelDx: -8, labelDy: 16 },
-    { id: "america", label: "АМЕРИКА", x: 66, y: 168, anchor: "start", labelDx: -6, labelDy: 22 },
-    { id: "south-asia", label: "ЮЖНАЯ АЗИЯ", x: 705, y: 325, anchor: "end", labelDx: -8, labelDy: 22 },
-    { id: "middle-east", label: "БЛИЖНИЙ ВОСТОК", x: 385, y: 332, anchor: "start", labelDx: -6, labelDy: 24 },
+    { id: "east-asia", x: 1160, y: 140, anchor: "start", labelDx: 8, labelDy: 16 },
+    { id: "transcaucasia", x: 440, y: 80, anchor: "end", labelDx: -8, labelDy: 16 },
+    { id: "america", x: 66, y: 168, anchor: "start", labelDx: -6, labelDy: 22 },
+    { id: "south-asia", x: 705, y: 325, anchor: "end", labelDx: -8, labelDy: 22 },
+    { id: "middle-east", x: 385, y: 332, anchor: "start", labelDx: -6, labelDy: 24 },
   ],
 };
 
@@ -39,15 +54,15 @@ export const exportMapTablet: ExportMapConfig = {
   dotRadius: 5,
   factory: { x: 630, y: 250, anchor: "start", labelDx: 12, labelDy: 22 },
   regions: [
-    { id: "central-asia", label: "ЦЕНТРАЛЬНАЯ АЗИЯ", x: 700, y: 70, anchor: "start", labelDx: 8, labelDy: -12 },
+    { id: "central-asia", x: 700, y: 70, anchor: "start", labelDx: 8, labelDy: -12 },
     // Pushed right so the label starts past x=700: the hub→Central Asia spoke
     // occupies x 630–700, and at 768px this label is wide enough to reach back
     // into it.
-    { id: "east-asia", label: "ВОСТОЧНАЯ АЗИЯ", x: 790, y: 190, anchor: "end", labelDx: 75, labelDy: -14 },
-    { id: "transcaucasia", label: "ЗАКАВКАЗЬЕ", x: 300, y: 105, anchor: "end", labelDx: -10, labelDy: 4 },
-    { id: "america", label: "АМЕРИКА", x: 60, y: 225, anchor: "start", labelDx: -6, labelDy: -14 },
-    { id: "south-asia", label: "ЮЖНАЯ АЗИЯ", x: 480, y: 430, anchor: "end", labelDx: -10, labelDy: 6 },
-    { id: "middle-east", label: "БЛИЖНИЙ ВОСТОК", x: 260, y: 450, anchor: "start", labelDx: -6, labelDy: 22 },
+    { id: "east-asia", x: 790, y: 190, anchor: "end", labelDx: 75, labelDy: -14 },
+    { id: "transcaucasia", x: 300, y: 105, anchor: "end", labelDx: -10, labelDy: 4 },
+    { id: "america", x: 60, y: 225, anchor: "start", labelDx: -6, labelDy: -14 },
+    { id: "south-asia", x: 480, y: 430, anchor: "end", labelDx: -10, labelDy: 6 },
+    { id: "middle-east", x: 260, y: 450, anchor: "start", labelDx: -6, labelDy: 22 },
   ],
 };
 
@@ -63,15 +78,15 @@ export const exportMapMobile: ExportMapConfig = {
   dotRadius: 4,
   factory: { x: 252, y: 202, anchor: "start", labelDx: 10, labelDy: 12 },
   regions: [
-    { id: "central-asia", label: "ЦЕНТРАЛЬНАЯ АЗИЯ", x: 284, y: 26, anchor: "middle", labelDx: 0, labelDy: -13 },
-    { id: "transcaucasia", label: "ЗАКАВКАЗЬЕ", x: 155, y: 100, anchor: "middle", labelDx: 0, labelDy: -14 },
+    { id: "central-asia", x: 284, y: 26, anchor: "middle", labelDx: 0, labelDy: -13 },
+    { id: "transcaucasia", x: 155, y: 100, anchor: "middle", labelDx: 0, labelDy: -14 },
     // +2 clears the hub→Central Asia spoke on the left; below the dot instead
     // would land it on its own hub→East Asia spoke.
-    { id: "east-asia", label: "ВОСТОЧНАЯ АЗИЯ", x: 320, y: 158, anchor: "middle", labelDx: 2, labelDy: -13 },
+    { id: "east-asia", x: 320, y: 158, anchor: "middle", labelDx: 2, labelDy: -13 },
     // Only 51 units of frame sit left of this dot but the label needs ~64 at
     // 360px, so it moves up and right of the node instead of left of it.
-    { id: "america", label: "АМЕРИКА", x: 57, y: 167, anchor: "end", labelDx: 14, labelDy: -8 },
-    { id: "south-asia", label: "ЮЖНАЯ АЗИЯ", x: 227, y: 257, anchor: "middle", labelDx: -9, labelDy: 15 },
-    { id: "middle-east", label: "БЛИЖНИЙ ВОСТОК", x: 39, y: 315, anchor: "start", labelDx: 0, labelDy: 14 },
+    { id: "america", x: 57, y: 167, anchor: "end", labelDx: 14, labelDy: -8 },
+    { id: "south-asia", x: 227, y: 257, anchor: "middle", labelDx: -9, labelDy: 15 },
+    { id: "middle-east", x: 39, y: 315, anchor: "start", labelDx: 0, labelDy: 14 },
   ],
 };

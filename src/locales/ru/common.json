@@ -116,7 +116,15 @@
    "mapLabel": "Карта экспортных направлений Deya",
    "truckAlt": "Логистика Deya",
    "modalTitle": "Как стать партнёром?",
-   "factoryLabel": "ФАБРИКА DEYA"
+   "factoryLabel": "ФАБРИКА DEYA",
+   "regions": {
+    "central-asia": "ЦЕНТРАЛЬНАЯ АЗИЯ",
+    "east-asia": "ВОСТОЧНАЯ АЗИЯ",
+    "transcaucasia": "ЗАКАВКАЗЬЕ",
+    "america": "АМЕРИКА",
+    "south-asia": "ЮЖНАЯ АЗИЯ",
+    "middle-east": "БЛИЖНИЙ ВОСТОК"
+   }
   },
   "aboutEyebrow": "О ФАБРИКЕ",
   "aboutLinkLabel": "Подробнее о фабрике",

@@ -21,12 +21,18 @@ import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import {
+  EXPORT_REGION_API_IDS,
   exportMapDesktop,
   exportMapMobile,
   exportMapTablet,
 } from "@/content/regions";
 import { homeContent } from "@/content/home";
-import type { ExportMapConfig } from "@/content/types";
+import type {
+  ExportMapConfig,
+  ExportRegionSlug,
+  MapPoint,
+} from "@/content/types";
+import type { TranslationKey } from "@/lib/i18n/dictionary";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 
 // Loaded on demand: this form lives inside a Modal that only mounts when the
@@ -162,7 +168,7 @@ function useViewBoxScale(
 }
 
 interface MapSvgProps {
-  config: ExportMapConfig;
+  config: LabelledMapConfig;
   variants: MapVariants;
   /** `false` mounts straight into the final state (reduced motion), avoiding
    * the one-frame flash of a hidden map. */
@@ -286,74 +292,95 @@ function MapSvg({
   );
 }
 
-/** Case- and whitespace-insensitive, so "  Южная  Азия " matches
- *  "ЮЖНАЯ АЗИЯ". Cyrillic and Latin stay distinct, which is what keeps the
- *  API's "Amerika" from colliding with the "АМЕРИКА" marker. */
-function matchKey(name: string): string {
-  return name.trim().toUpperCase().replace(/\s+/g, " ");
+/** A marker as drawn: its geometry plus the label resolved for this locale. */
+type LabelledPoint = MapPoint & { label: string };
+type LabelledMapConfig = Omit<ExportMapConfig, "regions"> & {
+  regions: LabelledPoint[];
+};
+
+const CYRILLIC = /[\u0400-\u04FF]/;
+
+const MARKER_SLUGS = Object.keys(EXPORT_REGION_API_IDS) as ExportRegionSlug[];
+const KNOWN_API_IDS = new Set(Object.values(EXPORT_REGION_API_IDS));
+
+interface RegionLabels {
+  labels: Record<ExportRegionSlug, string>;
+  /** Markers whose API id is absent from a non-empty response. */
+  orphanMarkers: string[];
+  /** API regions whose id no marker claims. */
+  unusedRegions: string[];
+  /** Markers with neither an API name nor a dictionary entry. */
+  slugLabels: ExportRegionSlug[];
 }
 
 /**
- * Replaces each marker's label with the matching API region's name, matched BY
- * NAME. Coordinates, offsets, anchors, ordering and the marker set itself are
- * untouched — the three configs in content/regions.ts are hand-tuned per
- * breakpoint and the API sends the same "1.00"/"1.00" position pair for every
- * region, so its position_x/position_y are deliberately never read.
+ * One label per marker, resolved once for all three breakpoints. API regions
+ * are matched to markers BY ID through EXPORT_REGION_API_IDS — never by name,
+ * which is translated per locale. Per marker, the first non-empty of:
  *
- * LABEL SOURCING, once the API has answered with at least one region:
+ *   1. the API's name for this id, in the active locale
+ *   2. the dictionary's home.exportMap.regions.<slug>
+ *   3. the slug itself, reported, so a marker is never left blank
  *
- *   matched   → the API's own name
- *   unmatched → NO label text. The dot and its spoke still render, because
- *               that geometry is layout rather than data, but the static
- *               label is NOT substituted — a stale name presented as live
- *               data is worse than a missing one, and the console.error in
- *               ExportMap names the orphan so it gets fixed in the CMS.
+ * The API's name is skipped on /uz and /en when it is Cyrillic: the backend
+ * answers an unfilled uz/en field with the Russian value rather than with "",
+ * so a Cyrillic name there means "not translated yet", and the dictionary has
+ * the better label. The site's Uzbek is Latin-script throughout.
  *
- * An API region matching no marker is ignored: markers are never added.
- *
- * The ONE exception is `regions.length === 0` — an empty array or a failed
- * request — where the static labels are kept deliberately, because a wholly
- * unlabelled map is useless. That is the only path on which content/regions.ts
- * labels reach the screen.
+ * An empty `regions` (empty section or failed request) simply sends every
+ * marker to step 2; the page already logs that case. API regions with no
+ * marker never add one.
  */
-function withApiLabels(
-  config: ExportMapConfig,
+function resolveRegionLabels(
   regions: ExportRegion[],
-): ExportMapConfig {
-  if (regions.length === 0) return config;
+  locale: string,
+  t: (key: TranslationKey) => string,
+): RegionLabels {
+  const nameById = new Map(regions.map((region) => [region.id, region.name]));
+  const labels = {} as Record<ExportRegionSlug, string>;
+  const orphanMarkers: string[] = [];
+  const slugLabels: ExportRegionSlug[] = [];
 
-  const byName = new Map(
-    regions.map((region) => [matchKey(region.name), region.name]),
-  );
+  for (const slug of MARKER_SLUGS) {
+    const apiId = EXPORT_REGION_API_IDS[slug];
+    if (regions.length > 0 && !nameById.has(apiId)) {
+      orphanMarkers.push(`${slug} (id=${apiId})`);
+    }
 
+    let apiName = nameById.get(apiId)?.trim() ?? "";
+    if (locale !== "ru" && CYRILLIC.test(apiName)) apiName = "";
+
+    const key: TranslationKey = `home.exportMap.regions.${slug}`;
+    const dictionaryLabel = t(key);
+    const fallback = dictionaryLabel !== key ? dictionaryLabel.trim() : "";
+
+    labels[slug] = apiName || fallback || slug;
+    if (!apiName && !fallback) slugLabels.push(slug);
+  }
+
+  return {
+    labels,
+    orphanMarkers,
+    unusedRegions: regions
+      .filter((region) => !KNOWN_API_IDS.has(region.id))
+      .map((region) => `${region.name} (id=${region.id})`),
+    slugLabels,
+  };
+}
+
+/** Puts the resolved labels on one breakpoint's markers. Coordinates, offsets,
+ *  anchors, ordering and the marker set itself are untouched — and the API's
+ *  position_x/position_y (always "1.00") are deliberately never read. */
+function withLabels(
+  config: ExportMapConfig,
+  labels: Record<ExportRegionSlug, string>,
+): LabelledMapConfig {
   return {
     ...config,
     regions: config.regions.map((region) => ({
       ...region,
-      label: byName.get(matchKey(region.label)) ?? "",
+      label: labels[region.id],
     })),
-  };
-}
-
-/**
- * Both halves of the mismatch, reported together. Computed off the desktop
- * config because all three breakpoints carry the same six marker names.
- */
-function findMismatches(regions: ExportRegion[]) {
-  if (regions.length === 0) return { orphanMarkers: [], unusedRegions: [] };
-
-  const markerKeys = new Set(
-    exportMapDesktop.regions.map((region) => matchKey(region.label)),
-  );
-  const apiKeys = new Set(regions.map((region) => matchKey(region.name)));
-
-  return {
-    orphanMarkers: exportMapDesktop.regions
-      .filter((region) => !apiKeys.has(matchKey(region.label)))
-      .map((region) => region.id),
-    unusedRegions: regions
-      .filter((region) => !markerKeys.has(matchKey(region.name)))
-      .map((region) => `${region.name} (id=${region.id})`),
   };
 }
 
@@ -364,9 +391,10 @@ export interface ExportRegion {
 }
 
 export interface ExportMapProps {
-  /** From GET /api/v1/home/ `export_regions[]`. An empty array — whether the
-   *  section is genuinely empty or the request failed — keeps every marker on
-   *  its static label; see withApiLabels. */
+  /** From GET /api/v1/home/ `export_regions[]`. Matched to markers by id. An
+   *  empty array — whether the section is genuinely empty or the request
+   *  failed — puts every marker on its dictionary label; see
+   *  resolveRegionLabels. */
   regions: ExportRegion[];
   /**
    * The heading, from GET /api/v1/banners/ type "sub_main_map" (the type name
@@ -381,7 +409,7 @@ export interface ExportMapProps {
 }
 
 export default function ExportMap({ regions, headingText }: ExportMapProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [isPartnerFormOpen, setIsPartnerFormOpen] = useState(false);
   const diagramRef = useRef<HTMLDivElement>(null);
   const inView = useInView(diagramRef, { once: true, margin: "-100px" });
@@ -404,45 +432,48 @@ export default function ExportMap({ regions, headingText }: ExportMapProps) {
     [prefersReducedMotion],
   );
 
-  // One overlay per breakpoint config. Labels only — see withApiLabels.
+  // Labels are resolved once and shared: all three breakpoints carry the same
+  // six markers. See resolveRegionLabels.
+  const { labels, orphanMarkers, unusedRegions, slugLabels } = useMemo(
+    () => resolveRegionLabels(regions, locale, t),
+    [regions, locale, t],
+  );
+
+  // One overlay per breakpoint config. Labels only — see withLabels.
   const desktopConfig = useMemo(
-    () => withApiLabels(exportMapDesktop, regions),
-    [regions],
+    () => withLabels(exportMapDesktop, labels),
+    [labels],
   );
   const tabletConfig = useMemo(
-    () => withApiLabels(exportMapTablet, regions),
-    [regions],
+    () => withLabels(exportMapTablet, labels),
+    [labels],
   );
   const mobileConfig = useMemo(
-    () => withApiLabels(exportMapMobile, regions),
-    [regions],
+    () => withLabels(exportMapMobile, labels),
+    [labels],
   );
 
   // Reported from an effect rather than during render, so a re-render cannot
-  // repeat it. A marker left unlabelled is a data fault, not a display choice:
-  // it must be loud enough to get fixed in the CMS.
-  const { orphanMarkers, unusedRegions } = useMemo(
-    () => findMismatches(regions),
-    [regions],
-  );
+  // repeat it. All three are warn, NOT error: each is a CMS data-entry issue
+  // the map already survives (the marker falls back to its dictionary label),
+  // and console.error trips the Next dev error overlay on every page load.
   useEffect(() => {
     if (orphanMarkers.length > 0) {
-      console.error(
-        `[ExportMap] ${orphanMarkers.length} marker(s) have no matching export_region and render WITHOUT a label: ${orphanMarkers.join(", ")} — add these names in the CMS.`,
+      console.warn(
+        `[ExportMap] ${orphanMarkers.length} marker(s) have no export_region with their id and show the dictionary label: ${orphanMarkers.join(", ")} — restore these ids in the CMS or update EXPORT_REGION_API_IDS.`,
       );
     }
-    // warn, NOT error: an export_region with no marker is a CMS data-entry
-    // problem, not a code fault, and console.error trips the Next dev error
-    // overlay on every home page load. The check itself stays — a genuinely
-    // unmatched region must keep being named here so it can be found in the
-    // CMS. The orphan-marker case above stays an error: that one costs a
-    // label on the rendered map.
     if (unusedRegions.length > 0) {
       console.warn(
         `[ExportMap] ${unusedRegions.length} export_region(s) match no marker on the map and are not rendered: ${unusedRegions.join(", ")}.`,
       );
     }
-  }, [orphanMarkers, unusedRegions]);
+    if (slugLabels.length > 0) {
+      console.warn(
+        `[ExportMap] ${slugLabels.length} marker(s) have no API name and no dictionary label on /${locale}, showing the slug: ${slugLabels.join(", ")} — add home.exportMap.regions.<slug> to the locale file.`,
+      );
+    }
+  }, [orphanMarkers, unusedRegions, slugLabels, locale]);
 
   const svgMotionProps = {
     variants,
@@ -491,13 +522,9 @@ export default function ExportMap({ regions, headingText }: ExportMapProps) {
               <p>{t("home.exportMap.mapLabel")}</p>
               <ul>
                 <li>{t("home.exportMap.factoryLabel")}</li>
-                {/* An unlabelled marker contributes no list item — a blank one
-                    would be announced as an empty bullet. */}
-                {desktopConfig.regions
-                  .filter((region) => region.label)
-                  .map((region) => (
-                    <li key={region.id}>{region.label}</li>
-                  ))}
+                {desktopConfig.regions.map((region) => (
+                  <li key={region.id}>{region.label}</li>
+                ))}
               </ul>
             </div>
 
