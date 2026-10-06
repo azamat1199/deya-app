@@ -12,10 +12,16 @@ import { CAREERS_SECTION_HEADING } from "./sectionType";
 
 export interface CareersCultureProps {
   item: ProductInfoItem;
+  /** The block's position among the CareersCulture blocks on the page. Even
+   *  index: text left, image right. Odd index: image left, text right. */
+  index: number;
 }
 
-export default function CareersCulture({ item }: CareersCultureProps) {
+export default function CareersCulture({ item, index }: CareersCultureProps) {
   const image = item.image || null;
+  // Reordered at lg only. The markup stays text-first, so the single-column
+  // mobile stack (text above image) is the same for every block.
+  const imageFirst = index % 2 === 1;
 
   const titleHtml = isBlankRichText(item.title)
     ? null
@@ -50,7 +56,12 @@ export default function CareersCulture({ item }: CareersCultureProps) {
           />
         )}
       </div>
-      <div className="relative aspect-4/3 w-full overflow-hidden rounded-lg bg-light">
+      <div
+        className={cn(
+          "relative aspect-4/3 w-full overflow-hidden bg-light",
+          imageFirst && "lg:order-first",
+        )}
+      >
         {image && (
           <Image
             src={image}

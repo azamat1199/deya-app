@@ -21,7 +21,27 @@ export const STATIC_TILES: AboutTile[] = careersContent.about.tiles.map(
   }),
 );
 
-function TileBackground({ image }: { image: string | null }) {
+/**
+ * CMS ids (/api/v1/career-values/) of the tiles whose image is flat brand-red
+ * artwork rather than a photograph ("Ценности Deya", "Корпоративная культура").
+ * They render WITHOUT the darkening overlay so the red stays bright.
+ *
+ * FRAGILE, deliberately flagged: the API has no field telling artwork from a
+ * photo, so this is the only hook. If an editor uploads a photograph to one of
+ * these rows it will render un-darkened and the white text may become
+ * unreadable. The real fix is a card-type / has_overlay field on the schema.
+ * Static fallback tiles are keyed by title, so they never match here — their
+ * red tiles have no image at all and take the gradient branch below.
+ */
+const UNDARKENED_TILE_IDS: ReadonlySet<AboutTile["id"]> = new Set([5, 6]);
+
+function TileBackground({
+  image,
+  overlay,
+}: {
+  image: string | null;
+  overlay: boolean;
+}) {
   if (!image) {
     return (
       <div className="absolute inset-0 bg-linear-to-br from-brand-500 to-brand-700" />
@@ -31,7 +51,7 @@ function TileBackground({ image }: { image: string | null }) {
   return (
     <>
       <Image src={image} alt="" fill sizes="100vw" className="object-cover" />
-      <div className="absolute inset-0 bg-ink-900/55" />
+      {overlay && <div className="absolute inset-0 bg-[#00000073]" />}
     </>
   );
 }
@@ -50,7 +70,10 @@ export default function CareersAbout({ tiles }: CareersAboutProps) {
           showPagination
           renderSlide={(tile) => (
             <div className="relative flex aspect-[32/47] w-full items-stretch overflow-hidden ">
-              <TileBackground image={tile.image} />
+              <TileBackground
+                image={tile.image}
+                overlay={!UNDARKENED_TILE_IDS.has(tile.id)}
+              />
               <div className="relative z-10 flex h-full w-full flex-col justify-between gap-3 px-5 pt-8 pb-6">
                 <h3 className="w-full text-center text-xl font-normal text-white max-md:text-center max-md:text-[24px] max-md:leading-[1.1] max-md:font-light max-md:tracking-[-0.03em]">
                   {tile.title}
@@ -71,7 +94,10 @@ export default function CareersAbout({ tiles }: CareersAboutProps) {
               key={tile.id}
               className="relative flex aspect-2/1 items-end overflow-hidden bg-brand-600 lg:aspect-auto lg:h-[370px] lg:items-stretch xl:h-[clamp(370px,23.125vw,520px)]"
             >
-              <TileBackground image={tile.image} />
+              <TileBackground
+                image={tile.image}
+                overlay={!UNDARKENED_TILE_IDS.has(tile.id)}
+              />
 
               <div className="relative z-10 flex w-full flex-col items-center gap-4 px-6 pb-8 text-center lg:h-full lg:justify-between lg:pt-8">
                 <h3 className="text-xl font-normal text-white lg:text-2xl pt-7 max-md:pt-5">

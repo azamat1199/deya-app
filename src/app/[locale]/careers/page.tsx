@@ -7,7 +7,6 @@ import CareersAbout, {
 } from "@/components/careers/CareersAbout";
 import CareersBrands from "@/components/careers/CareersBrands";
 import CareersCulture from "@/components/careers/CareersCulture";
-import CareersGrowth from "@/components/careers/CareersGrowth";
 import CareersHero from "@/components/careers/CareersHero";
 import CareersJoinCta from "@/components/careers/CareersJoinCta";
 import Section from "@/components/ui/Section";
@@ -183,7 +182,7 @@ export default async function CareersPage({ params }: CareersPageProps) {
       )}
       {cultureBlockA && (
         <Section bg="white" containerWidth="home">
-          <CareersCulture item={cultureBlockA} />
+          <CareersCulture item={cultureBlockA} index={0} />
         </Section>
       )}
       <Section bg="white" containerWidth="home">
@@ -191,7 +190,7 @@ export default async function CareersPage({ params }: CareersPageProps) {
       </Section>
       {cultureBlockB && (
         <Section bg="white" containerWidth="home">
-          <CareersCulture item={cultureBlockB} />
+          <CareersCulture item={cultureBlockB} index={1} />
         </Section>
       )}
 
