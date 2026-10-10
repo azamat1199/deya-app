@@ -139,7 +139,11 @@ export default function ContactForm() {
             aria-invalid={Boolean(errors.name)}
             className={cn(INPUT_CLASSES, errors.name && INPUT_ERROR_CLASSES)}
           />
-          {errors.name && <p className="mt-1.5 text-sm text-brand-600">{errors.name.message}</p>}
+          {errors.name && (
+            <p className="mt-1.5 text-sm text-brand-600">
+              {errors.name.message}
+            </p>
+          )}
         </div>
 
         <div>
@@ -156,7 +160,11 @@ export default function ContactForm() {
             aria-invalid={Boolean(errors.email)}
             className={cn(INPUT_CLASSES, errors.email && INPUT_ERROR_CLASSES)}
           />
-          {errors.email && <p className="mt-1.5 text-sm text-brand-600">{errors.email.message}</p>}
+          {errors.email && (
+            <p className="mt-1.5 text-sm text-brand-600">
+              {errors.email.message}
+            </p>
+          )}
         </div>
 
         {/* Same row, background and input classes as before; only the fixed
@@ -205,7 +213,7 @@ export default function ContactForm() {
               {t("form.consentPersonalDataPrefix")}{" "}
               <Link
                 href={`/${locale}/personal-data-consent`}
-                className="underline hover:text-brand-600"
+                className="underline hover:text-brand-600 text-[#DA1F26]"
                 onClick={(event) => event.stopPropagation()}
               >
                 {t("form.consentLinkText")}
@@ -213,7 +221,7 @@ export default function ContactForm() {
               {t("form.consentMiddle")}{" "}
               <Link
                 href={`/${locale}/privacy-policy`}
-                className="underline hover:text-brand-600"
+                className="underline hover:text-brand-600 text-[#DA1F26]"
                 onClick={(event) => event.stopPropagation()}
               >
                 {t("form.consentPrivacyLinkText")}
@@ -232,12 +240,24 @@ export default function ContactForm() {
         />
       </div>
 
-      {status === "success" && <p className="mt-4 text-sm text-brand-600">{t("form.success")}</p>}
-      {status === "error" && formError && <p className="mt-4 text-sm text-brand-600">{formError}</p>}
+      {status === "success" && (
+        <p className="mt-4 text-sm text-brand-600">{t("form.success")}</p>
+      )}
+      {status === "error" && formError && (
+        <p className="mt-4 text-sm text-brand-600">{formError}</p>
+      )}
 
       {/* disabled until consent is given, and while a request is in flight —
           which is also what stops a second click firing a second POST. */}
-      <Button type="submit" variant="primary" size="lg" fullWidth loading={isSubmitting} disabled={!consentGiven || !phoneValid || isSubmitting} className="mt-6">
+      <Button
+        type="submit"
+        variant="primary"
+        size="lg"
+        fullWidth
+        loading={isSubmitting}
+        disabled={!consentGiven || !phoneValid || isSubmitting}
+        className="mt-6"
+      >
         {t("buttons.sendRequest")}
       </Button>
     </form>

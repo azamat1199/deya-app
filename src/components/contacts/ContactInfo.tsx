@@ -41,7 +41,10 @@ export default function ContactInfo({ settings }: ContactInfoProps) {
     { label: t("a11y.instagram"), href: settings?.instagram_url ?? "" },
     // "Telegram канал", not the bare brand name — this is a visible link
     // label on the contacts card, which is why it has its own key.
-    { label: t("contacts.telegramChannel"), href: settings?.telegram_url ?? "" },
+    {
+      label: t("contacts.telegramChannel"),
+      href: settings?.telegram_url ?? "",
+    },
   ].filter((link) => link.href);
 
   return (
@@ -88,9 +91,9 @@ export default function ContactInfo({ settings }: ContactInfoProps) {
                 href={mapUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-md border border-ink-900 px-6 py-3.5 text-sm font-semibold tracking-wide text-ink-900 uppercase transition-colors hover:border-brand-600 hover:bg-brand-600 hover:text-white"
+                className="inline-flex items-center justify-center gap-2 rounded-md border border-ink-900 px-6 py-3.5 text-sm font-semibold tracking-wide text-ink-900 uppercase transition-colors hover:border-brand-600 hover:bg-brand-600 hover:text-white w-full"
               >
-                <MapPin size={16} />
+                <MapPin size={16} color="red" />
                 <span>{t("buttons.openInYandexMap")}</span>
               </a>
             </div>
@@ -100,7 +103,9 @@ export default function ContactInfo({ settings }: ContactInfoProps) {
         <div className="space-y-11">
           {emailValue && (
             <div>
-              <p className="text-sm text-ink-500">{t("form.emailShortLabel")}</p>
+              <p className="text-sm text-ink-500">
+                {t("form.emailShortLabel")}
+              </p>
               <a
                 href={`mailto:${emailValue}`}
                 className="mt-2 block text-lg text-ink-900 hover:text-brand-600"
@@ -112,7 +117,9 @@ export default function ContactInfo({ settings }: ContactInfoProps) {
 
           {socialLinks.length > 0 && (
             <div>
-              <p className="text-sm text-ink-500">{t("contacts.socialTitle")}</p>
+              <p className="text-sm text-ink-500">
+                {t("contacts.socialTitle")}
+              </p>
               <div className="mt-2 space-y-1">
                 {socialLinks.map((link) => (
                   <a

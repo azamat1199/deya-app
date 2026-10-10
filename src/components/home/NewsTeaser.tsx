@@ -122,8 +122,16 @@ export default function NewsTeaser({
               // ЧИТАТЬ БОЛЬШЕ — Roboto 400 / 12px / 120% / 0. The card's only
               // <span> is that label. The spec's `border: 1px solid #00000080`
               // is applied as the UNDERLINE's colour, not as a box: see the
-              // note on the link below.
-              "[&_span]:text-[12px] [&_span]:leading-[1.2] [&_span]:font-normal [&_span]:tracking-normal [&_span]:decoration-[#00000080]",
+              // note on the link below. Text and underline are #747474 rather
+              // than the spec's #00000080, which measured 3.96:1 on this
+              // section's #FFFCF7 — under AA for 12px text; #747474 is 4.57:1.
+              //
+              // pb-1: the card's underline-offset-4 draws the rule ~2px below
+              // a 14.4px line box, and this label is the last thing in the
+              // slide, so Slider's overflow-hidden viewport was cutting the
+              // underline off entirely. 4px of padding gives it room inside
+              // the slide; ВСЕ НОВОСТИ below moves up by the same 4px.
+              "[&_span]:text-[12px] [&_span]:leading-[1.2] [&_span]:font-normal [&_span]:tracking-normal [&_span]:text-[#747474] [&_span]:decoration-[#747474] [&_span]:pb-1",
             )}
           >
             <Slider
@@ -162,11 +170,12 @@ export default function NewsTeaser({
                 per slide, while this link is one per section — so it is
                 anchored to the row instead.
 
-                bottom-8 = 32px = exactly what Slider's pagination adds under
-                the viewport (`mt-6` + the dots' `h-2`), which puts this link's
-                bottom edge on the viewport's bottom edge. The card's read-more
-                label is its last line and is pinned there by mt-auto, and both
-                are now 12px/120% line boxes, so the two sit on one line.
+                bottom-9 = 36px = what Slider's pagination adds under the
+                viewport (`mt-6` + the dots' `h-2`, 32px) plus the read-more
+                label's own pb-1 (see the [&_span] note above), which puts this
+                link's line box level with the label's. The label is the card's
+                last line, pinned there by mt-auto, and both are 12px/120% line
+                boxes, so the two sit on one line.
 
                 `background: #000000` from the spec is this link's UNDERLINE,
                 not a filled box — decoration-[#000000] below. Same reading as
@@ -178,7 +187,7 @@ export default function NewsTeaser({
             <Link
               href={allNewsHref}
               className={cn(
-                "absolute right-0 bottom-8",
+                "absolute right-0 bottom-9",
                 ALL_NEWS_LINK_CLASSES,
                 // max-md: so these beat ALL_NEWS_LINK_CLASSES' own text-xs /
                 // font-medium / tracking-[0.08em] on cascade order rather than

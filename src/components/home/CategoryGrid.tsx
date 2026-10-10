@@ -47,7 +47,7 @@ export default function CategoryGrid({
             key={category.id}
             href={`/${locale}/catalog?category=${category.slug}`}
             aria-label={goToCategoryLabel.replace("{category}", category.title)}
-            className="group relative aspect-4/3 overflow-hidden max-md:aspect-square lg:aspect-square"
+            className="group relative aspect-4/3 overflow-hidden max-md:aspect-auto max-md:h-[240px] lg:aspect-square"
           >
             <Image
               src={category.image}

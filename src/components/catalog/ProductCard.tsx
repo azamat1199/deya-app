@@ -12,7 +12,7 @@ export interface ProductCardProps {
 export default function ProductCard({ product, href }: ProductCardProps) {
   return (
     <Link href={href} className="group block">
-      <div className="relative h-[316px] w-full overflow-hidden rounded-lg border border-line-100 bg-white shadow-sm max-md:h-[244px]">
+      <div className="relative h-[316px] w-full overflow-hidden border border-line-100 bg-white shadow-sm max-md:h-[244px]">
         {product.badge && (
           <Badge
             text={product.badge.text}

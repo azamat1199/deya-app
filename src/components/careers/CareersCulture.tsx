@@ -19,8 +19,10 @@ export interface CareersCultureProps {
 
 export default function CareersCulture({ item, index }: CareersCultureProps) {
   const image = item.image || null;
-  // Reordered at lg only. The markup stays text-first, so the single-column
-  // mobile stack (text above image) is the same for every block.
+  // Odd blocks put the image first on desktop (left column) and on phones
+  // (above the text). The markup stays text-first, which is the reading order;
+  // only the visual order changes, via `order`. Tablet (md–lg) keeps the
+  // text-first stack for every block.
   const imageFirst = index % 2 === 1;
 
   const titleHtml = isBlankRichText(item.title)
@@ -59,7 +61,7 @@ export default function CareersCulture({ item, index }: CareersCultureProps) {
       <div
         className={cn(
           "relative aspect-4/3 w-full overflow-hidden bg-light",
-          imageFirst && "lg:order-first",
+          imageFirst && "lg:order-first max-md:order-first",
         )}
       >
         {image && (

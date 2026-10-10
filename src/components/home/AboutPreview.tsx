@@ -37,13 +37,8 @@ export default async function AboutPreview({
   rightParagraph,
 }: AboutPreviewProps) {
   const dictionary = await getDictionary(locale);
-  const {
-    heading,
-    paragraphs,
-    paragraphHighlights,
-    linkHref,
-    factoryImage,
-  } = homeContent.about;
+  const { heading, paragraphs, paragraphHighlights, linkHref, factoryImage } =
+    homeContent.about;
 
   // CMS value when there is one, the existing static copy otherwise. `||`, not
   // `??`: an empty string from the CMS means "nothing authored for this
@@ -87,28 +82,35 @@ export default async function AboutPreview({
 
       <ScrollReveal direction="fade">
         <div className="relative left-1/2 right-1/2 w-screen -mx-[50vw]">
-          <div className="relative  overflow-hidden h-[500px] md:h-[600px] lg:h-[800px] xl:h-[800px]">
+          {/* Mobile: the photo starts BELOW the stats overlay rather than under
+              it. 282 = the overlay's measured height (last caption at 242 +
+              its pb-[40px]), and the box grows to 282 + 380 so the photo is
+              not cropped. Re-measure if the stats ever wrap to more lines. */}
+          <div className="relative  overflow-hidden h-[500px] max-md:h-[662px] md:h-[600px] lg:h-[800px] xl:h-[800px]">
             <Image
               src={factoryImage}
               alt={dictionary.home.aboutFactoryAlt}
               fill
               sizes="100vw"
-              className="object-fill max-md:top-[120px]! max-md:h-[380px]! max-md:bottom-auto!"
+              // md:top-px: the photo and the fade overlay used to share their top
+              // edge, and at fractional zoom both were anti-aliased there, so
+              // the sky bled through as a 1px line. One pixel down puts the
+              // photo's edge under the overlay's solid band.
+              className="object-fill max-md:top-[282px]! max-md:h-[380px]! max-md:bottom-auto! md:top-px!"
             />
 
             {/* Desktop only. Being a sibling of the stats overlay, a fixed
                 height here can never track how tall the stats actually are —
                 which is why the phone uses the overlay's own background
                 instead and hides this one. Both active at once would stack two
-                white fades and double the opacity. */}
-            {/* Explicit stops rather than from/via/to: the new factory photo is
-                a bright exterior, and on the old three-stop ramp all five stat
-                captions measured between 2.98:1 and 4.47:1 against #6b6b6b —
-                every one under WCAG AA. Holding white to 58% and 0.92 through
-                80% covers the caption band (it ends at ~80% of this ramp) and
-                lifts them past 4.5:1. The element's height is unchanged, so
-                nothing moves. */}
-            <div className="absolute inset-x-0 top-0 z-10 h-[200px] bg-[linear-gradient(to_bottom,#fff_0%,#fff_58%,rgba(255,255,255,0.92)_80%,rgba(255,255,255,0)_100%)] max-md:hidden lg:h-[250px]" />
+                fades and double the opacity. */}
+            {/* #FFFCF7, the section's own background, so the fade starts with no
+                visible edge. The 0.92 stop at 80% is load-bearing: it covers
+                the caption band (which ends at ~80% of this ramp). The plain
+                49.52% → transparent ramp left captions over the sky at 3.56–
+                3.84:1 against #6b6b6b; with this stop the worst measured is
+                4.98:1. The element's height is unchanged, so nothing moves. */}
+            <div className="absolute inset-x-0 top-0 z-10 h-[200px] bg-[linear-gradient(180deg,#FFFCF7_49.52%,rgba(255,252,247,0.92)_80%,rgba(255,252,247,0)_100%)] max-md:hidden lg:h-[250px]" />
             {/* On mobile the fade lives here rather than on the sibling above:
                 this wrapper is auto-height, so it is exactly as tall as the
                 stats plus pb-40, and the gradient tracks the content at any

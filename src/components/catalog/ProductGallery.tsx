@@ -25,13 +25,17 @@ export default function ProductGallery({ product }: ProductGalleryProps) {
   if (!activeSrc) return null;
 
   return (
-    <div className="flex flex-col gap-4 lg:flex-row">
+    // max-md:min-w-0: as a grid item this root defaulted to min-width:auto, so
+    // the thumbnail row's 436px min-content (4 × 100 + 3 × 12) stretched it —
+    // and the photo with it — past a 320–374px column, and the row could never
+    // scroll inside itself. Letting it shrink keeps the scroll in the row.
+    <div className="flex flex-col gap-4 lg:flex-row max-md:min-w-0">
       <div className="relative order-1 aspect-square w-full overflow-hidden rounded-lg bg-light lg:order-2 lg:flex-1">
         {product.badge && (
           <Badge
             text={product.badge.text}
             variant={product.badge.variant}
-            className="absolute top-4 left-4 z-10"
+            className="absolute top-4 left-4 z-10 max-md:left-1/2 max-md:-translate-x-1/2"
           />
         )}
         <Image

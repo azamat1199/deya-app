@@ -52,7 +52,7 @@ export default function ProductCard({
           <Badge
             text={badge.text}
             variant={badge.variant}
-            className="absolute top-5 left-1/2 z-10 -translate-x-1/2"
+            className="absolute top-5 left-1/2 z-10 -translate-x-1/2 max-md:font-['Roboto'] max-md:text-[10px] max-md:font-medium max-md:leading-[120%] max-md:tracking-[0] max-md:text-center max-md:uppercase"
           />
         )}
         <Image
@@ -60,7 +60,7 @@ export default function ProductCard({
           alt={title}
           fill
           sizes="(min-width: 1200px) 25vw, (min-width: 768px) 50vw, 100vw"
-          className="object-contain p-12 transition-transform duration-600 ease-out motion-reduce:transition-none [@media(hover:hover)]:group-hover:scale-[1.04] lg:p-16"
+          className="object-contain p-12 transition-transform duration-600 ease-out motion-reduce:transition-none [@media(hover:hover)]:group-hover:scale-[1.04] lg:p-16 max-md:p-6"
         />
       </div>
       {/* max-w-[80%] + mx-auto keeps the title narrower than the card and
@@ -71,7 +71,7 @@ export default function ProductCard({
           need three lines, and the clamp was truncating them with an ellipsis.
           The brief requires the full title to stay visible, so it wraps freely
           and the title block grows instead. */}
-      <h3 className="mx-auto mt-6 max-w-[80%] text-center text-sm leading-snug text-ink-900 lg:text-base">
+      <h3 className="mx-auto mt-6 max-w-[80%] text-center text-sm leading-snug text-ink-900 lg:text-base max-md:font-['Roboto'] max-md:text-[12px] max-md:font-normal max-md:leading-[120%] max-md:tracking-[0] max-md:text-center">
         {title}
       </h3>
     </Link>

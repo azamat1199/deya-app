@@ -140,13 +140,9 @@ function toFeaturedCard(
 ): FeaturedProductItem {
   return {
     id: product.id,
-    // The PRODUCT name, never category.name.
     title: product.name,
     image: product.main_image?.image || IMAGES.placeholder,
     href: `/${locale}/catalog/${product.category.slug}/${product.slug}`,
-    // The one shared badge vocabulary in lib/badges.ts, the same map the
-    // catalogue grid uses. Returns undefined for a null or unrecognised
-    // badge, so no chip is rendered rather than a raw API value.
     badge: badgeLabel(product.badge, badges),
   };
 }
@@ -154,7 +150,6 @@ function toFeaturedCard(
 function toTeaserItem(post: HomePost, locale: string): NewsTeaserItem {
   return {
     id: String(post.id),
-    // ISO 8601 UTC; NewsListCard formats it with Intl for the active locale.
     date: post.published_at,
     title: post.title,
     excerpt: post.excerpt,
@@ -168,45 +163,16 @@ export default async function HomePage({ params }: HomePageProps) {
 
   const dictionary = await getDictionary(locale as Locale);
 
-  // Two requests now, in parallel: /api/v1/home/ still feeds five sections
-  // (stats, categories, featured_products, export_regions, latest_posts), and
-  // /api/v1/banners/ feeds the hero, which used to come from home.slides.
-  // Neither depends on the other. No component below fetches anything of its
-  // own, and /api/v1/categories/ and /api/v1/posts/ are deliberately NOT
-  // called here — their rows are already in the home body. (The layout
-  // separately fetches /api/v1/settings/ for the header and footer, which is
-  // not this page's request.)
-  //
-  // Above the fold, so server-side only: a useEffect would flash an empty hero
-  // and this API sends no Access-Control-Allow-Origin anyway. Neither helper
-  // rejects — each logs its own failure with `cause` and answers null / [].
   const [home, banners] = await Promise.all([
     getHome(locale),
     getBanners(locale),
   ]);
   const mainBanners = banners.filter((banner) => banner.type === "main");
 
-  // The four CMS texts for AboutPreview and ExportMap, read out of the SAME
-  // `banners` array fetched above — no second request to /api/v1/banners/.
-  // Each is "" when the CMS has nothing for this locale, and the component
-  // falls back to its existing static copy.
   const mainTexts = getMainTexts(banners, locale as Locale);
 
-  // null means the REQUEST failed, and every section falls back to its static
-  // content at once — getHome has already logged the one error with its cause.
-  // An empty array from a SUCCESSFUL response is not a failure: it means the
-  // section has no rows, and the section is hidden below rather than quietly
-  // refilled with mock content.
-  // Collected by the stats adapter — the only one with a per-field static
-  // fallback left, now that the hero reads from /api/v1/banners/ — and
-  // reported in ONE console.warn, so a CMS row left half-filled stays visible
-  // to us instead of quietly looking like a finished page.
   const fallbackNotes: string[] = [];
 
-  // Sourced from /api/v1/banners/ type="main", NOT home.slides — see
-  // toHeroSlide. Rendered in id order, which is also the order the endpoint
-  // returns today. No static fallback: an empty list hides the slider below
-  // rather than showing mock copy as the first thing a visitor sees.
   const heroSlides: Slide[] = mainBanners.map((banner) =>
     toHeroSlide(banner, locale, dictionary.buttons.viewCatalog),
   );
@@ -236,11 +202,6 @@ export default async function HomePage({ params }: HomePageProps) {
         badge: product.badge,
       }));
 
-  // An empty array is what ExportMap treats as "no data" — every marker then
-  // shows its dictionary label (home.exportMap.regions) rather than a CMS
-  // name. That is deliberate and agreed, but it hides the CMS entirely, so it
-  // is logged here. A failed request is already logged by getHome, with
-  // its cause; this covers the successful-but-empty case it cannot see.
   const exportRegions = home ? home.export_regions : [];
   if (home && home.export_regions.length === 0) {
     console.error(
@@ -275,22 +236,7 @@ export default async function HomePage({ params }: HomePageProps) {
       )}
 
       {statItems.length > 0 && (
-        // containerWidth="page" — NOT "home" — so this section's copy lands on
-        // the same vertical axis as the header's Deya logo. Both now resolve to
-        // the very same `.container-page` class the Header uses
-        // (max-w-1600 / px-5 / md:px-8 / lg:px-10), rather than the "home"
-        // container's max-w-1440 / px-5 / md:px-10 / lg:px-20. That is the whole
-        // fix: no offset, no negative margin, just one container definition
-        // shared with the header, so the two cannot drift apart.
-        //
-        // The gap it closes grows with the viewport — measured 0px at 360
-        // (both px-5), 8px at 768, 40px at 1280 and 120px at 1920, where the
-        // two different max-widths centre at different insets.
-        //
-        // AboutPreview's stats band is unaffected: it breaks out full-bleed
-        // (w-screen / -mx-[50vw]) and re-applies its own 1440 container inside,
-        // so it stays where it is.
-        <Section bg="white" containerWidth="page">
+        <Section bg="cream50" containerWidth="page">
           <AboutPreview
             locale={locale as Locale}
             stats={statItems}
