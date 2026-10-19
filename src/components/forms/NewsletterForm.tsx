@@ -25,7 +25,7 @@ export default function NewsletterForm() {
     reset,
     setError,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, touchedFields },
   } = useForm<FormValues>();
 
   // Gates the button before submission rather than failing afterwards.
@@ -33,6 +33,20 @@ export default function NewsletterForm() {
   // makes React Compiler skip memoising the component.
   const emailValue = useWatch({ control, name: "email" });
   const emailIsValid = isValidSubscriptionEmail(emailValue ?? "");
+
+  // The disabled button means an invalid address can never be submitted, so
+  // the submit-time validation below never ran and nothing ever said why the
+  // button stayed grey. Shown once the visitor has left the field with
+  // something in it that does not pass — never for an untouched or empty one.
+  const showInvalidHint =
+    Boolean(touchedFields.email) &&
+    Boolean(emailValue?.trim()) &&
+    !emailIsValid;
+  const emailMessage = errors.email
+    ? (errors.email.message ?? t("form.emailInvalid"))
+    : showInvalidHint
+      ? t("form.emailInvalid")
+      : null;
 
   const onSubmit = handleSubmit(async (values) => {
     if (values.company) return; // honeypot filled — likely a bot, drop silently
@@ -145,6 +159,8 @@ export default function NewsletterForm() {
           id="newsletter-email"
           type="email"
           placeholder={t("form.emailShortLabel")}
+          aria-invalid={emailMessage ? true : undefined}
+          aria-describedby={emailMessage ? "newsletter-email-error" : undefined}
           className="h-[35px] w-full min-w-0 rounded-l-[3.75px] rounded-r-none border-[0.75px] border-white/50 bg-transparent px-4 py-0 text-sm text-white outline-none transition-colors duration-200 ease-in-out placeholder:text-white/70 hover:border-white/80 hover:placeholder:text-white/90 focus:bg-white/25 focus-visible:ring-2 focus-visible:ring-white"
           {...register("email", {
             required: true,
@@ -208,9 +224,9 @@ export default function NewsletterForm() {
       {/* Renders the server's own message when there is one — that is how a
           duplicate address reads as "already subscribed" — and falls back to
           the existing copy for local validation. */}
-      {errors.email && (
-        <p className="text-xs text-white">
-          {errors.email.message ?? t("form.emailInvalid")}
+      {emailMessage && (
+        <p id="newsletter-email-error" className="text-xs text-white">
+          {emailMessage}
         </p>
       )}
       {status === "success" && <p className="text-xs text-white">{t("form.newsletterSuccess")}</p>}

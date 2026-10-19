@@ -114,6 +114,22 @@ export default function ContactForm() {
 
     setStatus("error");
 
+    // Same branch as PartnerForm, checked before the fieldErrors loop: a 429
+    // body is never field-shaped, and without this the throttle fell through to
+    // the generic error instead of the translated rate-limit copy. Fields are
+    // left as typed — only a success clears the form.
+    if (result.rateLimited) {
+      setFormError(
+        result.retryAfterSeconds != null
+          ? t("form.rateLimitedWithSeconds").replace(
+              "{seconds}",
+              String(result.retryAfterSeconds),
+            )
+          : t("form.rateLimited"),
+      );
+      return;
+    }
+
     let matched = false;
     for (const [apiField, message] of Object.entries(result.fieldErrors)) {
       const formField = API_FIELD_TO_FORM[apiField];
