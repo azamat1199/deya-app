@@ -84,7 +84,7 @@ function readLocaleField(value: unknown, locale: Locale): string {
  * first is the lowest id) and names the extras in one warning, so a duplicate
  * that outlives the cleanup stays visible to us.
  */
-export function pickMainText(
+function pickMainText(
   banners: Banner[],
   type: MainTextType,
   locale: Locale,

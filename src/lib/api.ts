@@ -8,7 +8,7 @@
 import { IMAGES } from "@/content/images";
 
 /** Strips trailing slashes so a path constant can be concatenated directly. */
-export function normaliseOrigin(base: string): string {
+function normaliseOrigin(base: string): string {
   return base.trim().replace(/\/+$/, "");
 }
 

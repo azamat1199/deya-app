@@ -16,9 +16,9 @@
 
 /** Bump when the cookie policy changes: a stored record from an older version
  *  no longer counts as a decision, so the banner asks again. */
-export const CONSENT_VERSION = 1;
+const CONSENT_VERSION = 1;
 
-export const CONSENT_COOKIE_NAME = "deya_cookie_consent";
+const CONSENT_COOKIE_NAME = "deya_cookie_consent";
 
 /** Set on <html> when the visitor has answered; globals.css hides the banner
  *  (and drops the room the mobile hero reserves for it) while it is present. */
@@ -27,7 +27,7 @@ export const CONSENT_DECIDED_ATTRIBUTE = "data-cookie-decided";
 const COOKIE_PATTERN = `(?:^|;\\s*)${CONSENT_COOKIE_NAME}=([^;]*)`;
 
 /** A year, the usual ceiling for a consent record. */
-export const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
 /** `necessary` is what the site cannot run without and is never opt-out.
  *  The other two are placeholders for gating: nothing sets them today. */
@@ -97,7 +97,7 @@ export function parseConsent(raw: string | undefined | null): ConsentRecord | nu
   return parsed;
 }
 
-export function serializeConsent(value: ConsentRecord): string {
+function serializeConsent(value: ConsentRecord): string {
   return encodeURIComponent(JSON.stringify(value));
 }
 
