@@ -26,14 +26,6 @@ type ContactFormValues = {
   consentMarketing: boolean;
 };
 
-// `duration-200 ease-in-out` is the project's standard state transition —
-// ui/Button, ui/FormField, Header and the cookie banner all use it, and these
-// fields were the odd ones out on Tailwind's bare 150ms default. Duration only:
-// no colour here changes, deliberately. The Figma three-state input treatment
-// is built on low-opacity WHITE (border, placeholder, fill), which works on the
-// footer's red but is invisible on these fields — they are white on white, a
-// measured contrast ratio of 1.00. See the report; flagged rather than
-// substituted with different values.
 const INPUT_CLASSES =
   "w-full rounded-md bg-white px-4 py-3.5 text-sm text-ink-900 outline-none transition-colors duration-200 ease-in-out placeholder:text-ink-500 focus:ring-1 focus:ring-ink-900";
 const INPUT_ERROR_CLASSES = "ring-1 ring-brand-600";
@@ -42,15 +34,10 @@ export default function ContactForm() {
   const { t, locale } = useTranslation();
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [formError, setFormError] = useState<string | null>(null);
-  // Phone lives outside react-hook-form: PhoneInput owns both representations
-  // (spaced display, E.164 for the API) plus its country selection.
   const [phoneDisplay, setPhoneDisplay] = useState("");
   const [phoneE164, setPhoneE164] = useState("");
   const [phoneValid, setPhoneValid] = useState(false);
   const [phoneTouched, setPhoneTouched] = useState(false);
-  // The phone field is not registered with react-hook-form any more, so a DRF
-  // error naming `phone` would have nowhere to land. It is held here and passed
-  // straight to PhoneInput's own error slot.
   const [phoneApiError, setPhoneApiError] = useState<string | null>(null);
   const {
     register,
@@ -61,9 +48,6 @@ export default function ContactForm() {
     formState: { errors, isSubmitting },
   } = useForm<ContactFormValues>();
 
-  // Legal consent gates submission, so the button is disabled until the box is
-  // ticked. useWatch rather than watch() — the latter returns a fresh function
-  // each render and makes React Compiler skip memoising the component.
   const consentGiven = Boolean(
     useWatch({ control, name: "consentPersonalData" }),
   );
@@ -72,24 +56,18 @@ export default function ContactForm() {
     setFormError(null);
     setPhoneApiError(null);
 
-    // Validated BEFORE the request. Reported through the same `errors` props
-    // the markup already renders, so no new error UI appears.
     const email = values.email.trim();
     if (!isValidEmail(email)) {
       setError("email", { message: t("form.emailInvalid") });
       return;
     }
 
-    // PhoneInput already produced E.164; normalisePhone is the last guard that
-    // no space, dash or bracket can reach the API.
     const phone = normalisePhone(phoneE164);
     if (!isValidPhone(phone)) {
       setPhoneTouched(true);
       return;
     }
 
-    // Same shared module as the partner and sales forms; only `type` differs.
-    // `product` is never sent from here — it belongs to the product page.
     const result = await submitLead({
       type: "contact",
       name: values.name.trim(),
