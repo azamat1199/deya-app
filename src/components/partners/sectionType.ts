@@ -10,10 +10,9 @@
  * module, the way catalogGridAnchor.ts does for the catalog folder, so neither
  * section has to import from the other.
  *
- * NOT put on ui/SectionHeading: that component exists but nothing outside
- * components/ui imports it, and its markup is a different shape (a flex row
- * with an optional trailing link, left-aligned). Styling it would have changed
- * nothing on this page.
+ * There is no shared heading component to put it on: ui/SectionHeading, a
+ * different shape (a left-aligned flex row with an optional trailing link),
+ * was never imported anywhere and has been deleted.
  *
  * Roboto is NOT declared here. It comes from next/font on <html> →
  * --font-roboto → --font-sans, which <body> already applies; confirmed loaded
