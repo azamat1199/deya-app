@@ -223,13 +223,39 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const { locale, category, product } = await params;
   if (!isLocale(locale)) notFound();
 
-  // A missing product is a real 404, never a stand-in: a fake product living at
-  // a real URL is worse than no page. Deliberately NOT wrapped in a fallback —
-  // this is the one integration on the site where falling back would be wrong.
-  const detail = await getProduct(product);
+  // The four requests are independent — each is keyed off the route params
+  // alone — so they go out together instead of one after another. For a slug
+  // that turns out not to exist, the related-products request is wasted; that
+  // is the cheaper side of the trade.
+  const [detail, dictionary, related, settings] = await Promise.all([
+    // A missing product is a real 404, never a stand-in: a fake product living
+    // at a real URL is worse than no page. Deliberately NOT wrapped in a
+    // fallback — this is the one integration on the site where falling back
+    // would be wrong.
+    getProduct(product),
+    getDictionary(locale as Locale),
+    // Related products, keyed off THIS page's route param — never derived from
+    // anything else. Fetched here because RecommendedProducts is "use client"
+    // and `next: { revalidate: 300 }` is server-fetch semantics only.
+    //
+    // A failure is NOT filled in with mock products: showing unrelated items
+    // as "recommended" is worse than showing none, so the section is hidden
+    // either way and the reason is logged.
+    getRelatedProducts(product).catch((error: unknown): ApiProduct[] => {
+      console.error(
+        `[ProductPage] related products for "${product}" failed, hiding the recommendation section —`,
+        error instanceof Error ? error.message : String(error),
+        "| cause:",
+        error instanceof Error ? (error.cause ?? "(none)") : "(none)",
+      );
+      return [];
+    }),
+    // Memoised by Next against the same call in the locale layout, so this is
+    // still one network request per render.
+    getSettings(locale),
+  ]);
   if (!detail) notFound();
 
-  const dictionary = await getDictionary(locale as Locale);
   const found = toDisplayProduct(
     detail,
     dictionary.catalog.badges,
@@ -237,33 +263,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
     locale,
   );
 
-  // Related products, keyed off THIS page's route param — never derived from
-  // anything else. Fetched here because RecommendedProducts is "use client" and
-  // `next: { revalidate: 300 }` is server-fetch semantics only.
-  //
-  // A failure is NOT filled in with mock products: showing unrelated items as
-  // "recommended" is worse than showing none, so the section is hidden either
-  // way and the reason is logged.
-  let related: ApiProduct[] = [];
-  try {
-    related = await getRelatedProducts(product);
-  } catch (error) {
-    console.error(
-      `[ProductPage] related products for "${product}" failed, hiding the recommendation section —`,
-      error instanceof Error ? error.message : String(error),
-      "| cause:",
-      error instanceof Error ? (error.cause ?? "(none)") : "(none)",
-    );
-  }
-
   const recommended = related
     .slice(0, RECOMMENDED_LIMIT)
     .map((item) => toRecommendedItem(item, locale, dictionary.catalog.badges));
   const categoryLabel = detail.category.name;
-
-  // Memoised by Next against the same call in the locale layout, so this is
-  // still one network request per render.
-  const settings = await getSettings(locale);
   const catalogFile = settings?.catalog_file ?? "";
 
   return (
