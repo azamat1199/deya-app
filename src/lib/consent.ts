@@ -106,20 +106,6 @@ export function hasDecision(value: ConsentRecord | null): boolean {
   return value !== null && value.v === CONSENT_VERSION;
 }
 
-/**
- * The gate for any future tracking script. No analytics, tag manager or pixel
- * exists in this project today — this is what one would have to pass through
- * when it does, rather than being wired to `window` on load.
- */
-export function allows(
-  value: ConsentRecord | null,
-  category: ConsentCategory,
-): boolean {
-  if (category === "necessary") return true;
-  if (!hasDecision(value)) return false;
-  return value?.categories[category] === true;
-}
-
 /** Client-only read of the raw cookie value, for parseConsent. */
 export function readConsentCookie(): string | null {
   const match = document.cookie.match(new RegExp(COOKIE_PATTERN));
