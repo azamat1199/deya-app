@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
     root: path.join(__dirname),
   },
   images: {
+    // AVIF first, WebP for browsers that do not accept it. AVIF encodes
+    // slower, but only on the first request for each size — the optimizer
+    // caches every format separately. Anything fronting this server must
+    // forward the Accept header, or every visitor gets the WebP.
+    formats: ["image/avif", "image/webp"],
     // Local placeholder illustrations (authored by us, not user-uploaded)
     // until real product/factory photography is supplied.
     dangerouslyAllowSVG: true,
