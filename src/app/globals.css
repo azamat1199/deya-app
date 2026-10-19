@@ -154,22 +154,33 @@
    corner and the desktop hero's CTA sits in a different row entirely, which it
    has never overlapped.
 
-   Driven by `:has()` rather than React state on purpose. The banner is
-   server-rendered from the consent cookie (see the locale layout), so its
-   presence in the DOM already IS the state — the first paint is correct and
-   there is no post-hydration jump. Accepting unmounts the banner, the selector
-   stops matching, and the hero drops straight back to its own values.
+   Driven by `:has()` rather than React state on purpose. The pages are
+   prerendered, so the banner is in every page's HTML; for a visitor who has
+   already answered, the inline script in the locale layout sets
+   [data-cookie-decided] on <html> before the first paint, which hides the
+   banner and switches these rules off in the same frame — no post-hydration
+   jump either way. Accepting unmounts the banner, the selector stops matching,
+   and the hero drops straight back to its own values.
 
    Deliberately UNLAYERED. Tailwind v4 emits its utilities inside
    `@layer utilities`, and unlayered rules beat every layered one regardless of
    specificity — which is what lets these override the elements' own `pb-24`
-   and `bottom-8` without an `!important` or a specificity-hack selector. */
+   and `bottom-8` (and the banner's own `flex`) without an `!important` or a
+   specificity-hack selector. */
+[data-cookie-decided] [data-cookie-banner] {
+  display: none;
+}
+
 @media (width < 768px) {
-  body:has([data-cookie-banner]) [data-above-cookie-banner] {
+  html:not([data-cookie-decided])
+    body:has([data-cookie-banner])
+    [data-above-cookie-banner] {
     bottom: calc(var(--cookie-banner-height) + 2rem);
   }
 
-  body:has([data-cookie-banner]) [data-clears-cookie-banner] {
+  html:not([data-cookie-decided])
+    body:has([data-cookie-banner])
+    [data-clears-cookie-banner] {
     padding-bottom: calc(var(--cookie-banner-height) + 2rem + 3.5rem);
   }
 }

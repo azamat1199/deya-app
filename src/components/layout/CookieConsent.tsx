@@ -1,31 +1,64 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 
 import { cn } from "@/lib/cn";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import {
   acceptAll,
+  CONSENT_DECIDED_ATTRIBUTE,
   hasDecision,
+  parseConsent,
+  readConsentCookie,
   writeConsentCookie,
-  type ConsentRecord,
 } from "@/lib/consent";
 
-export interface CookieConsentProps {
-  initialConsent: ConsentRecord | null;
+// The cookie as an external store. The server snapshot is "no decision", which
+// is what the prerendered HTML contains, so hydration always matches; React
+// then re-renders with the real cookie straight after. For a visitor who has
+// already answered, CONSENT_DECIDED_SCRIPT has hidden the banner with CSS
+// before the first paint, so removing it here is invisible.
+const listeners = new Set<() => void>();
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
-export default function CookieConsent({ initialConsent }: CookieConsentProps) {
-  const { t, locale } = useTranslation();
-  const [consent, setConsent] = useState<ConsentRecord | null>(initialConsent);
+function getServerSnapshot() {
+  return null;
+}
 
-  if (hasDecision(consent)) return null;
+export default function CookieConsent() {
+  const { t, locale } = useTranslation();
+  const raw = useSyncExternalStore(
+    subscribe,
+    readConsentCookie,
+    getServerSnapshot,
+  );
+  const decided = hasDecision(parseConsent(raw));
+
+  // Keeps <html> in step with the cookie, both ways: set after accepting, and
+  // removed if the inline script ever read a cookie that parseConsent rejects —
+  // otherwise the CSS would hide a banner that is meant to be showing. Reads
+  // the cookie itself rather than `decided`: on the hydration pass `decided` is
+  // still the server snapshot (false), and clearing the attribute from that
+  // would un-hide a returning visitor's banner for a frame.
+  useEffect(() => {
+    document.documentElement.toggleAttribute(
+      CONSENT_DECIDED_ATTRIBUTE,
+      hasDecision(parseConsent(readConsentCookie())),
+    );
+  }, [decided]);
+
+  if (decided) return null;
 
   function handleAccept() {
-    const decision = acceptAll();
-    writeConsentCookie(decision);
-    setConsent(decision);
+    writeConsentCookie(acceptAll());
+    listeners.forEach((listener) => listener());
   }
 
   return (

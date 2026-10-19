@@ -1,6 +1,8 @@
 /**
- * Cookie-consent state, shared by the server (which reads the cookie to decide
- * whether the banner renders at all) and the client (which writes it).
+ * Cookie-consent state. Read and written in the browser only: the pages are
+ * prerendered, so the server never sees the visitor's cookie. The banner is in
+ * every page's HTML, and CONSENT_DECIDED_SCRIPT hides it before first paint
+ * for a visitor who has already answered — see CookieConsent.
  *
  * DELIBERATELY NOT modelled as a boolean. The Figma banner offers only
  * "accept", but an accept-only banner is the older implied-consent pattern and
@@ -17,6 +19,12 @@
 export const CONSENT_VERSION = 1;
 
 export const CONSENT_COOKIE_NAME = "deya_cookie_consent";
+
+/** Set on <html> when the visitor has answered; globals.css hides the banner
+ *  (and drops the room the mobile hero reserves for it) while it is present. */
+export const CONSENT_DECIDED_ATTRIBUTE = "data-cookie-decided";
+
+const COOKIE_PATTERN = `(?:^|;\\s*)${CONSENT_COOKIE_NAME}=([^;]*)`;
 
 /** A year, the usual ceiling for a consent record. */
 export const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
@@ -112,10 +120,35 @@ export function allows(
   return value?.categories[category] === true;
 }
 
+/** Client-only read of the raw cookie value, for parseConsent. */
+export function readConsentCookie(): string | null {
+  const match = document.cookie.match(new RegExp(COOKIE_PATTERN));
+  return match ? match[1] : null;
+}
+
+/**
+ * Runs inline in <head>, synchronously, before the body is parsed: marks <html>
+ * when the cookie holds a decision for the current policy version, so a
+ * returning visitor's banner is hidden by CSS before the first paint rather
+ * than after hydration. Mirrors parseConsent + hasDecision; CookieConsent
+ * re-checks with those after hydration and corrects the attribute either way,
+ * so the two cannot leave the banner stuck hidden.
+ */
+export const CONSENT_DECIDED_SCRIPT =
+  `(function(){try{` +
+  `var m=document.cookie.match(new RegExp(${JSON.stringify(COOKIE_PATTERN)}));` +
+  `if(!m)return;` +
+  `var r=JSON.parse(decodeURIComponent(m[1]));` +
+  `if(r&&r.v===${CONSENT_VERSION}&&typeof r.at==="string"&&` +
+  `(r.status==="accepted"||r.status==="rejected")&&r.categories&&` +
+  `typeof r.categories.necessary==="boolean")` +
+  `document.documentElement.setAttribute(${JSON.stringify(CONSENT_DECIDED_ATTRIBUTE)},"")` +
+  `}catch(e){}})()`;
+
 /**
  * Client-only write. Not HttpOnly on purpose — the banner itself has to set it
  * from the browser — but SameSite=Lax and Secure (outside localhost) still
- * apply. Reading happens server-side via next/headers `cookies()`.
+ * apply. Read back by readConsentCookie and CONSENT_DECIDED_SCRIPT.
  */
 export function writeConsentCookie(value: ConsentRecord): void {
   const secure = window.location.protocol === "https:" ? "; Secure" : "";

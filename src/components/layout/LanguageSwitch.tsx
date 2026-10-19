@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -36,12 +36,34 @@ export interface LanguageSwitchProps {
   variant?: "toggle" | "dropdown";
 }
 
-export default function LanguageSwitch({
+/**
+ * The pages are prerendered, where the query string is unknown, and
+ * useSearchParams without a Suspense boundary would client-render everything up
+ * to the nearest one. So the boundary sits here: its fallback — the HTML every
+ * visitor first gets — is the same switch with query-less links, and after
+ * hydration it swaps in the one that carries the query (?category= on the
+ * catalog) across a language change. Same markup either way, so no visible
+ * swap.
+ */
+export default function LanguageSwitch(props: LanguageSwitchProps) {
+  return (
+    <Suspense fallback={<LanguageSwitchView {...props} query="" />}>
+      <LanguageSwitchWithQuery {...props} />
+    </Suspense>
+  );
+}
+
+function LanguageSwitchWithQuery(props: LanguageSwitchProps) {
+  const query = useSearchParams().toString();
+  return <LanguageSwitchView {...props} query={query} />;
+}
+
+function LanguageSwitchView({
   className,
   variant = "toggle",
-}: LanguageSwitchProps) {
+  query,
+}: LanguageSwitchProps & { query: string }) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { locale } = useTranslation();
   const [open, setOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
@@ -51,8 +73,6 @@ export default function LanguageSwitch({
   const pendingFocusRef = useRef<number | null>(null);
 
   const pathWithoutLocale = pathname.split("/").slice(2).join("/");
-
-  const query = searchParams.toString();
 
   function localeHref(loc: string) {
     const path = pathWithoutLocale ? `/${pathWithoutLocale}` : "";
