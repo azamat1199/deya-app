@@ -14,12 +14,12 @@
 
 /** Bump when the cookie policy changes: a stored record from an older version
  *  no longer counts as a decision, so the banner asks again. */
-export const CONSENT_VERSION = 1;
+const CONSENT_VERSION = 1;
 
-export const CONSENT_COOKIE_NAME = "deya_cookie_consent";
+const CONSENT_COOKIE_NAME = "deya_cookie_consent";
 
 /** A year, the usual ceiling for a consent record. */
-export const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
 /** `necessary` is what the site cannot run without and is never opt-out.
  *  The other two are placeholders for gating: nothing sets them today. */
@@ -89,27 +89,13 @@ export function parseConsent(raw: string | undefined | null): ConsentRecord | nu
   return parsed;
 }
 
-export function serializeConsent(value: ConsentRecord): string {
+function serializeConsent(value: ConsentRecord): string {
   return encodeURIComponent(JSON.stringify(value));
 }
 
 /** True when the visitor has answered the CURRENT policy version. */
 export function hasDecision(value: ConsentRecord | null): boolean {
   return value !== null && value.v === CONSENT_VERSION;
-}
-
-/**
- * The gate for any future tracking script. No analytics, tag manager or pixel
- * exists in this project today — this is what one would have to pass through
- * when it does, rather than being wired to `window` on load.
- */
-export function allows(
-  value: ConsentRecord | null,
-  category: ConsentCategory,
-): boolean {
-  if (category === "necessary") return true;
-  if (!hasDecision(value)) return false;
-  return value?.categories[category] === true;
 }
 
 /**
