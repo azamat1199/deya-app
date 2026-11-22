@@ -1,4 +1,4 @@
-import { apiOrigin, listRows, mediaImageUrl, mediaUrl, readJson } from "@/lib/api";
+import { apiOrigin, listRows, localizedRequest, mediaImageUrl, mediaUrl, readJson } from "@/lib/api";
 
 /**
  * GET /api/v1/certificates/
@@ -37,12 +37,12 @@ function isCertificate(value: unknown): value is Certificate {
  * cannot blank the section. A non-array body, a non-2xx status or a missing
  * base URL throw — the caller decides whether to fall back.
  */
-export async function getCertificates(): Promise<Certificate[]> {
+export async function getCertificates(locale: string): Promise<Certificate[]> {
   const origin = apiOrigin();
-  const url = `${origin}${CERTIFICATES_PATH}`;
+  const { url, headers } = localizedRequest(`${origin}${CERTIFICATES_PATH}`, locale);
 
   const response = await fetch(url, {
-    headers: { Accept: "application/json" },
+    headers,
     // EXPLICIT, not the default: leaving it unset freezes the build-time
     // result into static HTML, which is what stalled the companies row.
     next: { revalidate: 300 },

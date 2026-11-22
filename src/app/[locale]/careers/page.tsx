@@ -186,7 +186,7 @@ export default async function CareersPage({ params }: CareersPageProps) {
         </Section>
       )}
       <Section bg="white" containerWidth="home">
-        <CareersBrands />
+        <CareersBrands locale={locale} />
       </Section>
       {cultureBlockB && (
         <Section bg="white" containerWidth="home">
