@@ -10,7 +10,6 @@
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"src/**/*.test.ts\""
   },
   "dependencies": {
-    "@types/sanitize-html": "^2.16.1",
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.6.0",
     "libphonenumber-js": "^1.13.12",
@@ -27,8 +26,10 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sanitize-html": "^2.16.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "postcss": "^8.5.16",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
