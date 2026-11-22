@@ -35,8 +35,8 @@ export default async function ContactsPage({ params }: ContactsPageProps) {
   // logs its own failure with the cause and returns null, which ContactInfo
   // reads as "use the static values".
   const settings = await getSettings(locale);
-  // Formatted here, on the server, so ContactInfo (a client component) does
-  // not need libphonenumber-js in the browser just to print the hotline.
+  // Formatted here, on the server: libphonenumber-js never reaches the
+  // browser just to print the hotline.
   const phoneRaw = settings?.hotline || settings?.phone || "";
   const phoneText = phoneRaw ? formatForDisplay(phoneRaw) : "";
   const dictionary = await getDictionary(locale);
@@ -64,7 +64,11 @@ export default async function ContactsPage({ params }: ContactsPageProps) {
       </h1>
 
       <div className="mt-10 mb-10 grid gap-8 lg:grid-cols-2">
-        <ContactInfo settings={settings} phoneText={phoneText} />
+        <ContactInfo
+          settings={settings}
+          phoneText={phoneText}
+          dictionary={dictionary}
+        />
         <ContactForm />
       </div>
     </Section>

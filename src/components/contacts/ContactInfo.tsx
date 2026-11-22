@@ -1,9 +1,8 @@
-"use client";
-
 import { MapPin } from "lucide-react";
 
 import { contactsContent } from "@/content/contacts";
-import { useTranslation } from "@/lib/i18n/useTranslation";
+import type { Dictionary } from "@/lib/i18n/dictionary";
+import { createTranslator } from "@/lib/i18n/translator";
 import { telHref, type Settings } from "@/lib/settings";
 
 export interface ContactInfoProps {
@@ -20,10 +19,16 @@ export interface ContactInfoProps {
    * in this client component's bundle just to print one number.
    */
   phoneText: string;
+  dictionary: Dictionary;
 }
 
-export default function ContactInfo({ settings, phoneText }: ContactInfoProps) {
-  const { t } = useTranslation();
+/** Server component: static contact details, no interactivity. */
+export default function ContactInfo({
+  settings,
+  phoneText,
+  dictionary,
+}: ContactInfoProps) {
+  const t = createTranslator(dictionary);
   const { hotline, email, hours, address } = contactsContent;
 
   // Each VALUE falls back individually, so one empty API field cannot blank a
