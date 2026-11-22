@@ -198,6 +198,10 @@ export interface Dictionary {
   product: {
     unitKg: string;
     unitG: string;
+    /** Pieces — the "pcs" unit of quantity per box. */
+    unitPcs: string;
+    /** Characteristics row label, shown only when the API sends a value. */
+    boxQuantity: string;
     boxWeight: string;
     shelfLife: string;
     code: string;

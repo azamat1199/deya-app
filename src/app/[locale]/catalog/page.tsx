@@ -59,8 +59,8 @@ export default async function CatalogPage({
   // categories list, so awaiting them in sequence would just add a round trip.
   // allSettled, not all: one endpoint failing must not blank the other.
   const [categoriesResult, productsResult] = await Promise.allSettled([
-    getCategories(),
-    getProducts(),
+    getCategories(locale),
+    getProducts(locale),
   ]);
 
   function reason(error: unknown): [string, string, unknown] {

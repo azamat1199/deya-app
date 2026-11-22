@@ -192,3 +192,21 @@ export function listRows(body: unknown, url: string): unknown[] | null {
 
   return null;
 }
+
+/**
+ * URL + headers for a GET whose response depends on the visitor's language.
+ * The backend translates from `Accept-Language`; the locale goes out as BOTH
+ * the header and `?lang=` (appended with & if the URL already has a query):
+ * the header is what the backend reads, and the query string is what keeps the
+ * fetch cache key distinct per locale — without it /en could be served the
+ * cached /ru response.
+ */
+export function localizedRequest(
+  path: string,
+  locale: string,
+): { url: string; headers: Record<string, string> } {
+  return {
+    url: `${path}${path.includes("?") ? "&" : "?"}lang=${encodeURIComponent(locale)}`,
+    headers: { Accept: "application/json", "Accept-Language": locale },
+  };
+}

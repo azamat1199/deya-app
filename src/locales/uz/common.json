@@ -153,6 +153,8 @@
   "unitKg": "kg",
   "unitG": "g",
   "boxWeight": "Quti og‘irligi",
+  "boxQuantity": "Qutidagi miqdor",
+  "unitPcs": "dona",
   "shelfLife": "Saqlash muddati",
   "code": "Mahsulot kodi",
   "flavorHeading": "Ta’m",

@@ -153,6 +153,8 @@
   "unitKg": "кг",
   "unitG": "г",
   "boxWeight": "Вес ящика",
+  "boxQuantity": "Количество в ящике",
+  "unitPcs": "шт",
   "shelfLife": "Срок хранения",
   "code": "Код товара",
   "flavorHeading": "Вкус",

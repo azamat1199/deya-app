@@ -153,6 +153,8 @@
   "unitKg": "kg",
   "unitG": "g",
   "boxWeight": "Box weight",
+  "boxQuantity": "Quantity per box",
+  "unitPcs": "pcs",
   "shelfLife": "Shelf life",
   "code": "Product code",
   "flavorHeading": "Flavor",
