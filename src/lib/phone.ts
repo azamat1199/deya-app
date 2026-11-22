@@ -87,6 +87,11 @@ export function toE164(nationalInput: string, country: CountryCode): string {
 }
 
 /** Per-country validity — length included. Never one rule for all countries. */
+/** Validity of a full E.164 number ("+998901234567"), length included. */
+export function isValidE164(e164: string): boolean {
+  return isValidPhoneNumber(e164);
+}
+
 export function isValidFor(
   nationalInput: string,
   country: CountryCode,

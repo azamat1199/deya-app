@@ -1,5 +1,6 @@
 
 import { apiOrigin } from "@/lib/api";
+import { loadPhone } from "@/lib/phoneLite";
 
 /**
  * POST /api/v1/leads/
@@ -79,10 +80,11 @@ export async function isValidPhone(value: string): Promise<boolean> {
   const e164 = normalisePhone(value);
   if (!e164) return false;
   // Loaded on submit rather than imported: libphonenumber-js is ~40 KB gzip
-  // and must not ride in the initial JS of every page with a form. The phone
-  // field has normally loaded it already, so this resolves from cache.
-  const { isValidPhoneNumber } = await import("libphonenumber-js");
-  return isValidPhoneNumber(e164);
+  // and must not ride in the initial JS of every page with a form. Through
+  // the SAME loader the phone field uses, so the library is one chunk,
+  // fetched once (a separate import() here bundled a second copy).
+  const { isValidE164 } = await loadPhone();
+  return isValidE164(e164);
 }
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
