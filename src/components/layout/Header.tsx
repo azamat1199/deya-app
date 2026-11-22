@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -14,7 +15,13 @@ import { NAV_ITEMS } from "@/lib/nav";
 import { telHref, type Settings } from "@/lib/settings";
 
 import LanguageSwitch from "./LanguageSwitch";
-import MobileMenu from "./MobileMenu";
+
+// The mobile menu (and framer-motion, which animates it) is only needed once
+// someone opens it. Loaded on demand rather than shipped in every page's
+// initial JS; loadMobileMenu() warms the chunk on pointer-down so the first
+// open does not wait for it.
+const loadMobileMenu = () => import("./MobileMenu");
+const MobileMenu = dynamic(loadMobileMenu, { ssr: false });
 
 const HERO_ROUTES = ["", "/about", "/partners", "/careers"];
 
@@ -70,6 +77,9 @@ export default function Header({ settings, hotlineText }: HeaderProps) {
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Latched on first open so the menu stays mounted for its close animation.
+  const [mobileMenuLoaded, setMobileMenuLoaded] = useState(false);
+  if (mobileOpen && !mobileMenuLoaded) setMobileMenuLoaded(true);
   const closeMobileMenu = useCallback(() => setMobileOpen(false), []);
 
   useEffect(() => {
@@ -132,7 +142,10 @@ export default function Header({ settings, hotlineText }: HeaderProps) {
               // otherwise clamp the block back to the width of its slot and
               // erase the overhang.
               className="absolute top-0 left-0 size-(--logo-size) max-w-none"
-              priority
+              // Above the fold on every page but never the LCP: eager without
+              // high priority, so it does not compete with the hero/product
+              // image. (`priority` is deprecated in Next 16.)
+              loading="eager"
             />
           </Link>
           <nav className="hidden items-center gap-3 whitespace-nowrap md:flex lg:gap-8">
@@ -201,6 +214,7 @@ export default function Header({ settings, hotlineText }: HeaderProps) {
             type="button"
             className="flex items-center justify-center md:hidden"
             aria-label={t("a11y.openMenu")}
+            onPointerDown={() => void loadMobileMenu()}
             onClick={() => setMobileOpen(true)}
           >
             <Menu size={26} />
@@ -208,7 +222,9 @@ export default function Header({ settings, hotlineText }: HeaderProps) {
         </div>
       </header>
 
-      <MobileMenu open={mobileOpen} onClose={closeMobileMenu} />
+      {mobileMenuLoaded && (
+        <MobileMenu open={mobileOpen} onClose={closeMobileMenu} />
+      )}
     </>
   );
 }

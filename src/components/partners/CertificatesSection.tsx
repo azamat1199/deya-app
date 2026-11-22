@@ -54,7 +54,7 @@ export default async function CertificatesSection({
   let fetched: Certificate[] = [];
   let fetchError: unknown = null;
   try {
-    fetched = await getCertificates();
+    fetched = await getCertificates(locale);
   } catch (error) {
     fetchError = error;
   }

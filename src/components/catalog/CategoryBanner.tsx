@@ -35,7 +35,7 @@ export default function CategoryBanner({
       <div
         className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 ${CARD_GUTTER}`}
       >
-        {categories.map((category) => (
+        {categories.map((category, index) => (
           <Link
             key={category.id}
             href={`/${locale}/catalog?category=${category.slug}`}
@@ -57,7 +57,18 @@ export default function CategoryBanner({
               src={category.image}
               alt={category.title}
               fill
-              sizes="(min-width: 1200px) 25vw, (min-width: 640px) 50vw, 100vw"
+              // Breakpoints are this project's (sm = 360px, lg = 1200px — see
+              // globals.css), so phones already get two columns. The old
+              // `(min-width: 640px) 50vw, 100vw` made a 390px phone download
+              // tiles twice as wide as they render.
+              sizes="(min-width: 1200px) 25vw, (min-width: 360px) 50vw, 100vw"
+              // The banner is the first thing on /catalog and its first tile
+              // is the page's LCP. Lazy-loading made the browser wait for
+              // layout before even requesting it (~2.3s of load delay in
+              // Lighthouse mobile). All tiles are above the fold on desktop,
+              // so all load eagerly; only the first gets high priority.
+              loading="eager"
+              fetchPriority={index === 0 ? "high" : undefined}
               className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-linear-to-t from-black/45 via-transparent to-transparent" />

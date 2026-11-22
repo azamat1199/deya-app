@@ -44,7 +44,7 @@ export default async function PartnersLogos({ locale }: PartnersLogosProps) {
   let fetched: Partner[] = [];
   let fetchError: unknown = null;
   try {
-    fetched = await getPartners();
+    fetched = await getPartners(locale);
   } catch (error) {
     fetchError = error;
   }

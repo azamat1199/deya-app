@@ -149,10 +149,19 @@
   "articleNotFound": "Maqola topilmadi — DEYA",
   "productNotFound": "Mahsulot topilmadi — DEYA"
  },
+ "notFound": {
+  "title": "Sahifa topilmadi — DEYA",
+  "heading": "Sahifa topilmadi",
+  "text": "Ehtimol, u o‘chirilgan yoki havola noto‘g‘ri.",
+  "backHome": "Bosh sahifaga",
+  "toCatalog": "Katalogga"
+ },
  "product": {
   "unitKg": "kg",
   "unitG": "g",
   "boxWeight": "Quti og‘irligi",
+  "boxQuantity": "Qutidagi miqdor",
+  "unitPcs": "dona",
   "shelfLife": "Saqlash muddati",
   "code": "Mahsulot kodi",
   "flavorHeading": "Ta’m",

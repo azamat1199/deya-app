@@ -6,19 +6,14 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type RefObject,
 } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import {
-  motion,
-  useInView,
-  useReducedMotion,
-  type Variants,
-} from "framer-motion";
 
 import Button from "@/components/ui/Button";
-import Modal from "@/components/ui/Modal";
+import Modal from "@/components/ui/LazyModal";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import {
   EXPORT_REGION_API_IDS,
@@ -34,6 +29,7 @@ import type {
 } from "@/content/types";
 import type { TranslationKey } from "@/lib/i18n/dictionary";
 import { useTranslation } from "@/lib/i18n/useTranslation";
+import { usePrefersReducedMotion } from "@/lib/usePrefersReducedMotion";
 
 // Loaded on demand: this form lives inside a Modal that only mounts when the
 // user opens it, and it is the entry point to libphonenumber-js's metadata and
@@ -67,70 +63,88 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
-interface MapVariants {
-  line: Variants;
-  point: Variants;
-  label: Variants;
-  hub: Variants;
-  hubLabel: Variants;
-}
+/** framer-motion's "easeInOut", which the line draw used before this was CSS. */
+const EASE_IN_OUT = "cubic-bezier(0.42, 0, 0.58, 1)";
+/** A small overshoot, standing in for the default spring framer-motion gave
+ *  the dots' scale. */
+const EASE_POP = "cubic-bezier(0.34, 1.36, 0.64, 1)";
+const EASE_OUT = "cubic-bezier(0, 0, 0.58, 1)";
 
-/** Explicit "hidden"/"shown" states rather than `animate={cond ? {...} : undefined}`
- * — with `undefined` the element is left sitting on its `initial` (opacity 0)
- * with no target to return to if the trigger never resolves.
- * `instant` collapses every duration and delay to 0 for reduced motion. */
-function buildVariants(instant: boolean): MapVariants {
-  const d = (seconds: number) => (instant ? 0 : seconds);
+/**
+ * The map's entrance as plain CSS transitions (it used to need framer-motion,
+ * ~40 KB gzip, for these few tweens). Each element sits on its hidden state
+ * and transitions to its shown state when `shown` flips; dots and labels key
+ * off their own spoke's index, so each destination resolves as its line
+ * arrives instead of all six landing together. `instant` (reduced motion)
+ * drops every transition.
+ */
+function mapStyles(shown: boolean, instant: boolean) {
+  const t = (value: string) => (instant ? "none" : value);
+  const pointDelay = (i: number) => i * LINE_STAGGER + LINE_DURATION * 0.8;
+  const labelDelay = (i: number) => i * LINE_STAGGER + LINE_DURATION * 0.9;
+  const pop = (delay: number): CSSProperties => ({
+    transformBox: "fill-box",
+    transformOrigin: "center",
+    transform: shown ? "scale(1)" : "scale(0)",
+    opacity: shown ? 1 : 0,
+    transition: t(
+      `transform ${POINT_DURATION}s ${EASE_POP} ${delay}s, opacity ${POINT_DURATION}s ${EASE_OUT} ${delay}s`,
+    ),
+  });
+  const fade = (delay: number): CSSProperties => ({
+    opacity: shown ? 1 : 0,
+    transition: t(`opacity ${LABEL_DURATION}s ${EASE_OUT} ${delay}s`),
+  });
 
   return {
-    line: {
-      hidden: { pathLength: 0, opacity: 0 },
-      shown: (i: number) => ({
-        pathLength: 1,
-        opacity: 1,
-        transition: {
-          duration: d(LINE_DURATION),
-          ease: "easeInOut",
-          delay: d(i * LINE_STAGGER),
-        },
-      }),
+    // pathLength={1} on the line normalises the dash in user space, so a
+    // dash of 1 offset by 1 is exactly "not drawn yet".
+    line: (i: number): CSSProperties => {
+      const delay = i * LINE_STAGGER;
+      return {
+        strokeDasharray: 1,
+        strokeDashoffset: shown ? 0 : 1,
+        opacity: shown ? 1 : 0,
+        transition: t(
+          `stroke-dashoffset ${LINE_DURATION}s ${EASE_IN_OUT} ${delay}s, opacity ${LINE_DURATION}s ${EASE_IN_OUT} ${delay}s`,
+        ),
+      };
     },
-    // Dots and labels key off their own spoke's index, so each destination
-    // resolves as its line arrives instead of all six landing together.
-    point: {
-      hidden: { scale: 0, opacity: 0 },
-      shown: (i: number) => ({
-        scale: 1,
-        opacity: 1,
-        transition: {
-          duration: d(POINT_DURATION),
-          delay: d(i * LINE_STAGGER + LINE_DURATION * 0.8),
-        },
-      }),
-    },
-    label: {
-      hidden: { opacity: 0 },
-      shown: (i: number) => ({
-        opacity: 1,
-        transition: {
-          duration: d(LABEL_DURATION),
-          delay: d(i * LINE_STAGGER + LINE_DURATION * 0.9),
-        },
-      }),
-    },
-    hub: {
-      hidden: { scale: 0, opacity: 0 },
-      shown: {
-        scale: 1,
-        opacity: 1,
-        transition: { duration: d(POINT_DURATION) },
-      },
-    },
-    hubLabel: {
-      hidden: { opacity: 0 },
-      shown: { opacity: 1, transition: { duration: d(LABEL_DURATION) } },
-    },
+    point: (i: number) => pop(pointDelay(i)),
+    label: (i: number) => fade(labelDelay(i)),
+    hub: pop(0),
+    hubLabel: fade(0),
   };
+}
+
+/** True once the element has come within `rootMargin` of the viewport; stays
+ *  true. Without IntersectionObserver it is true immediately, so the map can
+ *  never be stranded hidden. */
+function useInViewOnce(
+  ref: RefObject<Element | null>,
+  rootMargin: string,
+): boolean {
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const element = ref.current;
+    if (!element || inView) return;
+    if (typeof IntersectionObserver === "undefined") {
+      const id = window.setTimeout(() => setInView(true), 0);
+      return () => window.clearTimeout(id);
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin },
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ref, rootMargin, inView]);
+  return inView;
 }
 
 /** Live scale factor between viewBox units and rendered CSS pixels. Mirrors
@@ -169,11 +183,9 @@ function useViewBoxScale(
 
 interface MapSvgProps {
   config: LabelledMapConfig;
-  variants: MapVariants;
-  /** `false` mounts straight into the final state (reduced motion), avoiding
-   * the one-frame flash of a hidden map. */
-  initial: false | "hidden";
-  animate: "hidden" | "shown";
+  shown: boolean;
+  /** Reduced motion: no transitions, straight to the shown state. */
+  instant: boolean;
   className: string;
 }
 
@@ -181,13 +193,7 @@ interface MapSvgProps {
 // coordinate space, so they can never detach from each other at any screen
 // size. Text *and* dot radius are counter-scaled by the live render scale so
 // both hold a constant on-screen size instead of growing on wide monitors.
-function MapSvg({
-  config,
-  variants,
-  initial,
-  animate,
-  className,
-}: MapSvgProps) {
+function MapSvg({ config, shown, instant, className }: MapSvgProps) {
   const { t } = useTranslation();
   const { viewBox, factory, regions, fontSize, dotRadius } = config;
   const svgRef = useRef<SVGSVGElement>(null);
@@ -200,7 +206,7 @@ function MapSvg({
   const pointRadius = dotRadius / scale;
   const hubRadius = (dotRadius + 1) / scale;
   // Counter-scaled rather than vectorEffect="non-scaling-stroke": that keyword
-  // resolves the dash pattern in screen space while framer-motion's pathLength
+  // resolves the dash pattern in screen space while the pathLength={1} dash
   // normalises in user space, and the mismatch truncates every line by the
   // scale factor so it never reaches its dot.
   const strokeWidth = 1 / scale;
@@ -208,9 +214,10 @@ function MapSvg({
   const hubAnchor = factory.anchor ?? "start";
   const hubLabelX = factory.x + (factory.labelDx ?? 10);
   const hubLabelY = factory.y + (factory.labelDy ?? 4);
+  const styles = mapStyles(shown, instant);
 
   return (
-    <motion.svg
+    <svg
       ref={svgRef}
       viewBox={viewBox}
       preserveAspectRatio="xMidYMid meet"
@@ -220,11 +227,9 @@ function MapSvg({
       // described once by the sr-only list in the parent instead.
       aria-hidden="true"
       focusable="false"
-      initial={initial}
-      animate={animate}
     >
       {regions.map((region, i) => (
-        <motion.line
+        <line
           key={region.id}
           x1={factory.x}
           y1={factory.y}
@@ -232,36 +237,33 @@ function MapSvg({
           y2={region.y}
           stroke="var(--color-ink-900)"
           strokeWidth={strokeWidth}
-          variants={variants.line}
-          custom={i}
+          pathLength={1}
+          style={styles.line(i)}
         />
       ))}
 
       {regions.map((region, i) => (
-        <motion.circle
+        <circle
           key={region.id}
           cx={region.x}
           cy={region.y}
           r={pointRadius}
           fill="var(--color-brand-600)"
-          variants={variants.point}
-          custom={i}
-          // A px transform-origin on an SVG shape is unreliable in Safari;
-          // fill-box + center resolves against the shape's own bounding box.
-          style={{ transformBox: "fill-box", transformOrigin: "center" }}
+          // transformBox fill-box + center (set in mapStyles): a px
+          // transform-origin on an SVG shape is unreliable in Safari.
+          style={styles.point(i)}
         />
       ))}
-      <motion.circle
+      <circle
         cx={factory.x}
         cy={factory.y}
         r={hubRadius}
         fill="var(--color-brand-600)"
-        variants={variants.hub}
-        style={{ transformBox: "fill-box", transformOrigin: "center" }}
+        style={styles.hub}
       />
 
       {regions.map((region, i) => (
-        <motion.text
+        <text
           key={region.id}
           x={region.x + (region.labelDx ?? 0)}
           y={region.y + (region.labelDy ?? 0)}
@@ -270,13 +272,12 @@ function MapSvg({
           fill="var(--color-ink-900)"
           letterSpacing={labelLetterSpacing}
           className="font-medium uppercase"
-          variants={variants.label}
-          custom={i}
+          style={styles.label(i)}
         >
           {region.label}
-        </motion.text>
+        </text>
       ))}
-      <motion.text
+      <text
         x={hubLabelX}
         y={hubLabelY}
         textAnchor={hubAnchor}
@@ -284,11 +285,11 @@ function MapSvg({
         fill="var(--color-brand-600)"
         letterSpacing={labelLetterSpacing}
         className="font-medium uppercase"
-        variants={variants.hubLabel}
+        style={styles.hubLabel}
       >
         {t("home.exportMap.factoryLabel")}
-      </motion.text>
-    </motion.svg>
+      </text>
+    </svg>
   );
 }
 
@@ -412,25 +413,11 @@ export default function ExportMap({ regions, headingText }: ExportMapProps) {
   const { t, locale } = useTranslation();
   const [isPartnerFormOpen, setIsPartnerFormOpen] = useState(false);
   const diagramRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(diagramRef, { once: true, margin: "-100px" });
-  const prefersReducedMotion = useReducedMotion();
-
-  // useInView never fires without IntersectionObserver support, which would
-  // strand the map in its "hidden" state; reveal it immediately in that case.
-  const [inViewUnavailable, setInViewUnavailable] = useState(false);
-  useEffect(() => {
-    if (typeof IntersectionObserver !== "undefined") return;
-    const id = window.setTimeout(() => setInViewUnavailable(true), 0);
-    return () => window.clearTimeout(id);
-  }, []);
-
-  const shouldAnimate =
-    Boolean(prefersReducedMotion) || inView || inViewUnavailable;
-
-  const variants = useMemo(
-    () => buildVariants(Boolean(prefersReducedMotion)),
-    [prefersReducedMotion],
-  );
+  const inView = useInViewOnce(diagramRef, "-100px");
+  const prefersReducedMotion = usePrefersReducedMotion();
+  // Reduced motion shows the finished map straight away, without waiting to
+  // scroll into view.
+  const shown = prefersReducedMotion || inView;
 
   // Labels are resolved once and shared: all three breakpoints carry the same
   // six markers. See resolveRegionLabels.
@@ -475,11 +462,7 @@ export default function ExportMap({ regions, headingText }: ExportMapProps) {
     }
   }, [orphanMarkers, unusedRegions, slugLabels, locale]);
 
-  const svgMotionProps = {
-    variants,
-    initial: prefersReducedMotion ? (false as const) : ("hidden" as const),
-    animate: shouldAnimate ? ("shown" as const) : ("hidden" as const),
-  };
+  const svgMotionProps = { shown, instant: prefersReducedMotion };
 
   return (
     <div>

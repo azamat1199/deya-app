@@ -30,6 +30,7 @@ import {
   type HomeStat,
 } from "@/lib/home";
 import { isLocale, type Locale } from "@/lib/i18n/config";
+import { pageMetadata } from "@/lib/seo";
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import type { Dictionary } from "@/lib/i18n/dictionary";
 import { badgeLabel } from "@/lib/badges";
@@ -44,7 +45,10 @@ export async function generateMetadata({
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const dictionary = await getDictionary(locale);
-  return { title: dictionary.home.placeholderTitle };
+  return {
+    title: dictionary.home.placeholderTitle,
+    ...pageMetadata(locale, ""),
+  };
 }
 
 /**
@@ -230,9 +234,9 @@ export default async function HomePage({ params }: HomePageProps) {
   return (
     <>
       {heroSlides.length > 0 && (
-        <ScrollReveal direction="fade">
-          <HeroSlider slides={heroSlides} />
-        </ScrollReveal>
+        // Deliberately NOT in a ScrollReveal: the hero is this page's LCP
+        // element and must paint from the server HTML, not after hydration.
+        <HeroSlider slides={heroSlides} />
       )}
 
       {statItems.length > 0 && (

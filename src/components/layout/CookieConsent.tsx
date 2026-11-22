@@ -1,31 +1,59 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 
 import { cn } from "@/lib/cn";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import {
+  CONSENT_DECIDED_ATTRIBUTE,
   acceptAll,
   hasDecision,
+  parseConsent,
+  readConsentCookie,
   writeConsentCookie,
   type ConsentRecord,
 } from "@/lib/consent";
 
-export interface CookieConsentProps {
-  initialConsent: ConsentRecord | null;
-}
+// The cookie only changes through handleAccept below, which also sets state,
+// so there is nothing to subscribe to.
+const subscribe = () => () => {};
+/** null on the server: "unknown", which renders the banner — the same markup
+ *  the static HTML carries for every visitor. */
+const serverSnapshot = () => null;
 
-export default function CookieConsent({ initialConsent }: CookieConsentProps) {
+/**
+ * The page HTML is static and shared by every visitor, so it always contains
+ * the banner. For a returning visitor the inline CONSENT_BOOT_SCRIPT has
+ * already hidden it before first paint (no flash, no layout shift); after
+ * hydration this component reads the cookie itself and unmounts the banner.
+ */
+export default function CookieConsent() {
   const { t, locale } = useTranslation();
-  const [consent, setConsent] = useState<ConsentRecord | null>(initialConsent);
+  const storedRaw = useSyncExternalStore(
+    subscribe,
+    readConsentCookie,
+    serverSnapshot,
+  );
+  const [accepted, setAccepted] = useState<ConsentRecord | null>(null);
+  const consent = accepted ?? (storedRaw === null ? null : parseConsent(storedRaw));
+  const decided = hasDecision(consent);
 
-  if (hasDecision(consent)) return null;
+  // A cookie that exists but is stale (older policy version) or malformed had
+  // the banner hidden by the boot script, which only checks for presence.
+  // Undo that so the visitor is asked again.
+  useEffect(() => {
+    if (storedRaw !== null && !decided) {
+      document.documentElement.removeAttribute(CONSENT_DECIDED_ATTRIBUTE);
+    }
+  }, [storedRaw, decided]);
+
+  if (decided) return null;
 
   function handleAccept() {
     const decision = acceptAll();
     writeConsentCookie(decision);
-    setConsent(decision);
+    setAccepted(decision);
   }
 
   return (

@@ -149,10 +149,19 @@
   "articleNotFound": "Article not found — DEYA",
   "productNotFound": "Product not found — DEYA"
  },
+ "notFound": {
+  "title": "Page not found — DEYA",
+  "heading": "Page not found",
+  "text": "It may have been removed, or the link is wrong.",
+  "backHome": "Back to home",
+  "toCatalog": "To the catalog"
+ },
  "product": {
   "unitKg": "kg",
   "unitG": "g",
   "boxWeight": "Box weight",
+  "boxQuantity": "Quantity per box",
+  "unitPcs": "pcs",
   "shelfLife": "Shelf life",
   "code": "Product code",
   "flavorHeading": "Flavor",

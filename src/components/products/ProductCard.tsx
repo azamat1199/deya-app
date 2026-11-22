@@ -59,7 +59,12 @@ export default function ProductCard({
           src={image}
           alt={title}
           fill
-          sizes="(min-width: 1200px) 25vw, (min-width: 768px) 50vw, 100vw"
+          // Both users of this card lay it out at most half the viewport wide
+          // below lg — the home featured grid is 2 columns, the recommended
+          // row 44% — and a quarter from lg (1200px). The old `100vw` made
+          // phones fetch 750px images for ~180px cards; this yields the
+          // ~300–384px thumbnails a card actually needs.
+          sizes="(min-width: 1200px) 25vw, 50vw"
           className="object-contain p-12 transition-transform duration-600 ease-out motion-reduce:transition-none [@media(hover:hover)]:group-hover:scale-[1.04] lg:p-16 max-md:p-6"
         />
       </div>

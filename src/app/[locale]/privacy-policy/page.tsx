@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import LegalPage from "@/components/legal/LegalPage";
 import { isLocale } from "@/lib/i18n/config";
+import { pageMetadata } from "@/lib/seo";
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import { getLegalDocument } from "@/lib/legalDocuments";
 
@@ -29,7 +30,11 @@ export async function generateMetadata({
   ]);
 
   const title = doc?.title ?? dictionary.footer.privacyPolicy;
-  return { title: `${title} — DEYA`, description: title };
+  return {
+    title: `${title} — DEYA`,
+    description: title,
+    ...pageMetadata(locale, "/privacy-policy"),
+  };
 }
 
 export default async function PrivacyPolicyPage({

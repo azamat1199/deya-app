@@ -1,6 +1,14 @@
 import { IMAGES } from "@/content/images";
-import { apiOrigin, listRows, mediaImageUrl, readJson } from "@/lib/api";
+import {
+  apiOrigin,
+  listRows,
+  localizedRequest,
+  mediaImageUrl,
+  readJson,
+} from "@/lib/api";
 import { isCategory, type Category } from "@/lib/categories";
+import { parseBoxQuantity, type BoxQuantityUnit } from "@/lib/boxQuantity";
+import { CACHE_TAGS } from "@/lib/cacheTags";
 
 /**
  * GET /api/v1/products/
@@ -13,6 +21,8 @@ export interface ProductFlavor {
   id: number;
   name: string;
   slug: string;
+  /** Drives the order of flavour chips; absent on older payloads. */
+  sort_order?: number;
 }
 
 /**
@@ -38,9 +48,25 @@ export interface Product {
   badge: string | null;
   is_featured: boolean;
   main_image: ProductImage | null;
+  /** The weight THIS product row is sold in; null when unset. */
+  weight: ProductWeight | null;
 }
 
-/** One weight the product is sold in. `value` is a decimal string ("1.00"). */
+export type { BoxQuantityUnit };
+
+/**
+ * box_quantity + box_quantity_unit as one optional value. The backend enforces
+ * "both or neither", but a half-filled, non-numeric, unknown-unit or missing
+ * (older backend) pair still reads as absent — the page hides the row rather
+ * than printing a number with no unit (or a unit with no number).
+ */
+function toBoxQuantity(
+  raw: Record<string, unknown>,
+): Pick<ProductDetail, "box_quantity" | "box_quantity_unit"> {
+  return parseBoxQuantity(raw.box_quantity, raw.box_quantity_unit);
+}
+
+/** A product's weight. `value` is a decimal string ("500.00"), unit "g" | "kg". */
 export interface ProductWeight {
   id: number;
   value: string;
@@ -52,8 +78,14 @@ export interface ProductWeight {
  *
  * NOT a strict superset of the list shape: the detail view drops `main_image`
  * and answers with a full `images` array instead, and adds description, code,
- * box_weight, shelf_life_months, weights and variants. The shared sub-types
- * (Category, ProductFlavor, ProductImage) are reused rather than redeclared.
+ * box_weight, shelf_life_months and variants. The shared sub-types
+ * (Category, ProductFlavor, ProductImage, ProductWeight) are reused.
+ *
+ * Variant model: each flavour/weight combination is its OWN product with its
+ * own slug. `variants` lists the other active products in the same family
+ * (never the current one), each carrying its own `flavor` and `weight`, so
+ * the page can link every flavour/weight chip to a real product. Empty when
+ * the product has no family.
  */
 export interface ProductDetail {
   id: number;
@@ -64,14 +96,22 @@ export interface ProductDetail {
   code: string;
   /** Decimal string in kilograms, e.g. "1.500". */
   box_weight: string;
+  /**
+   * Quantity per box, decimal string ("24.000"), or null when unset. The
+   * backend already resolves it: the variant's own value, else the family's
+   * shared one, else null. Always paired with `box_quantity_unit`.
+   */
+  box_quantity: string | null;
+  /** "kg" | "pcs" when box_quantity is set; "" otherwise. */
+  box_quantity_unit: BoxQuantityUnit | "";
   shelf_life_months: number | null;
   category: Category;
   flavor: ProductFlavor | null;
   badge: string | null;
   is_featured: boolean;
   images: ProductImage[];
-  weights: ProductWeight[];
-  /** Sibling products offered as alternative variants. */
+  weight: ProductWeight | null;
+  /** Other products in the same family (flavour and/or weight variants). */
   variants: Product[];
 }
 
@@ -156,6 +196,22 @@ function warnIfSvg(url: string, productName: string, field: string): string {
   return url;
 }
 
+function isWeight(value: unknown): value is ProductWeight {
+  if (typeof value !== "object" || value === null) return false;
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate.id === "number" &&
+    typeof candidate.value === "string" &&
+    typeof candidate.unit === "string"
+  );
+}
+
+function toWeight(value: unknown): ProductWeight | null {
+  return isWeight(value)
+    ? { id: value.id, value: value.value, unit: value.unit }
+    : null;
+}
+
 function toProduct(value: unknown, origin: string): Product {
   const raw = value as Record<string, unknown>;
   const category = raw.category as Category;
@@ -186,6 +242,7 @@ function toProduct(value: unknown, origin: string): Product {
           ),
         }
       : null,
+    weight: toWeight(raw.weight),
   };
 }
 
@@ -212,9 +269,11 @@ function nextPageUrl(next: unknown, origin: string): string | null {
  * status, a missing envelope or a missing base URL throw and the caller decides
  * whether to fall back.
  */
-export async function getProducts(): Promise<Product[]> {
+export async function getProducts(locale: string): Promise<Product[]> {
   const origin = apiOrigin();
-  let url: string | null = `${origin}${PRODUCTS_PATH}`;
+  // DRF carries the query string into `next`, so later pages keep ?lang=.
+  const first = localizedRequest(`${origin}${PRODUCTS_PATH}`, locale);
+  let url: string | null = first.url;
   const collected: Product[] = [];
   let requests = 0;
 
@@ -222,10 +281,11 @@ export async function getProducts(): Promise<Product[]> {
     requests += 1;
 
     const response: Response = await fetch(url, {
-      headers: { Accept: "application/json" },
+      headers: first.headers,
       // EXPLICIT, never the default: leaving it unset freezes the build-time
-      // result into static HTML, so CMS edits would never appear.
-      next: { revalidate: 300 },
+      // result into static HTML, so CMS edits would never appear. Tagged so
+      // POST /api/revalidate can refresh it on demand (lib/cacheTags.ts).
+      next: { revalidate: 300, tags: [CACHE_TAGS.products] },
     });
 
     if (!response.ok) {
@@ -265,17 +325,26 @@ export async function getProducts(): Promise<Product[]> {
  * An empty array is a normal answer, not an error: the caller hides its section
  * instead of substituting unrelated products.
  */
-export async function getRelatedProducts(slug: string): Promise<Product[]> {
+export async function getRelatedProducts(
+  slug: string,
+  locale: string,
+): Promise<Product[]> {
   const trimmed = slug.trim();
   if (!trimmed) return [];
 
   const origin = apiOrigin();
-  const url = `${origin}${PRODUCTS_PATH}${encodeURIComponent(trimmed)}/related/`;
+  const { url, headers } = localizedRequest(
+    `${origin}${PRODUCTS_PATH}${encodeURIComponent(trimmed)}/related/`,
+    locale,
+  );
 
   const response = await fetch(url, {
-    headers: { Accept: "application/json" },
+    headers,
     // EXPLICIT, never the default.
-    next: { revalidate: 300 },
+    next: {
+      revalidate: 300,
+      tags: [CACHE_TAGS.products, CACHE_TAGS.product(trimmed)],
+    },
   });
 
   if (!response.ok) {
@@ -292,12 +361,6 @@ export async function getRelatedProducts(slug: string): Promise<Product[]> {
   return rows.filter(isProduct).map((row) => toProduct(row, origin));
 }
 
-function isWeight(value: unknown): value is ProductWeight {
-  if (typeof value !== "object" || value === null) return false;
-  const candidate = value as Record<string, unknown>;
-  return typeof candidate.value === "string" && typeof candidate.unit === "string";
-}
-
 // badgeLabel now lives in lib/badges.ts, which is the single badge vocabulary
 // for both the client grid and the server pages. The version that stood here
 // hardcoded Russian and knew the wrong key set — see the comment there.
@@ -311,17 +374,26 @@ function isWeight(value: unknown): value is ProductWeight {
  * from "no such product", which would silently 404 the whole catalog during an
  * outage.
  */
-export async function getProduct(slug: string): Promise<ProductDetail | null> {
+export async function getProduct(
+  slug: string,
+  locale: string,
+): Promise<ProductDetail | null> {
   const trimmed = slug.trim();
   if (!trimmed) return null;
 
   const origin = apiOrigin();
-  const url = `${origin}${PRODUCTS_PATH}${encodeURIComponent(trimmed)}/`;
+  const { url, headers } = localizedRequest(
+    `${origin}${PRODUCTS_PATH}${encodeURIComponent(trimmed)}/`,
+    locale,
+  );
 
   const response = await fetch(url, {
-    headers: { Accept: "application/json" },
+    headers,
     // EXPLICIT, never the default.
-    next: { revalidate: 300 },
+    next: {
+      revalidate: 300,
+      tags: [CACHE_TAGS.products, CACHE_TAGS.product(trimmed)],
+    },
   });
 
   if (response.status === 404) return null;
@@ -365,6 +437,7 @@ export async function getProduct(slug: string): Promise<ProductDetail | null> {
     description: typeof raw.description === "string" ? raw.description : "",
     code: typeof raw.code === "string" ? raw.code : "",
     box_weight: typeof raw.box_weight === "string" ? raw.box_weight : "",
+    ...toBoxQuantity(raw),
     shelf_life_months:
       typeof raw.shelf_life_months === "number" ? raw.shelf_life_months : null,
     category: {
@@ -375,9 +448,15 @@ export async function getProduct(slug: string): Promise<ProductDetail | null> {
     badge:
       typeof raw.badge === "string" && raw.badge.trim() ? raw.badge.trim() : null,
     is_featured: raw.is_featured === true,
-    // Sorted so the gallery order is the backend's, not the payload's.
-    images: images.sort((a, b) => a.sort_order - b.sort_order || a.id - b.id),
-    weights: Array.isArray(raw.weights) ? raw.weights.filter(isWeight) : [],
+    // The is_main image leads the gallery; the rest keep the backend's
+    // sort_order rather than the payload's arrival order.
+    images: images.sort(
+      (a, b) =>
+        Number(b.is_main === true) - Number(a.is_main === true) ||
+        a.sort_order - b.sort_order ||
+        a.id - b.id,
+    ),
+    weight: toWeight(raw.weight),
     variants: Array.isArray(raw.variants)
       ? raw.variants.filter(isProduct).map((row) => toProduct(row, origin))
       : [],

@@ -6,3 +6,5 @@
 # go in the Netlify UI as non-public vars, never here.
 [build.environment]
   NEXT_PUBLIC_API_URL = "https://deya.uz"
+  NEXT_PUBLIC_SITE_URL = "https://deya.uz"
+  # REVALIDATION_SECRET is a secret: set it in the Netlify UI, never here.

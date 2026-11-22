@@ -1,32 +1,151 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 
 import ContactSalesButton from "@/components/catalog/ContactSalesButton";
 import ProductGallery from "@/components/catalog/ProductGallery";
 import RecommendedProducts, {
   type RecommendedItem,
 } from "@/components/catalog/RecommendedProducts";
+import {
+  VariantNavigationProvider,
+  VariantPendingRegion,
+} from "@/components/catalog/VariantNavigation";
+import VariantSwitcher, {
+  type VariantRow,
+} from "@/components/catalog/VariantSwitcher";
 import Section from "@/components/ui/Section";
 import { IMAGES } from "@/content/images";
-import type { Product, ProductVariantOption } from "@/content/types";
+import type { Product } from "@/content/types";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import type { Dictionary } from "@/lib/i18n/dictionary";
 import { getSettings } from "@/lib/settings";
 import { badgeLabel } from "@/lib/badges";
+import { formatBoxQuantity } from "@/lib/boxQuantity";
+import { SITE_URL, pageMetadata } from "@/lib/seo";
 import {
   getProduct,
+  getProducts,
   getRelatedProducts,
   productImageUrl,
   type Product as ApiProduct,
   type ProductDetail,
   type ProductWeight,
 } from "@/lib/products";
+import {
+  buildOptions,
+  formatWeight,
+  variantPool,
+  type VariantItem,
+} from "@/lib/variants";
 
 type ProductPageProps = {
   params: Promise<{ locale: string; category: string; product: string }>;
 };
+
+/**
+ * Every product is prerendered at build time, per locale, and then revalidated
+ * (ISR) on the fetches' 300s window. A product added in the CMS after the
+ * build is rendered on its first visit and cached from then on
+ * (dynamicParams defaults to true). If the list request fails at build time
+ * the build still succeeds — every product then renders on first visit.
+ */
+export async function generateStaticParams({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<{ category: string; product: string }[]> {
+  try {
+    const products = await getProducts(params.locale);
+    return products.map((item) => ({
+      category: item.category.slug,
+      product: item.slug,
+    }));
+  } catch (error) {
+    console.error(
+      `[ProductPage] generateStaticParams(${params.locale}) failed, products will render on first visit —`,
+      error instanceof Error ? error.message : String(error),
+    );
+    return [];
+  }
+}
+
+/** The product's one true URL path (without the locale): the category
+ *  segment comes from the product itself, never from the request. */
+function productPath(detail: ProductDetail): string {
+  return `/catalog/${detail.category.slug}/${detail.slug}`;
+}
+
+/**
+ * schema.org Product + BreadcrumbList. No `offers`: the site is B2B and shows
+ * no prices — inventing one would be worse than the rich-result Google then
+ * declines to show. weight uses UN/CEFACT codes (GRM = gram, KGM = kilogram).
+ */
+function productJsonLd(
+  detail: ProductDetail,
+  locale: Locale,
+  dictionary: Dictionary,
+) {
+  const url = `${SITE_URL}/${locale}${productPath(detail)}`;
+  const unitCode: Record<string, string> = { g: "GRM", kg: "KGM" };
+  const weightValue = detail.weight ? Number(detail.weight.value) : Number.NaN;
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Product",
+        "@id": `${url}#product`,
+        name: detail.name,
+        url,
+        ...(detail.description ? { description: detail.description } : {}),
+        ...(detail.code ? { sku: detail.code, mpn: detail.code } : {}),
+        ...(detail.images.length > 0
+          ? { image: detail.images.map((image) => image.image) }
+          : {}),
+        brand: { "@type": "Brand", name: "Deya" },
+        category: detail.category.name,
+        ...(detail.weight && Number.isFinite(weightValue)
+          ? {
+              weight: {
+                "@type": "QuantitativeValue",
+                value: weightValue,
+                unitCode: unitCode[detail.weight.unit.toLowerCase()],
+              },
+            }
+          : {}),
+        ...(detail.flavor
+          ? {
+              additionalProperty: {
+                "@type": "PropertyValue",
+                name: dictionary.product.flavorHeading,
+                value: detail.flavor.name,
+              },
+            }
+          : {}),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: dictionary.nav.products,
+            item: `${SITE_URL}/${locale}/catalog`,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: detail.category.name,
+            item: `${SITE_URL}/${locale}/catalog?category=${detail.category.slug}`,
+          },
+          { "@type": "ListItem", position: 3, name: detail.name, item: url },
+        ],
+      },
+    ],
+  };
+}
 
 /** The design shows four recommendations; a longer list is cut to that. */
 const RECOMMENDED_LIMIT = 4;
@@ -50,23 +169,20 @@ function toRecommendedItem(
   };
 }
 
-/** "1.500" -> "1,5". The payload sends decimal strings with trailing zeros. */
-function formatDecimal(value: string): string {
+/** "1.500" -> "1,5" on /ru, "1.5" on /en. The payload sends decimal strings
+ *  with trailing zeros. */
+function formatDecimal(value: string, locale: Locale): string {
   const parsed = Number.parseFloat(value);
   if (!Number.isFinite(parsed)) return value;
-  return parsed.toLocaleString("ru-RU", { maximumFractionDigits: 3 });
+  return parsed.toLocaleString(locale, { maximumFractionDigits: 3 });
 }
 
-function formatWeight(
+function weightLabel(
   weight: ProductWeight,
+  locale: Locale,
   product: Dictionary["product"],
 ): string {
-  const unitLabels: Record<string, string> = {
-    kg: product.unitKg,
-    g: product.unitG,
-  };
-  const unit = unitLabels[weight.unit.toLowerCase()] ?? weight.unit;
-  return `${formatDecimal(weight.value)} ${unit}`;
+  return formatWeight(weight, locale, { g: product.unitG, kg: product.unitKg });
 }
 
 /**
@@ -91,37 +207,23 @@ function monthsLabel(
 }
 
 /**
- * The product's own flavour first, then each sibling variant. The existing
- * markup marks the option whose slug equals the product's as active, so the
- * first entry reads as selected without any extra state.
+ * The flavour and weight chip rows. Each option's target slug is resolved here,
+ * at render time, so every chip is a plain link to a real product URL. Empty
+ * rows (fewer than two values, or no family) are dropped by the switcher.
  */
-function toFlavorOptions(detail: ProductDetail): ProductVariantOption[] {
-  const options: ProductVariantOption[] = [];
-  if (detail.flavor) {
-    options.push({ label: detail.flavor.name, slug: detail.slug });
-  }
-  for (const variant of detail.variants) {
-    options.push({
-      label: variant.flavor?.name ?? variant.name,
-      slug: variant.slug,
-    });
-  }
-  return options;
-}
-
-/**
- * `weights` carries values but no per-weight product to navigate to, so every
- * option points back at this same product and therefore renders as the active
- * chip. The values are real; only the link target is absent from the payload.
- */
-function toWeightOptions(
+function toVariantRows(
   detail: ProductDetail,
   product: Dictionary["product"],
-): ProductVariantOption[] {
-  return detail.weights.map((weight) => ({
-    label: formatWeight(weight, product),
-    slug: detail.slug,
-  }));
+  locale: Locale,
+): VariantRow[] {
+  const pool = variantPool<VariantItem>(detail, detail.variants);
+  const options = buildOptions(pool, detail, (weight) =>
+    weightLabel(weight, locale, product),
+  );
+  return [
+    { id: "flavor", heading: product.flavorHeading, options: options.flavor },
+    { id: "weight", heading: product.weightHeading, options: options.weight },
+  ];
 }
 
 /** Row labels come from the dictionary; only the values are live. A field the
@@ -132,11 +234,34 @@ function toCharacteristics(
   locale: Locale,
 ) {
   const rows: { label: string; value: string }[] = [];
+  if (detail.weight) {
+    rows.push({
+      label: product.weightHeading,
+      value: weightLabel(detail.weight, locale, product),
+    });
+  }
+  if (detail.flavor) {
+    rows.push({ label: product.flavorHeading, value: detail.flavor.name });
+  }
   if (detail.box_weight) {
     rows.push({
       label: product.boxWeight,
-      value: `${formatDecimal(detail.box_weight)} ${product.unitKg}`,
+      value: `${formatDecimal(detail.box_weight, locale)} ${product.unitKg}`,
     });
+  }
+  // Directly below "Вес ящика". Optional: shown only when the payload carries
+  // a quantity per box — the backend has already resolved variant → family →
+  // null, so there is no fallback here. "24.000" pcs → "24 шт",
+  // "5.500" kg → "5,5 кг". Comes from THIS product's payload, so switching
+  // flavour/weight (a different slug) shows that variant's value.
+  const boxQuantity = formatBoxQuantity(
+    detail.box_quantity,
+    detail.box_quantity_unit,
+    locale,
+    { kg: product.unitKg, pcs: product.unitPcs },
+  );
+  if (boxQuantity) {
+    rows.push({ label: product.boxQuantity, value: boxQuantity });
   }
   if (detail.shelf_life_months !== null) {
     rows.push({
@@ -171,10 +296,9 @@ function toDisplayProduct(
   // image at all — /products/glazer/ returns `images: []` — the existing
   // static placeholder stands in, so the gallery still renders rather than
   // being handed src="".
+  // getProduct already orders images is_main first, then by sort_order.
   const gallery = detail.images.map((image) => image.image).filter(Boolean);
   const primary = gallery[0] ?? IMAGES.placeholder;
-  const flavorOptions = toFlavorOptions(detail);
-  const weightOptions = toWeightOptions(detail, product);
   const characteristics = toCharacteristics(detail, product, locale);
 
   return {
@@ -185,10 +309,17 @@ function toDisplayProduct(
     badge: badgeLabel(detail.badge, badges),
     description: detail.description || undefined,
     gallery: gallery.length > 0 ? gallery : undefined,
-    flavorOptions: flavorOptions.length > 0 ? flavorOptions : undefined,
-    weightOptions: weightOptions.length > 0 ? weightOptions : undefined,
     characteristics: characteristics.length > 0 ? characteristics : undefined,
   };
+}
+
+/** Cuts at the last word boundary before `max` and adds an ellipsis. */
+function truncate(text: string, max: number): string {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (clean.length <= max) return clean;
+  const cut = clean.slice(0, max - 1);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
 }
 
 export async function generateMetadata({
@@ -201,7 +332,7 @@ export async function generateMetadata({
   // The fetch is deduped against the one in the page body for this request.
   let detail: ProductDetail | null = null;
   try {
-    detail = await getProduct(product);
+    detail = await getProduct(product, locale);
   } catch {
     detail = null;
   }
@@ -211,11 +342,26 @@ export async function generateMetadata({
     return { title: dictionary.meta.productNotFound };
   }
 
+  // ~160 characters is what search results show; cut on a word boundary.
+  const description = detail.description
+    ? truncate(detail.description, 160)
+    : undefined;
+  // images[0] is the main image — getProduct orders is_main first.
+  const image = detail.images[0];
+  // canonical + hreflang from the product's OWN category slug, so the same
+  // product under a stale/mistyped category URL never competes with itself.
+  const shared = pageMetadata(locale, productPath(detail));
+
   return {
     title: `${detail.name} — DEYA`,
-    ...(detail.description
-      ? { description: detail.description.slice(0, 300) }
-      : {}),
+    description,
+    alternates: shared.alternates,
+    openGraph: {
+      ...shared.openGraph,
+      title: detail.name,
+      description,
+      ...(image ? { images: [{ url: image.image, alt: image.alt || detail.name }] } : {}),
+    },
   };
 }
 
@@ -226,8 +372,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
   // A missing product is a real 404, never a stand-in: a fake product living at
   // a real URL is worse than no page. Deliberately NOT wrapped in a fallback —
   // this is the one integration on the site where falling back would be wrong.
-  const detail = await getProduct(product);
+  const detail = await getProduct(product, locale);
   if (!detail) notFound();
+
+  // Nothing else validates the category segment, so /catalog/anything/<slug>
+  // used to render the product too — duplicate content at unlimited URLs.
+  // 308 to the one true URL instead.
+  if (category !== detail.category.slug) {
+    permanentRedirect(`/${locale}${productPath(detail)}`);
+  }
 
   const dictionary = await getDictionary(locale as Locale);
   const found = toDisplayProduct(
@@ -236,6 +389,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
     dictionary.product,
     locale,
   );
+  const variantRows = toVariantRows(detail, dictionary.product, locale);
+  // Same rule ProductGallery uses to decide whether it shows a thumbnail strip.
+  const hasThumbnails = (found.gallery?.length ?? 0) > 1;
 
   // Related products, keyed off THIS page's route param — never derived from
   // anything else. Fetched here because RecommendedProducts is "use client" and
@@ -246,7 +402,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   // way and the reason is logged.
   let related: ApiProduct[] = [];
   try {
-    related = await getRelatedProducts(product);
+    related = await getRelatedProducts(product, locale);
   } catch (error) {
     console.error(
       `[ProductPage] related products for "${product}" failed, hiding the recommendation section —`,
@@ -271,11 +427,29 @@ export default async function ProductPage({ params }: ProductPageProps) {
     // the breadcrumb — so the page starts below the block's lowest edge, not the
     // bar's. --logo-overhang is derived from the logo's own size, so this can
     // never drift; the 1.5rem is the breathing room on top of it.
+    // containerWidth="page" is the header's own container, so the content
+    // starts on the logo's left edge and ends on the phone button's right edge.
     <Section
       bg="white"
-      containerWidth="home"
+      containerWidth="page"
       className="pt-[calc(var(--logo-overhang)_+_1.5rem)]"
     >
+      {/* Switching flavour/weight navigates to the sibling product's own URL.
+          The provider runs that navigation as a transition so the blocks
+          below dim in place, instead of blanking, until the next product's
+          data has arrived. */}
+      {/* `<` is escaped so a product text containing "</script>" cannot end
+          the tag early (the pattern the Next JSON-LD guide recommends). */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            productJsonLd(detail, locale, dictionary),
+          ).replace(/</g, "\\u003c"),
+        }}
+      />
+      <VariantNavigationProvider>
+      <VariantPendingRegion>
       <nav className="mb-8 text-sm text-ink-500">
         <Link href={`/${locale}/catalog`} className="hover:text-ink-900">
           {dictionary.nav.products}
@@ -300,7 +474,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <span className="text-ink-900">{found.title}</span>
       </nav>
 
-      <div className="grid gap-12 lg:grid-cols-2">
+      {/* With thumbnails, 738 : 574 — the gallery column is the 100px strip +
+          16px gap + the 622px main frame at the 1440 design width (1360
+          content − 48 gap = 738 + 574). As fr units it scales down
+          proportionally instead of starving the text column. A single-photo
+          product has no strip, so it is a plain 50/50: photo half, info half. */}
+      <div
+        className={
+          hasThumbnails
+            ? "grid gap-12 lg:grid-cols-[minmax(0,738fr)_minmax(0,574fr)]"
+            : "grid gap-12 lg:grid-cols-2"
+        }
+      >
         <ProductGallery product={found} />
 
         <div>
@@ -314,59 +499,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </p>
           )}
 
-          {found.flavorOptions && found.flavorOptions.length > 0 && (
-            <div className="mt-8">
-              <h3 className="mb-3 text-xs font-semibold tracking-wide text-ink-500 uppercase">
-                {dictionary.product.flavorHeading}
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {found.flavorOptions.map((option) => {
-                  const isActive = option.slug === found.slug;
-                  return (
-                    <Link
-                      key={option.slug}
-                      href={`/${locale}/catalog/${category}/${option.slug}`}
-                      className={
-                        isActive
-                          ? "rounded-md border border-brand-600 bg-brand-600 px-4 py-2 text-xs font-medium tracking-wide text-white uppercase"
-                          : "rounded-md border border-brand-600 px-4 py-2 text-xs font-medium tracking-wide text-brand-600 uppercase transition-colors hover:bg-brand-50"
-                      }
-                    >
-                      {option.label}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {found.weightOptions && found.weightOptions.length > 0 && (
-            <div className="mt-8">
-              <h3 className="mb-3 text-xs font-semibold tracking-wide text-ink-500 uppercase">
-                {dictionary.product.weightHeading}
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {found.weightOptions.map((option) => {
-                  const isActive = option.slug === found.slug;
-                  return (
-                    <Link
-                      // Every weight points at this same product, so the slug
-                      // alone is not unique across the list — the label is.
-                      key={`${option.slug}-${option.label}`}
-                      href={`/${locale}/catalog/${category}/${option.slug}`}
-                      className={
-                        isActive
-                          ? "rounded-md border border-brand-600 bg-brand-600 px-4 py-2 text-xs font-medium tracking-wide text-white uppercase"
-                          : "rounded-md border border-brand-600 px-4 py-2 text-xs font-medium tracking-wide text-brand-600 uppercase transition-colors hover:bg-brand-50"
-                      }
-                    >
-                      {option.label}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          <VariantSwitcher locale={locale} rows={variantRows} />
 
           {found.characteristics && found.characteristics.length > 0 && (
             <div className="mt-8">
@@ -385,6 +518,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           )}
         </div>
       </div>
+      </VariantPendingRegion>
 
       {/* Already a sibling of the two-column grid rather than a child of either
           column, so it spans the full block width — it was only left-aligned.
@@ -408,13 +542,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
       {/* Hidden entirely when there is nothing related: a heading with an
           empty row under it reads as broken. */}
       {recommended.length > 0 && (
-        <RecommendedProducts
-          locale={locale as Locale}
-          heading={dictionary.product.recommendedHeading}
-          allCatalogLabel={dictionary.buttons.allCatalog}
-          items={recommended}
-        />
+        <VariantPendingRegion>
+          <RecommendedProducts
+            locale={locale as Locale}
+            heading={dictionary.product.recommendedHeading}
+            allCatalogLabel={dictionary.buttons.allCatalog}
+            items={recommended}
+          />
+        </VariantPendingRegion>
       )}
+      </VariantNavigationProvider>
     </Section>
   );
 }

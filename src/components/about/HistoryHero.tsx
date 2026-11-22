@@ -6,21 +6,16 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  useEffectEvent,
 } from "react";
 import Image from "next/image";
-import {
-  AnimatePresence,
-  motion,
-  useMotionValueEvent,
-  useReducedMotion,
-  useScroll,
-} from "framer-motion";
 
 import { cn } from "@/lib/cn";
 import type { TranslationKey } from "@/lib/i18n/dictionary";
 import { useTranslation } from "@/lib/i18n/useTranslation";
+import { useCrossfade } from "@/lib/useCrossfade";
+import { usePrefersReducedMotion } from "@/lib/usePrefersReducedMotion";
 
-const FADE_EASE = [0.4, 0, 0.2, 1] as const;
 const IMAGE_FADE_S = 0.7;
 /** Copy settles before the photo does. */
 const TEXT_FADE_S = 0.55;
@@ -98,11 +93,23 @@ const useIsomorphicLayoutEffect =
 
 export default function HistoryHero({ slides }: HistoryHeroProps) {
   const { t } = useTranslation();
-  const prefersReducedMotion = useReducedMotion();
-  const instant = Boolean(prefersReducedMotion);
+  const instant = usePrefersReducedMotion();
 
   const [activeIndex, setActiveIndex] = useState(0);
   const active = slides[activeIndex];
+  // Photo and paragraph crossfades (CSS, see .anim-crossfade-* in
+  // globals.css): the outgoing layer stays mounted while the incoming one
+  // fades up over it; nothing fades on first load.
+  const photoLayers = useCrossfade(
+    active,
+    active.key,
+    instant ? 0 : IMAGE_FADE_S * 1000,
+  );
+  const textLayers = useCrossfade(
+    active,
+    active.key,
+    instant ? 0 : TEXT_FADE_S * 1000,
+  );
   // Was a module-level constant off the static array; the entry count is live
   // now, so it is derived per render.
   const lastIndex = slides.length - 1;
@@ -211,10 +218,6 @@ export default function HistoryHero({ slides }: HistoryHeroProps) {
   // The hero is pinned inside a tall track; progress through that track maps
   // onto the year list. At >= md the track collapses to the section's own
   // height, so the range is zero and this never fires.
-  const { scrollYProgress } = useScroll({
-    target: trackRef,
-    offset: ["start start", "end end"],
-  });
 
   // While a click or arrow key is smooth-scrolling the page, the intermediate
   // years must not flash past — the target index is parked here and every other
@@ -229,7 +232,7 @@ export default function HistoryHero({ slides }: HistoryHeroProps) {
     [],
   );
 
-  useMotionValueEvent(scrollYProgress, "change", (progress) => {
+  const onTrackProgress = useEffectEvent((progress: number) => {
     if (!isMobileRef.current) return;
     const next = Math.min(
       lastIndex,
@@ -241,6 +244,37 @@ export default function HistoryHero({ slides }: HistoryHeroProps) {
     }
     setActiveIndex((prev) => (prev === next ? prev : next));
   });
+
+  // Progress (0..1) of the page through the track: 0 when its top reaches the
+  // viewport top, 1 when its bottom reaches the viewport bottom. Read on
+  // scroll/resize, once per frame, reported only when it changes.
+  useEffect(() => {
+    let frame = 0;
+    let last = Number.NaN;
+    function read() {
+      frame = 0;
+      const track = trackRef.current;
+      if (!track) return;
+      const rect = track.getBoundingClientRect();
+      const span = rect.height - window.innerHeight;
+      if (span <= 0) return;
+      const progress = Math.min(1, Math.max(0, -rect.top / span));
+      if (progress === last) return;
+      last = progress;
+      onTrackProgress(progress);
+    }
+    function schedule() {
+      if (!frame) frame = requestAnimationFrame(read);
+    }
+    read();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
+  }, []);
 
   /**
    * Mobile: move the page to the slice of the track that owns `index`, so a
@@ -332,28 +366,33 @@ export default function HistoryHero({ slides }: HistoryHeroProps) {
           photo fades up while the outgoing holds its place. No translate, no
           scale, and the ink-900 base behind them prevents any black flash. */}
           <div className="absolute inset-0 grid">
-            <AnimatePresence mode="sync" initial={false}>
-              <motion.div
-                key={active.key}
-                className="[grid-area:1/1]"
-                initial={instant ? false : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: instant ? 1 : 0 }}
-                transition={{
-                  duration: instant ? 0 : IMAGE_FADE_S,
-                  ease: FADE_EASE,
-                }}
+            {photoLayers.map((layer) => (
+              <div
+                key={layer.key}
+                className={cn(
+                  "[grid-area:1/1]",
+                  !instant && layer.phase === "enter" && "anim-crossfade-in",
+                  !instant && layer.phase === "exit" && "anim-crossfade-out",
+                )}
+                style={
+                  {
+                    "--fade-duration": `${IMAGE_FADE_S}s`,
+                  } as React.CSSProperties
+                }
               >
                 <Image
-                  src={active.image}
+                  src={layer.item.image}
                   alt=""
                   fill
-                  priority={activeIndex === 0}
+                  loading={layer.key === slides[0]?.key ? "eager" : undefined}
+                  fetchPriority={
+                    layer.key === slides[0]?.key ? "high" : undefined
+                  }
                   sizes="100vw"
                   className="object-cover"
                 />
-              </motion.div>
-            </AnimatePresence>
+              </div>
+            ))}
           </div>
           <div className="absolute inset-0 bg-ink-900/55" />
 
@@ -618,27 +657,35 @@ export default function HistoryHero({ slides }: HistoryHeroProps) {
                 {/* Right edge is the container's right edge (justify-between on the
               row), which is exactly where the rule above ends. */}
                 <div className="grid w-full shrink-0 min-[1024px]:w-[41%]">
-                  <AnimatePresence mode="sync" initial={false}>
-                    <motion.p
-                      key={active.key}
+                  {textLayers.map((layer) => (
+                    <p
+                      key={layer.key}
                       // Mobile: Roboto 400 / 13px / 135% (17.55px) / 0.
                       // font-normal is already the 400; the size, leading and
                       // the letter-spacing all need restating, the last one
                       // because the desktop value is -0.03em and the spec asks
                       // for 0 here.
-                      className="[grid-area:1/1] font-normal tracking-[-0.03em] text-white/90 text-[clamp(16px,1.39vw,20px)] leading-[1.25] max-md:text-[13px] max-md:leading-[1.35] max-md:tracking-normal"
-                      initial={instant ? false : { opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: instant ? 1 : 0 }}
-                      transition={{
-                        duration: instant ? 0 : TEXT_FADE_S,
-                        ease: FADE_EASE,
-                      }}
+                      className={cn(
+                        "[grid-area:1/1] font-normal tracking-[-0.03em] text-white/90 text-[clamp(16px,1.39vw,20px)] leading-[1.25] max-md:text-[13px] max-md:leading-[1.35] max-md:tracking-normal",
+                        !instant &&
+                          layer.phase === "enter" &&
+                          "anim-crossfade-in",
+                        !instant &&
+                          layer.phase === "exit" &&
+                          "anim-crossfade-out",
+                      )}
+                      style={
+                        {
+                          "--fade-duration": `${TEXT_FADE_S}s`,
+                        } as React.CSSProperties
+                      }
                     >
-                      {active.paragraph ??
-                        (active.paragraphKey ? t(active.paragraphKey) : "")}
-                    </motion.p>
-                  </AnimatePresence>
+                      {layer.item.paragraph ??
+                        (layer.item.paragraphKey
+                          ? t(layer.item.paragraphKey)
+                          : "")}
+                    </p>
+                  ))}
                 </div>
               </div>
             </div>

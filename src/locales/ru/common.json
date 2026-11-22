@@ -149,10 +149,19 @@
   "articleNotFound": "Статья не найдена — DEYA",
   "productNotFound": "Товар не найден — DEYA"
  },
+ "notFound": {
+  "title": "Страница не найдена — DEYA",
+  "heading": "Страница не найдена",
+  "text": "Возможно, она была удалена или вы перешли по неверной ссылке.",
+  "backHome": "На главную",
+  "toCatalog": "В каталог"
+ },
  "product": {
   "unitKg": "кг",
   "unitG": "г",
   "boxWeight": "Вес ящика",
+  "boxQuantity": "Количество в ящике",
+  "unitPcs": "шт",
   "shelfLife": "Срок хранения",
   "code": "Код товара",
   "flavorHeading": "Вкус",

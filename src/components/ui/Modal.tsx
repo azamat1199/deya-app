@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 
 import { useTranslation } from "@/lib/i18n/useTranslation";
+import { cn } from "@/lib/cn";
 import { useFocusTrap } from "@/lib/useFocusTrap";
+import { usePresence } from "@/lib/usePresence";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -31,53 +32,57 @@ export default function Modal({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
-  useFocusTrap(isOpen, panelRef, onClose);
+  // `&& mounted`: until the portal exists there is no panel to trap focus in.
+  // A modal that is already open on its first render (ui/LazyModal mounts it
+  // at the moment of opening) would otherwise run the trap against a null ref
+  // once and never again — no initial focus, no Escape, no scroll lock.
+  useFocusTrap(isOpen && mounted, panelRef, onClose);
+  // Stays mounted for the 300ms backdrop fade-out after closing.
+  const { rendered, closing } = usePresence(isOpen, 300);
 
-  if (!mounted) return null;
+  if (!mounted || !rendered) return null;
 
   return createPortal(
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <motion.div
-            className="absolute inset-0 bg-ink-900/60 backdrop-blur-sm"
-            onClick={onClose}
-            aria-hidden="true"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          />
-          <motion.div
-            ref={panelRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label={title}
-            className="relative max-h-[90vh] w-full max-w-[715px] overflow-y-auto rounded-lg bg-white p-6 md:p-8"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-          >
-            <button
-              type="button"
-              aria-label={t("a11y.closeModal")}
-              onClick={onClose}
-              className="absolute right-4 top-4 rounded-full p-1 text-ink-500 hover:bg-light hover:text-[#DA1F26] hover:cursor-pointer"
-            >
-              <X size={22} />
-            </button>
-
-            {title && (
-              <h2 className="pr-8 text-xl font-semibold text-ink-900">
-                {title}
-              </h2>
-            )}
-
-            <div className={title ? "mt-4" : undefined}>{children}</div>
-          </motion.div>
-        </div>
+    <div
+      className={cn(
+        "fixed inset-0 z-50 flex items-center justify-center p-4",
+        closing && "pointer-events-none",
       )}
-    </AnimatePresence>,
+    >
+      <div
+        className={cn(
+          "absolute inset-0 bg-ink-900/60 backdrop-blur-sm",
+          closing ? "anim-fade-out" : "anim-fade-in",
+        )}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className={cn(
+          "relative max-h-[90vh] w-full max-w-[715px] overflow-y-auto rounded-lg bg-white p-6 md:p-8",
+          closing ? "anim-pop-out" : "anim-pop-in",
+        )}
+      >
+        <button
+          type="button"
+          aria-label={t("a11y.closeModal")}
+          onClick={onClose}
+          className="absolute right-4 top-4 rounded-full p-1 text-ink-500 hover:bg-light hover:text-[#DA1F26] hover:cursor-pointer"
+        >
+          <X size={22} />
+        </button>
+
+        {title && (
+          <h2 className="pr-8 text-xl font-semibold text-ink-900">{title}</h2>
+        )}
+
+        <div className={title ? "mt-4" : undefined}>{children}</div>
+      </div>
+    </div>,
     document.body,
   );
 }

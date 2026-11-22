@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 
 import Button from "@/components/ui/Button";
-import Modal from "@/components/ui/Modal";
+import Modal from "@/components/ui/LazyModal";
 import { cn } from "@/lib/cn";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 
@@ -61,7 +61,8 @@ export default function PartnersHero({
           src={image}
           alt={title}
           fill
-          priority
+          loading="eager"
+          fetchPriority="high"
           sizes="100vw"
           className="object-cover"
         />

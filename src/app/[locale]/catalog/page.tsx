@@ -6,13 +6,14 @@ import CategoryBanner, {
 } from "@/components/catalog/CategoryBanner";
 import { homeCategories } from "@/content/categories";
 import { IMAGES } from "@/content/images";
-import ProductGrid from "@/components/catalog/ProductGrid";
+import CatalogProductGrid from "@/components/catalog/CatalogProductGrid";
 import Section from "@/components/ui/Section";
 import { getCategories, type Category } from "@/lib/categories";
 import { getProducts, type Product as ApiProduct } from "@/lib/products";
 import { getSettings } from "@/lib/settings";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/getDictionary";
+import { pageMetadata } from "@/lib/seo";
 
 /** The banner shows four cards; the backend decides WHICH four via sort_order. */
 const BANNER_LIMIT = 4;
@@ -31,7 +32,6 @@ const STATIC_BANNER: CategoryBannerItem[] = homeCategories.map((category) => ({
 
 type CatalogPageProps = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ category?: string }>;
 };
 
 export async function generateMetadata({
@@ -40,16 +40,18 @@ export async function generateMetadata({
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const dictionary = await getDictionary(locale);
-  return { title: `${dictionary.nav.products} — DEYA` };
+  return {
+    title: `${dictionary.nav.products} — DEYA`,
+    ...pageMetadata(locale, "/catalog"),
+  };
 }
 
-export default async function CatalogPage({
-  params,
-  searchParams,
-}: CatalogPageProps) {
+export default async function CatalogPage({ params }: CatalogPageProps) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  const { category } = await searchParams;
+  // `?category=` is deliberately NOT read here: awaiting searchParams would
+  // make this page dynamic on every request. CatalogProductGrid reads it on
+  // the client, so the page stays static/ISR.
 
   // Fetched here rather than inside ProductGrid: that component is "use client"
   // (useState/useRouter/useTranslation), and `next: { revalidate: 300 }` is
@@ -59,8 +61,8 @@ export default async function CatalogPage({
   // categories list, so awaiting them in sequence would just add a round trip.
   // allSettled, not all: one endpoint failing must not blank the other.
   const [categoriesResult, productsResult] = await Promise.allSettled([
-    getCategories(),
-    getProducts(),
+    getCategories(locale),
+    getProducts(locale),
   ]);
 
   function reason(error: unknown): [string, string, unknown] {
@@ -126,9 +128,8 @@ export default async function CatalogPage({
       />
       <div className=" py-24">
         <Section bg="white" containerWidth="home">
-          <ProductGrid
+          <CatalogProductGrid
             locale={locale as Locale}
-            initialCategory={category}
             categories={categories}
             products={products}
             catalogFile={catalogFile}

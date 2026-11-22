@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import { useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/cn";
 import { useTranslation } from "@/lib/i18n/useTranslation";
+import { usePrefersReducedMotion } from "@/lib/usePrefersReducedMotion";
 
 export type SliderPaginationStyle = "dots" | "progress";
 
@@ -47,6 +47,8 @@ export interface SliderProps<T> {
   /** Replaces the default nav/pagination row entirely for custom layouts
    * (e.g. an overlaid "‹ 01 ── 02 ›" widget on a full-bleed hero). */
   renderControls?: (state: SliderControlsState) => React.ReactNode;
+  /** Slide to show first (embla's startIndex). */
+  startIndex?: number;
 }
 
 function useResponsiveSlideConfig(
@@ -97,6 +99,7 @@ export default function Slider<T>({
   breakpoints,
   className,
   renderControls,
+  startIndex = 0,
 }: SliderProps<T>) {
   const { t } = useTranslation();
   const { slidesPerView: activeSlidesPerView, gap: activeGap } =
@@ -117,14 +120,15 @@ export default function Slider<T>({
     loop,
     align: effectiveAlign,
     containScroll,
+    startIndex,
   });
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(startIndex);
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
   const [isHovering, setIsHovering] = useState(false);
   const [isTabHidden, setIsTabHidden] = useState(false);
-  const prefersReducedMotion = useReducedMotion();
+  const prefersReducedMotion = usePrefersReducedMotion();
   const isAutoplayPaused =
     isHovering || isTabHidden || Boolean(prefersReducedMotion);
 

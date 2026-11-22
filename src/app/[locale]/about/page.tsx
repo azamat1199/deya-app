@@ -9,6 +9,7 @@ import { historySlides } from "@/content/history";
 import { IMAGES } from "@/content/images";
 import { getFactory, type Factory } from "@/lib/factory";
 import { isLocale } from "@/lib/i18n/config";
+import { pageMetadata } from "@/lib/seo";
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import { getTimeline, type TimelineEntry } from "@/lib/timeline";
 
@@ -58,7 +59,10 @@ export async function generateMetadata({
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const dictionary = await getDictionary(locale);
-  return { title: `${dictionary.nav.about} — DEYA` };
+  return {
+    title: `${dictionary.nav.about} — DEYA`,
+    ...pageMetadata(locale, "/about"),
+  };
 }
 
 export default async function AboutPage({ params }: AboutPageProps) {

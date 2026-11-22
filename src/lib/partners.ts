@@ -1,4 +1,4 @@
-import { apiOrigin, listRows, mediaUrl, readJson } from "@/lib/api";
+import { apiOrigin, listRows, localizedRequest, mediaUrl, readJson } from "@/lib/api";
 
 /**
  * GET /api/v1/partners/
@@ -64,12 +64,12 @@ function isPartner(value: unknown): value is Partner {
  * translations — at which point these six need the locale, and this comment is
  * the reminder of where to look.
  */
-export async function getPartners(): Promise<Partner[]> {
+export async function getPartners(locale: string): Promise<Partner[]> {
   const origin = apiOrigin();
-  const url = `${origin}${PARTNERS_PATH}`;
+  const { url, headers } = localizedRequest(`${origin}${PARTNERS_PATH}`, locale);
 
   const response = await fetch(url, {
-    headers: { Accept: "application/json" },
+    headers,
     // EXPLICIT, never the default: leaving it unset freezes the build-time
     // result into static HTML, so CMS edits would never appear.
     next: { revalidate: 300 },

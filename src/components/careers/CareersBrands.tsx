@@ -159,7 +159,7 @@ function BrandCopyHtml({ html }: { html: string }) {
   );
 }
 
-export default async function CareersBrands() {
+export default async function CareersBrands({ locale }: { locale: string }) {
   const { heading, viewVacanciesLabel } = careersContent.brands;
 
   // An async server component, not a client fetch: nothing here uses hooks, so
@@ -169,7 +169,7 @@ export default async function CareersBrands() {
   let companies: Company[] = [];
   let fetchError: unknown = null;
   try {
-    companies = await getCompanies();
+    companies = await getCompanies(locale);
   } catch (error) {
     fetchError = error;
   }

@@ -1,4 +1,4 @@
-import { apiOrigin, listRows, mediaImageUrl, readJson } from "@/lib/api";
+import { apiOrigin, listRows, localizedRequest, mediaImageUrl, readJson } from "@/lib/api";
 
 /**
  * GET /api/v1/companies/
@@ -42,12 +42,12 @@ function isCompany(value: unknown): value is Company {
  * row in the CMS cannot blank a section. A non-array body, a non-2xx status or
  * a missing base URL all throw — callers decide whether to fall back.
  */
-export async function getCompanies(): Promise<Company[]> {
+export async function getCompanies(locale: string): Promise<Company[]> {
   const origin = apiOrigin();
-  const url = `${origin}${COMPANIES_PATH}`;
+  const { url, headers } = localizedRequest(`${origin}${COMPANIES_PATH}`, locale);
 
   const response = await fetch(url, {
-    headers: { Accept: "application/json" },
+    headers,
     // Marketing copy, not per-request data: revalidating on an interval keeps
     // the page fast while still picking up edits.
     next: { revalidate: 300 },

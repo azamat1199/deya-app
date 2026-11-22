@@ -29,7 +29,7 @@ const QUOTE_TYPE =
  * change.
  */
 const RICH_TEXT =
-  "[&_p]:m-0 [&_p+p]:mt-[0.4em] [&_strong]:font-medium [&_strong]:italic [&_strong]:text-white [&_b]:font-medium [&_b]:italic [&_b]:text-white [&_em]:italic [&_i]:italic [&_a]:text-white [&_a]:underline [&_a]:underline-offset-2";
+  "[&_p]:m-0 [&_p+p]:mt-[0.4em] [&_strong]:font-medium [&_strong]:italic [&_strong]:font-italic [&_strong]:text-white [&_b]:font-medium [&_b]:italic [&_b]:font-italic [&_b]:text-white [&_em]:italic [&_i]:italic [&_a]:text-white [&_a]:underline [&_a]:underline-offset-2";
 
 const GAP_UNDER_HEADING = "mt-[clamp(14px,1.53vw,22px)]";
 const GAP_UNDER_NAME = "mt-[clamp(10px,0.97vw,14px)]";

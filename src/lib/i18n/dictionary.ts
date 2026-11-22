@@ -195,9 +195,21 @@ export interface Dictionary {
     articleNotFound: string;
     productNotFound: string;
   };
+  /** The 404 page for unmatched URLs and notFound() calls under a locale. */
+  notFound: {
+    title: string;
+    heading: string;
+    text: string;
+    backHome: string;
+    toCatalog: string;
+  };
   product: {
     unitKg: string;
     unitG: string;
+    /** Pieces — the "pcs" unit of quantity per box. */
+    unitPcs: string;
+    /** Characteristics row label, shown only when the API sends a value. */
+    boxQuantity: string;
     boxWeight: string;
     shelfLife: string;
     code: string;

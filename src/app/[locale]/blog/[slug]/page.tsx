@@ -7,6 +7,7 @@ import OtherArticles from "@/components/blog/OtherArticles";
 import Section from "@/components/ui/Section";
 import { formatPostDate } from "@/lib/formatDate";
 import { isLocale, type Locale } from "@/lib/i18n/config";
+import { pageMetadata } from "@/lib/seo";
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import { getPost, type PostBlock, type PostDetail } from "@/lib/posts";
 
@@ -46,6 +47,16 @@ function toRenderBlocks(blocks: PostBlock[]): KeyedBlogBlock[] {
   return out;
 }
 
+/**
+ * ISR for every post: none are built ahead of time, each is rendered on its
+ * first visit and then cached on the fetches' 300s revalidate window. (An
+ * empty list is what opts a dynamic segment into ISR rather than per-request
+ * rendering.)
+ */
+export function generateStaticParams(): { slug: string }[] {
+  return [];
+}
+
 type BlogPostPageProps = {
   params: Promise<{ locale: string; slug: string }>;
 };
@@ -68,10 +79,15 @@ export async function generateMetadata({
     return { title: dictionary.meta.articleNotFound };
   }
 
+  const shared = pageMetadata(locale, `/blog/${post.slug}`);
   return {
     title: `${post.title} — DEYA`,
     description: post.excerpt || undefined,
+    alternates: shared.alternates,
     openGraph: {
+      ...shared.openGraph,
+      type: "article",
+      ...(post.published_at ? { publishedTime: post.published_at } : {}),
       title: post.title,
       description: post.excerpt || undefined,
       ...(post.cover ? { images: [post.cover] } : {}),
