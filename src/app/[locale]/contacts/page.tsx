@@ -5,6 +5,7 @@ import ContactForm from "@/components/contacts/ContactForm";
 import ContactInfo from "@/components/contacts/ContactInfo";
 import Section from "@/components/ui/Section";
 import { isLocale } from "@/lib/i18n/config";
+import { pageMetadata } from "@/lib/seo";
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import { getSettings } from "@/lib/settings";
 
@@ -18,7 +19,10 @@ export async function generateMetadata({
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const dictionary = await getDictionary(locale);
-  return { title: `${dictionary.nav.contacts} — DEYA` };
+  return {
+    title: `${dictionary.nav.contacts} — DEYA`,
+    ...pageMetadata(locale, "/contacts"),
+  };
 }
 
 export default async function ContactsPage({ params }: ContactsPageProps) {

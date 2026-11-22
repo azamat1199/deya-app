@@ -8,6 +8,7 @@ import Section from "@/components/ui/Section";
 import { IMAGES } from "@/content/images";
 import { getBanners, pickBanner } from "@/lib/banners";
 import { isLocale } from "@/lib/i18n/config";
+import { pageMetadata } from "@/lib/seo";
 import { getDictionary } from "@/lib/i18n/getDictionary";
 
 type PartnersPageProps = {
@@ -18,7 +19,10 @@ export async function generateMetadata({ params }: PartnersPageProps): Promise<M
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const dictionary = await getDictionary(locale);
-  return { title: `${dictionary.nav.partners} — DEYA` };
+  return {
+    title: `${dictionary.nav.partners} — DEYA`,
+    ...pageMetadata(locale, "/partners"),
+  };
 }
 
 export default async function PartnersPage({ params }: PartnersPageProps) {

@@ -14,6 +14,7 @@ import { IMAGES } from "@/content/images";
 import { getBanners, pickBanner } from "@/lib/banners";
 import { getCareerValues, type CareerValue } from "@/lib/careerValues";
 import { isLocale } from "@/lib/i18n/config";
+import { pageMetadata } from "@/lib/seo";
 import { getDictionary } from "@/lib/i18n/getDictionary";
 import { getProductInfo, type ProductInfoItem } from "@/lib/productInfo";
 
@@ -41,7 +42,10 @@ export async function generateMetadata({
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const dictionary = await getDictionary(locale);
-  return { title: `${dictionary.nav.careers} — DEYA` };
+  return {
+    title: `${dictionary.nav.careers} — DEYA`,
+    ...pageMetadata(locale, "/careers"),
+  };
 }
 
 export default async function CareersPage({ params }: CareersPageProps) {
