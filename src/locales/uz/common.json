@@ -149,6 +149,13 @@
   "articleNotFound": "Maqola topilmadi — DEYA",
   "productNotFound": "Mahsulot topilmadi — DEYA"
  },
+ "notFound": {
+  "title": "Sahifa topilmadi — DEYA",
+  "heading": "Sahifa topilmadi",
+  "text": "Ehtimol, u o‘chirilgan yoki havola noto‘g‘ri.",
+  "backHome": "Bosh sahifaga",
+  "toCatalog": "Katalogga"
+ },
  "product": {
   "unitKg": "kg",
   "unitG": "g",

@@ -195,6 +195,14 @@ export interface Dictionary {
     articleNotFound: string;
     productNotFound: string;
   };
+  /** The 404 page for unmatched URLs and notFound() calls under a locale. */
+  notFound: {
+    title: string;
+    heading: string;
+    text: string;
+    backHome: string;
+    toCatalog: string;
+  };
   product: {
     unitKg: string;
     unitG: string;

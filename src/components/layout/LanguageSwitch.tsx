@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -36,12 +36,33 @@ export interface LanguageSwitchProps {
   variant?: "toggle" | "dropdown";
 }
 
-export default function LanguageSwitch({
+/**
+ * The switch keeps the current query string (?category=…) when changing
+ * language, which needs useSearchParams. On a statically prerendered page that
+ * hook makes everything up to the nearest Suspense boundary client-only — here
+ * that would have been the whole header. The boundary keeps it local: the
+ * static HTML carries the switch with query-less links (correct for every page
+ * but a filtered catalog), and the query is filled in on hydration.
+ */
+export default function LanguageSwitch(props: LanguageSwitchProps) {
+  return (
+    <Suspense fallback={<LanguageSwitchView {...props} query="" />}>
+      <LanguageSwitchWithQuery {...props} />
+    </Suspense>
+  );
+}
+
+function LanguageSwitchWithQuery(props: LanguageSwitchProps) {
+  const query = useSearchParams().toString();
+  return <LanguageSwitchView {...props} query={query} />;
+}
+
+function LanguageSwitchView({
   className,
   variant = "toggle",
-}: LanguageSwitchProps) {
+  query,
+}: LanguageSwitchProps & { query: string }) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { locale } = useTranslation();
   const [open, setOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
@@ -51,8 +72,6 @@ export default function LanguageSwitch({
   const pendingFocusRef = useRef<number | null>(null);
 
   const pathWithoutLocale = pathname.split("/").slice(2).join("/");
-
-  const query = searchParams.toString();
 
   function localeHref(loc: string) {
     const path = pathWithoutLocale ? `/${pathWithoutLocale}` : "";

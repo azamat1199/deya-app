@@ -113,9 +113,41 @@ export function allows(
 }
 
 /**
+ * Client-only read of the raw cookie value; "" when absent.
+ *
+ * Reading is CLIENT-side on purpose. It used to be `cookies()` in the locale
+ * layout, which made every page on the site dynamically rendered — no static
+ * HTML, no ISR — just to decide whether to show this banner.
+ */
+export function readConsentCookie(): string {
+  const prefix = `${CONSENT_COOKIE_NAME}=`;
+  for (const part of document.cookie.split(";")) {
+    const trimmed = part.trim();
+    if (trimmed.startsWith(prefix)) return trimmed.slice(prefix.length);
+  }
+  return "";
+}
+
+/**
+ * Set on <html> by CONSENT_BOOT_SCRIPT before first paint when a consent
+ * cookie exists. The static HTML always contains the banner; this attribute is
+ * what hides it (and stops the hero reserving room for it — see globals.css)
+ * for returning visitors, without waiting for React and without a flash.
+ */
+export const CONSENT_DECIDED_ATTRIBUTE = "data-cookie-consent";
+
+/**
+ * Inline <head> script. Deliberately only checks that the cookie EXISTS — the
+ * full validity check (version, shape) runs in CookieConsent after hydration,
+ * which removes the attribute again if the stored decision is stale, so a
+ * policy-version bump still re-asks.
+ */
+export const CONSENT_BOOT_SCRIPT = `try{if(("; "+document.cookie).indexOf("; ${CONSENT_COOKIE_NAME}=")>-1)document.documentElement.setAttribute("${CONSENT_DECIDED_ATTRIBUTE}","")}catch(e){}`;
+
+/**
  * Client-only write. Not HttpOnly on purpose — the banner itself has to set it
  * from the browser — but SameSite=Lax and Secure (outside localhost) still
- * apply. Reading happens server-side via next/headers `cookies()`.
+ * apply.
  */
 export function writeConsentCookie(value: ConsentRecord): void {
   const secure = window.location.protocol === "https:" ? "; Secure" : "";
