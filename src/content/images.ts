@@ -24,8 +24,6 @@ export const IMAGES = {
   history1998: "/images/Photo_1998.webp",
   history2001: "/images/Photo_2001.webp",
   history2003: "/images/Photo2003.webp",
-  founderPortrait: "/images/founder-portrait.webp",
-  productFrust: "/images/product-frust.webp",
   certificateSanitary: "/images/certificate-sanitary.webp",
   certificateHalal: "/images/certificate-halal.webp",
   certificateIso22000: "/images/certificate-iso22000.webp",
