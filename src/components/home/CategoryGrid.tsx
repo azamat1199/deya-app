@@ -53,7 +53,10 @@ export default function CategoryGrid({
               src={category.image}
               alt={category.title}
               fill
-              sizes="(min-width: 768px) 50vw, 100vw"
+              // Two columns at every width (max-md:grid-cols-2 and
+              // md:grid-cols-2), so a tile is never wider than half the
+              // viewport; "100vw" below 768px made phones fetch 2x images.
+              sizes="50vw"
               className="object-cover transition-transform duration-600 ease-out motion-reduce:transition-none [@media(hover:hover)]:group-hover:scale-[1.04]"
             />
 
