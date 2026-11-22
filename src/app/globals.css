@@ -172,6 +172,76 @@ html[data-cookie-consent] [data-cookie-banner] {
   display: none;
 }
 
+/* Enter/exit animations for the modal, the mobile menu and the /about
+   crossfades — what framer-motion used to do, as plain keyframes. Durations
+   and curves match the old framer transitions; the components pick the class
+   (usePresence / useCrossfade in src/lib). `both` holds the end state of an
+   exit until the element is unmounted. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    scale: 0.95;
+  }
+}
+
+@keyframes pop-out {
+  to {
+    opacity: 0;
+    scale: 0.95;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    translate: 100% 0;
+  }
+}
+
+@keyframes slide-out-right {
+  to {
+    translate: 100% 0;
+  }
+}
+
+.anim-fade-in {
+  animation: fade-in 300ms ease-out both;
+}
+.anim-fade-out {
+  animation: fade-out 300ms ease-out both;
+}
+.anim-pop-in {
+  animation: pop-in 200ms ease-out both;
+}
+.anim-pop-out {
+  animation: pop-out 200ms ease-out both;
+}
+.anim-slide-in-right {
+  animation: slide-in-right 300ms ease-out both;
+}
+.anim-slide-out-right {
+  animation: slide-out-right 300ms ease-out both;
+}
+/* The /about crossfades: framer's [0.4, 0, 0.2, 1] curve; the duration comes
+   from --fade-duration so photo (0.7s) and text (0.55s) can differ. */
+.anim-crossfade-in {
+  animation: fade-in var(--fade-duration, 0.7s) cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.anim-crossfade-out {
+  animation: fade-out var(--fade-duration, 0.7s) cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
 /* ScrollReveal (components/ui/ScrollReveal.tsx) — CSS-only, scroll-driven.
 
    Progressive by construction: with no support for scroll-driven animations,
