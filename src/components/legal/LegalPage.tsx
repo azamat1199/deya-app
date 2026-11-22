@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import ScrollReveal from "@/components/ui/ScrollReveal";
 import type { LegalDocument } from "@/lib/legalDocuments";
 import type { Locale } from "@/lib/i18n/config";
 
@@ -54,7 +53,7 @@ export default function LegalPage({
           </Link>
 
           {doc ? (
-            <ScrollReveal direction="fade">
+            <>
               <h1 className="mb-8 text-3xl leading-snug font-normal text-ink-900 lg:mb-10 lg:text-4xl">
                 {doc.title}
               </h1>
@@ -68,7 +67,7 @@ export default function LegalPage({
                 className="[&_p]:mb-4 [&_p:last-child]:mb-0 [&_p]:text-sm [&_p]:leading-relaxed [&_p]:text-ink-600 [&_strong]:font-semibold [&_b]:font-semibold [&_em]:italic [&_i]:italic [&_a]:text-brand-600 [&_a:hover]:underline"
                 dangerouslySetInnerHTML={{ __html: doc.body }}
               />
-            </ScrollReveal>
+            </>
           ) : (
             <p className="text-sm leading-relaxed text-ink-600">
               {unavailableLabel}

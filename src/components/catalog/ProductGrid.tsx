@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import Button from "@/components/ui/Button";
-import ScrollReveal from "@/components/ui/ScrollReveal";
 import { catalogProducts } from "@/content/catalog";
 import type { Product } from "@/content/types";
 import type { Category } from "@/lib/categories";
@@ -286,8 +285,13 @@ export default function ProductGrid({
   // cards below actually reflect.
   const activeSlug = tabs.find((tab) => tab.id === activeId)?.slug ?? ALL_TAB_SLUG;
 
+  // Not wrapped in ScrollReveal: the grid sits right under the banner, so on
+  // load it is half in view, and as one tall block a scroll-linked fade would
+  // paint it part-transparent (it was hidden until hydration before).
   return (
-    <ScrollReveal direction="up">
+    // A plain block wrapper where the ScrollReveal div used to be, so the
+    // layout (and the "100% = the grid's width" button note below) holds.
+    <div>
       <div
         id={CATALOG_GRID_ID}
         {...{ [CATALOG_GRID_CATEGORY_ATTR]: activeSlug }}
@@ -360,7 +364,7 @@ export default function ProductGrid({
               `max-md:w-full` rather than the component's `fullWidth` prop,
               because that prop has no breakpoint and would stretch the desktop
               button too. The wrapper is a sibling of the grid inside the same
-              ScrollReveal, so 100% here is exactly the grid's own width.
+              wrapper, so 100% here is exactly the grid's own width.
 
               The overrides carry `max-md:` because cn() is plain clsx and
               keeps both the losing and winning class: unprefixed, Tailwind's
@@ -377,6 +381,6 @@ export default function ProductGrid({
           </Button>
         </div>
       )}
-    </ScrollReveal>
+    </div>
   );
 }

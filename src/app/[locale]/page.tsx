@@ -234,9 +234,9 @@ export default async function HomePage({ params }: HomePageProps) {
   return (
     <>
       {heroSlides.length > 0 && (
-        <ScrollReveal direction="fade">
-          <HeroSlider slides={heroSlides} />
-        </ScrollReveal>
+        // Deliberately NOT in a ScrollReveal: the hero is this page's LCP
+        // element and must paint from the server HTML, not after hydration.
+        <HeroSlider slides={heroSlides} />
       )}
 
       {statItems.length > 0 && (
