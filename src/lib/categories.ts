@@ -1,4 +1,5 @@
 import { apiOrigin, listRows, mediaImageUrl, readJson } from "@/lib/api";
+import { CACHE_TAGS } from "@/lib/cacheTags";
 
 /**
  * GET /api/v1/categories/
@@ -71,7 +72,7 @@ export async function getCategories(locale?: string): Promise<Category[]> {
     headers,
     // EXPLICIT, never the default: leaving it unset freezes the build-time
     // result into static HTML, so CMS edits would never appear.
-    next: { revalidate: 300 },
+    next: { revalidate: 300, tags: [CACHE_TAGS.categories] },
   });
 
   if (!response.ok) {

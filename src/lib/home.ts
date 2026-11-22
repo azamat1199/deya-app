@@ -1,5 +1,6 @@
 import { IMAGES } from "@/content/images";
 import { apiOrigin, mediaImageUrl, mediaUrl } from "@/lib/api";
+import { CACHE_TAGS } from "@/lib/cacheTags";
 
 /**
  * GET /api/v1/home/
@@ -290,7 +291,7 @@ export async function getHome(locale: string): Promise<HomeData | null> {
       },
       // EXPLICIT, never the default: leaving it unset freezes the build-time
       // result into static HTML, so CMS edits would never appear.
-      next: { revalidate: 300 },
+      next: { revalidate: 300, tags: [CACHE_TAGS.home] },
     });
   } catch (error) {
     console.error(
