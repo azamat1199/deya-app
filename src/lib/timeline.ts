@@ -1,4 +1,5 @@
-import { apiOrigin, listRows, mediaImageUrl, readJson } from "@/lib/api";
+import { apiOrigin, fetchRows, mediaImageUrl } from "@/lib/api";
+import { keepValidRows } from "@/lib/rows";
 
 /**
  * GET /api/v1/timeline/
@@ -54,39 +55,21 @@ export async function getTimeline(locale: string): Promise<TimelineEntry[]> {
   const origin = apiOrigin();
   const url = `${origin}${TIMELINE_PATH}?lang=${encodeURIComponent(locale)}`;
 
-  const response = await fetch(url, {
-    headers: {
-      Accept: "application/json",
-      "Accept-Language": locale,
-    },
-    // EXPLICIT, never the default: leaving it unset freezes the build-time
-    // result into static HTML, so CMS edits would never appear.
-    next: { revalidate: 300 },
-  });
-
-  if (!response.ok) {
-    throw new Error(`GET ${url} failed with ${response.status}`);
-  }
-
-  const body: unknown = await readJson(response, url);
-  // Bare array OR a DRF `results` envelope — see listRows().
-  const rows = listRows(body, url);
-  if (rows === null) {
-    throw new Error(`GET ${url} did not return an array or a results envelope`);
-  }
-  // A row without a usable id would produce an undefined React key downstream,
-  // so it is reported loudly rather than dropped in silence. Logged once with
-  // the first offender, not once per row.
-  const rejected = rows.filter((row) => !isTimelineEntry(row));
-  if (rejected.length) {
-    console.error(
-      `[getTimeline] dropped ${rejected.length} unusable row(s) — first offender:`,
-      JSON.stringify(rejected[0]),
-    );
-  }
+  const rows = keepValidRows(
+    await fetchRows(url, {
+      headers: {
+        Accept: "application/json",
+        "Accept-Language": locale,
+      },
+      // EXPLICIT, never the default: leaving it unset freezes the build-time
+      // result into static HTML, so CMS edits would never appear.
+      next: { revalidate: 300 },
+    }),
+    isTimelineEntry,
+    "getTimeline",
+  );
 
   return rows
-    .filter(isTimelineEntry)
     .map((entry) => ({
       ...entry,
       // Shared helper, never a local copy: these arrive over http:// and a

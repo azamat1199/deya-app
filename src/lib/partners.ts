@@ -1,4 +1,5 @@
-import { apiOrigin, listRows, localizedRequest, mediaUrl, readJson } from "@/lib/api";
+import { apiOrigin, fetchRows, localizedRequest, mediaUrl } from "@/lib/api";
+import { keepValidRows } from "@/lib/rows";
 
 /**
  * GET /api/v1/partners/
@@ -66,43 +67,23 @@ function isPartner(value: unknown): value is Partner {
  */
 export async function getPartners(locale: string): Promise<Partner[]> {
   const origin = apiOrigin();
-  const { url, headers } = localizedRequest(`${origin}${PARTNERS_PATH}`, locale);
+  const { url, headers } = localizedRequest(
+    `${origin}${PARTNERS_PATH}`,
+    locale,
+  );
 
-  const response = await fetch(url, {
-    headers,
-    // EXPLICIT, never the default: leaving it unset freezes the build-time
-    // result into static HTML, so CMS edits would never appear.
-    next: { revalidate: 300 },
-  });
+  const rows = keepValidRows(
+    await fetchRows(url, {
+      headers,
+      // EXPLICIT, never the default: leaving it unset freezes the build-time
+      // result into static HTML, so CMS edits would never appear.
+      next: { revalidate: 300 },
+    }),
+    isPartner,
+    "getPartners",
+  );
 
-  if (!response.ok) {
-    throw new Error(`GET ${url} failed with ${response.status}`);
-  }
-
-  const body: unknown = await readJson(response, url);
-  // Bare array OR a DRF `results` envelope — see listRows().
-  const rows = listRows(body, url);
-  if (rows === null) {
-    throw new Error(`GET ${url} did not return an array or a results envelope`);
-  }
-  // A row without a usable id would produce a duplicate React key downstream,
-  // so it is reported loudly rather than silently dropped. Logged once with the
-  // first offender, not once per row.
-  const rejected = rows.filter((row) => !isPartner(row));
-  if (rejected.length) {
-    const missingId = rejected.filter(
-      (row) =>
-        typeof row !== "object" ||
-        row === null ||
-        typeof (row as Record<string, unknown>).id !== "number",
-    );
-    console.error(
-      `[getPartners] dropped ${rejected.length} unusable row(s), ${missingId.length} of them lacking a numeric id — first offender:`,
-      JSON.stringify(rejected[0]),
-    );
-  }
-
-  return rows.filter(isPartner).map((partner) => ({
+  return rows.map((partner) => ({
     ...partner,
     // Shared helper, never a local copy: these arrive over http:// and a
     // component must never see one.
