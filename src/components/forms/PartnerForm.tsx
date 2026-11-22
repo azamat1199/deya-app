@@ -142,7 +142,7 @@ export default function PartnerForm({
     // PhoneInput already produced E.164; normalisePhone is the last guard that
     // no space, dash or bracket can reach the API.
     const phone = normalisePhone(phoneE164);
-    if (!isValidPhone(phone)) {
+    if (!(await isValidPhone(phone))) {
       setPhoneTouched(true);
       return;
     }

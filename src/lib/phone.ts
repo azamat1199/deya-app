@@ -9,49 +9,32 @@ import {
 } from "libphonenumber-js";
 import examples from "libphonenumber-js/examples.mobile.json";
 
+import { countryName, type CountryOption } from "./phoneLite";
+
 /**
  * Every phone rule in the project comes from libphonenumber-js. Nothing here
  * hardcodes a dial code, a digit count or a format: those differ per country
  * and per operator prefix, and a hand-rolled table would be wrong.
  */
 
-export const DEFAULT_COUNTRY: CountryCode = "UZ";
+export {
+  DEFAULT_COUNTRY,
+  flagEmoji,
+  matchesQuery,
+  type CountryOption,
+} from "./phoneLite";
 
 /** Pinned to the top of the selector, in this order, ahead of the alphabet. */
 const PINNED: CountryCode[] = ["UZ", "RU", "KZ"];
-
-export interface CountryOption {
-  code: CountryCode;
-  /** Localised country name, from the platform — not a bundled list. */
-  name: string;
-  /** Dial code without the plus, e.g. "998". */
-  callingCode: string;
-}
-
-/** Regional-indicator flag for an ISO code, derived rather than stored. */
-export function flagEmoji(code: string): string {
-  return code
-    .toUpperCase()
-    .replace(/./g, (char) =>
-      String.fromCodePoint(127397 + char.charCodeAt(0)),
-    );
-}
 
 /**
  * The full country list, localised to `locale` via Intl.DisplayNames, with the
  * pinned entries first and the rest sorted by the locale's own collation.
  */
 export function countryOptions(locale: string): CountryOption[] {
-  let displayNames: Intl.DisplayNames | null = null;
-  try {
-    displayNames = new Intl.DisplayNames([locale], { type: "region" });
-  } catch {
-    displayNames = null;
-  }
-
   const all: CountryOption[] = getCountries().map((code) => ({
     code,
-    name: displayNames?.of(code) ?? code,
+    name: countryName(code, locale),
     callingCode: getCountryCallingCode(code),
   }));
 
@@ -65,17 +48,6 @@ export function countryOptions(locale: string): CountryOption[] {
     .sort((a, b) => a.name.localeCompare(b.name, locale));
 
   return [...pinned, ...rest];
-}
-
-/** Matches on country name OR dial code, so "germ", "49" and "+49" all work. */
-export function matchesQuery(option: CountryOption, query: string): boolean {
-  const needle = query.trim().toLowerCase().replace(/^\+/, "");
-  if (!needle) return true;
-  return (
-    option.name.toLowerCase().includes(needle) ||
-    option.callingCode.startsWith(needle) ||
-    option.code.toLowerCase().startsWith(needle)
-  );
 }
 
 /**

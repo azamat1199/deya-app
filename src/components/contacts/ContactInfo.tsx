@@ -4,7 +4,6 @@ import { MapPin } from "lucide-react";
 
 import { contactsContent } from "@/content/contacts";
 import { useTranslation } from "@/lib/i18n/useTranslation";
-import { formatForDisplay } from "@/lib/phone";
 import { telHref, type Settings } from "@/lib/settings";
 
 export interface ContactInfoProps {
@@ -15,9 +14,15 @@ export interface ContactInfoProps {
    * one.
    */
   settings: Settings | null;
+  /**
+   * The hotline already formatted for display (formatForDisplay), done by the
+   * server page: formatting here would put libphonenumber-js (~40 KB gzip)
+   * in this client component's bundle just to print one number.
+   */
+  phoneText: string;
 }
 
-export default function ContactInfo({ settings }: ContactInfoProps) {
+export default function ContactInfo({ settings, phoneText }: ContactInfoProps) {
   const { t } = useTranslation();
   const { hotline, email, hours, address } = contactsContent;
 
@@ -27,7 +32,7 @@ export default function ContactInfo({ settings }: ContactInfoProps) {
   // dictionary instead (see the calls to t() below) rather than this file.
   const phoneRaw = settings?.hotline || settings?.phone || "";
   // Spaced for display; the href stays digits-only E.164.
-  const phoneValue = phoneRaw ? formatForDisplay(phoneRaw) : hotline.value;
+  const phoneValue = phoneText || hotline.value;
   const phoneHref = telHref(phoneRaw) || `tel:${hotline.raw}`;
   const emailValue = settings?.email || email.value;
   const hoursValue = settings?.work_hours || hours.value;

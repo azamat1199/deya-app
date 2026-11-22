@@ -7,6 +7,7 @@ import Section from "@/components/ui/Section";
 import { isLocale } from "@/lib/i18n/config";
 import { pageMetadata } from "@/lib/seo";
 import { getDictionary } from "@/lib/i18n/getDictionary";
+import { formatForDisplay } from "@/lib/phone";
 import { getSettings } from "@/lib/settings";
 
 type ContactsPageProps = {
@@ -34,6 +35,10 @@ export default async function ContactsPage({ params }: ContactsPageProps) {
   // logs its own failure with the cause and returns null, which ContactInfo
   // reads as "use the static values".
   const settings = await getSettings(locale);
+  // Formatted here, on the server, so ContactInfo (a client component) does
+  // not need libphonenumber-js in the browser just to print the hotline.
+  const phoneRaw = settings?.hotline || settings?.phone || "";
+  const phoneText = phoneRaw ? formatForDisplay(phoneRaw) : "";
   const dictionary = await getDictionary(locale);
 
   return (
@@ -59,7 +64,7 @@ export default async function ContactsPage({ params }: ContactsPageProps) {
       </h1>
 
       <div className="mt-10 mb-10 grid gap-8 lg:grid-cols-2">
-        <ContactInfo settings={settings} />
+        <ContactInfo settings={settings} phoneText={phoneText} />
         <ContactForm />
       </div>
     </Section>

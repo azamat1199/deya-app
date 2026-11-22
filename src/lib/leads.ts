@@ -1,4 +1,3 @@
-import { isValidPhoneNumber } from "libphonenumber-js";
 
 import { apiOrigin } from "@/lib/api";
 
@@ -96,9 +95,13 @@ export function normalisePhone(raw: string): string {
  * number needs 9 digits after +998, a US one 10 after +1, German lengths vary —
  * none of that is expressed here on purpose.
  */
-export function isValidPhone(value: string): boolean {
+export async function isValidPhone(value: string): Promise<boolean> {
   const e164 = normalisePhone(value);
   if (!e164) return false;
+  // Loaded on submit rather than imported: libphonenumber-js is ~40 KB gzip
+  // and must not ride in the initial JS of every page with a form. The phone
+  // field has normally loaded it already, so this resolves from cache.
+  const { isValidPhoneNumber } = await import("libphonenumber-js");
   return isValidPhoneNumber(e164);
 }
 

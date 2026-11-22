@@ -63,7 +63,7 @@ export default function ContactForm() {
     }
 
     const phone = normalisePhone(phoneE164);
-    if (!isValidPhone(phone)) {
+    if (!(await isValidPhone(phone))) {
       setPhoneTouched(true);
       return;
     }
