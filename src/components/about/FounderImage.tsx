@@ -34,7 +34,9 @@ export default function FounderImage({ src, alt, className }: FounderImageProps)
       fill
       sizes="100vw"
       quality={90}
-      priority
+      // Below the full-screen HistoryHero on /about, so not above the fold:
+      // left lazy (the default) instead of the old `priority`, which made it
+      // compete with the hero for bandwidth.
       className={className}
       onError={() => setFailedUrl(src)}
     />

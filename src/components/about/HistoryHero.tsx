@@ -348,7 +348,8 @@ export default function HistoryHero({ slides }: HistoryHeroProps) {
                   src={active.image}
                   alt=""
                   fill
-                  priority={activeIndex === 0}
+                  loading={activeIndex === 0 ? "eager" : undefined}
+                  fetchPriority={activeIndex === 0 ? "high" : undefined}
                   sizes="100vw"
                   className="object-cover"
                 />

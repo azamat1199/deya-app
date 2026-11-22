@@ -132,7 +132,10 @@ export default function Header({ settings, hotlineText }: HeaderProps) {
               // otherwise clamp the block back to the width of its slot and
               // erase the overhang.
               className="absolute top-0 left-0 size-(--logo-size) max-w-none"
-              priority
+              // Above the fold on every page but never the LCP: eager without
+              // high priority, so it does not compete with the hero/product
+              // image. (`priority` is deprecated in Next 16.)
+              loading="eager"
             />
           </Link>
           <nav className="hidden items-center gap-3 whitespace-nowrap md:flex lg:gap-8">

@@ -71,7 +71,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
         loop
         autoplay
         autoplayInterval={AUTOPLAY_MS}
-        renderSlide={(slide) => (
+        renderSlide={(slide, index) => (
           // `mx-2` is not decoration — it cancels embla's gutter. ui/Slider
           // gives the track `margin-inline: -gap/2` (gap defaults to 16, and
           // this slider does not override it) and then sizes each slide at
@@ -92,7 +92,12 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
               src={slide.image}
               alt={slide.title}
               fill
-              priority
+              // Only the FIRST slide is the LCP image. Every slide used to be
+              // `priority`, so all hero photos downloaded eagerly at high
+              // priority and competed with the one actually on screen; the
+              // rest now load lazily as the carousel reaches them.
+              loading={index === 0 ? "eager" : undefined}
+              fetchPriority={index === 0 ? "high" : undefined}
               sizes="100vw"
               className="object-cover"
             />

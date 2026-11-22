@@ -34,7 +34,9 @@ export default function Logo({
         alt={t("a11y.logoAlt")}
         width={65}
         height={65}
-        priority
+        // Small and above the fold, but never the LCP: eager without high
+        // priority, so it does not compete with the page's hero image.
+        loading="eager"
         className="h-full w-auto"
       />
     </Link>

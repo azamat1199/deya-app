@@ -60,7 +60,8 @@ export default function CareersHero({
           src={image}
           alt={title}
           fill
-          priority
+          loading="eager"
+          fetchPriority="high"
           sizes="100vw"
           className="object-cover max-md:object-[50%_38%]"
         />

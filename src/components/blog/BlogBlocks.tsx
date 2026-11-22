@@ -61,7 +61,8 @@ function renderBlock(block: BlogBlock, spacing: string, isFirstImage: boolean) {
             alt={block.alt}
             fill
             sizes={IMAGE_SIZES}
-            priority={isFirstImage}
+            loading={isFirstImage ? "eager" : undefined}
+            fetchPriority={isFirstImage ? "high" : undefined}
             className="object-cover"
           />
         </div>
