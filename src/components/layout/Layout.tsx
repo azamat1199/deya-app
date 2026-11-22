@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 
 import type { Category } from "@/lib/categories";
 import { formatForDisplay } from "@/lib/phone";
+import type { Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/dictionary";
 import type { Settings } from "@/lib/settings";
 
 import Footer from "./Footer";
@@ -11,8 +13,13 @@ export default function Layout({
   children,
   settings,
   categories,
+  locale,
+  dictionary,
 }: {
   children: ReactNode;
+  locale: Locale;
+  /** The locale layout's dictionary, for the server-rendered footer. */
+  dictionary: Dictionary;
   /** Fetched once in the locale layout; null when the request failed. */
   settings: Settings | null;
   /**
@@ -39,6 +46,8 @@ export default function Layout({
         settings={settings}
         categories={categories}
         hotlineText={hotlineText}
+        locale={locale}
+        dictionary={dictionary}
       />
     </div>
   );

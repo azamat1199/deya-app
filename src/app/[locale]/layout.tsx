@@ -148,7 +148,12 @@ export default async function LocaleLayout({
       </head>
       <body className="flex min-h-full flex-col font-sans">
         <DictionaryProvider locale={locale} dictionary={dictionary}>
-          <Layout settings={settings} categories={categories}>
+          <Layout
+            settings={settings}
+            categories={categories}
+            locale={locale}
+            dictionary={dictionary}
+          >
             {children}
           </Layout>
           {/* Outside <Layout> on purpose: the banner is position-fixed, so it

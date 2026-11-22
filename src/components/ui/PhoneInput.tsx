@@ -1,22 +1,30 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { CountryCode } from "libphonenumber-js";
 
 import { cn } from "@/lib/cn";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import {
-  countryOptions,
+  DEFAULT_CALLING_CODE,
   DEFAULT_COUNTRY,
-  examplePlaceholder,
+  DEFAULT_PLACEHOLDER,
+  defaultCountryOption,
   flagEmoji,
-  formatAsYouType,
-  isValidFor,
+  loadPhone,
   matchesQuery,
-  parsePasted,
-  toE164,
   type CountryOption,
-} from "@/lib/phone";
+} from "@/lib/phoneLite";
+
+type PhoneLib = Awaited<ReturnType<typeof loadPhone>>;
 
 export interface PhoneInputProps {
   /** Localises the country names and their sort order. */
@@ -48,6 +56,12 @@ export interface PhoneInputProps {
  * fully keyboard operable. Every rule — dial codes, per-country length,
  * formatting, example numbers — comes from libphonenumber-js.
  *
+ * libphonenumber-js (~40 KB gzip) is NOT in the page's initial JS: the field
+ * first renders from lib/phoneLite (the default country's flag, +998 and
+ * placeholder) and loads the library on the first focus of the input or the
+ * country selector. Anything typed in the instant before it arrives is passed
+ * through as-is and reformatted/revalidated as soon as it does.
+ *
  * The field keeps the look it had as a static label: the same bordered row, the
  * same divider, the same input classes. Only the prefix became clickable, and
  * the listbox is an absolutely positioned overlay that adds nothing to the flow.
@@ -67,6 +81,10 @@ export default function PhoneInput({
 }: PhoneInputProps) {
   const { t } = useTranslation();
   const [country, setCountry] = useState<CountryCode>(DEFAULT_COUNTRY);
+  const [lib, setLib] = useState<PhoneLib | null>(null);
+  const ensureLib = useCallback(() => {
+    void loadPhone().then((loaded) => setLib(() => loaded));
+  }, []);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -80,7 +98,10 @@ export default function PhoneInput({
   const searchRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
-  const options = useMemo(() => countryOptions(locale), [locale]);
+  const options = useMemo(
+    () => (lib ? lib.countryOptions(locale) : [defaultCountryOption(locale)]),
+    [lib, locale],
+  );
   const filtered = useMemo(
     () => options.filter((option) => matchesQuery(option, query)),
     [options, query],
@@ -88,7 +109,10 @@ export default function PhoneInput({
   const selected =
     options.find((option) => option.code === country) ?? options[0];
 
-  const placeholder = useMemo(() => examplePlaceholder(country), [country]);
+  const placeholder = useMemo(
+    () => (lib ? lib.examplePlaceholder(country) : DEFAULT_PLACEHOLDER),
+    [lib, country],
+  );
 
   // Close on outside click, and on Escape from anywhere inside.
   useEffect(() => {
@@ -113,12 +137,40 @@ export default function PhoneInput({
   });
 
   function emit(display: string, nextCountry: CountryCode) {
+    if (!lib) {
+      // Library still loading (only ever the default country): pass the input
+      // through; the effect below reformats and validates it on arrival.
+      const digits = display.replace(/[^\d]/g, "");
+      onChange({
+        display,
+        e164: digits ? `+${DEFAULT_CALLING_CODE}${digits}` : "",
+        isValid: false,
+      });
+      return;
+    }
     onChange({
       display,
-      e164: toE164(display, nextCountry),
-      isValid: isValidFor(display, nextCountry),
+      e164: lib.toE164(display, nextCountry),
+      isValid: lib.isValidFor(display, nextCountry),
     });
   }
+
+  // When the library arrives, bring a value typed in the meantime into its
+  // formatted, validated form. An effect event: it reads the latest value and
+  // country but runs only when `lib` changes, not on every keystroke.
+  const reformatOnArrival = useEffectEvent((loaded: PhoneLib) => {
+    const digits = value.replace(/[^\d]/g, "");
+    if (!digits) return;
+    const display = loaded.formatAsYouType(digits, country);
+    onChange({
+      display,
+      e164: loaded.toE164(display, country),
+      isValid: loaded.isValidFor(display, country),
+    });
+  });
+  useEffect(() => {
+    if (lib) reformatOnArrival(lib);
+  }, [lib]);
 
   function selectCountry(next: CountryCode) {
     setCountry(next);
@@ -126,7 +178,7 @@ export default function PhoneInput({
     setQuery("");
     // Reformats the digits already entered rather than clearing them.
     const digits = value.replace(/[^\d]/g, "");
-    emit(digits ? formatAsYouType(digits, next) : "", next);
+    emit(digits ? (lib ? lib.formatAsYouType(digits, next) : digits) : "", next);
     // Focus returns to the number input, where typing continues.
     inputRef.current?.focus();
   }
@@ -176,7 +228,10 @@ export default function PhoneInput({
           aria-haspopup="listbox"
           aria-controls={listboxId}
           aria-label={selected ? `${selected.name} +${selected.callingCode}` : "Country"}
+          onPointerDown={ensureLib}
+          onFocus={ensureLib}
           onClick={() => {
+            ensureLib();
             setActiveIndex(0);
             setOpen((was) => !was);
           }}
@@ -195,24 +250,32 @@ export default function PhoneInput({
           placeholder={placeholder}
           value={value}
           aria-invalid={ariaInvalid}
+          onFocus={ensureLib}
           onBlur={onBlur}
           onChange={(event) => {
             const raw = event.target.value;
+            if (!lib) {
+              emit(raw, country);
+              return;
+            }
             // A pasted value carrying its own country code switches the
             // selector; otherwise it is read as a national number.
             if (/^\+|^\d{11,}$/.test(raw.trim())) {
-              const pasted = parsePasted(raw, country);
+              const pasted = lib.parsePasted(raw, country);
               if (pasted) {
                 setCountry(pasted.country);
                 emit(pasted.national, pasted.country);
                 return;
               }
             }
-            emit(formatAsYouType(raw, country), country);
+            emit(lib.formatAsYouType(raw, country), country);
           }}
           onPaste={(event) => {
+            // Without the library the paste goes through as plain input and
+            // is reformatted on arrival (the field is focused, so it loads).
+            if (!lib) return;
             const text = event.clipboardData.getData("text");
-            const pasted = parsePasted(text, country);
+            const pasted = lib.parsePasted(text, country);
             if (!pasted) return;
             event.preventDefault();
             setCountry(pasted.country);

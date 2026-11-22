@@ -1,10 +1,10 @@
-"use client";
-
 import { InstagramIcon, TelegramIcon } from "@/components/icons/SocialIcons";
 import NewsletterForm from "@/components/forms/NewsletterForm";
 import AnimatedLink from "@/components/ui/AnimatedLink";
 import type { Category } from "@/lib/categories";
-import { useTranslation } from "@/lib/i18n/useTranslation";
+import type { Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/dictionary";
+import { createTranslator } from "@/lib/i18n/translator";
 import { NAV_ITEMS } from "@/lib/nav";
 import { telHref, type Settings } from "@/lib/settings";
 
@@ -29,14 +29,24 @@ export interface FooterProps {
    *  client bundle of every page — see the note in Layout.tsx. Empty string
    *  when settings carried no number; the dictionary value stands in. */
   hotlineText: string;
+  locale: Locale;
+  dictionary: Dictionary;
 }
 
+/**
+ * A server component: nothing in the footer is interactive except the
+ * newsletter form, which stays a client component of its own. Translations
+ * come straight from the dictionary the locale layout already loaded, so none
+ * of this markup ships as JavaScript.
+ */
 export default function Footer({
   settings,
   categories,
   hotlineText,
+  locale,
+  dictionary,
 }: FooterProps) {
-  const { t, locale } = useTranslation();
+  const t = createTranslator(dictionary);
 
   // Already ordered by `sort_order` (then `id` for ties) inside getCategories,
   // which is contracted to sort because the response order is not the display

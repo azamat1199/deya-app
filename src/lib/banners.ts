@@ -1,4 +1,5 @@
 import { apiOrigin, listRows, mediaUrl, readJson } from "@/lib/api";
+import { fetchWithRetry } from "@/lib/fetchWithRetry";
 
 /**
  * GET /api/v1/banners/
@@ -88,7 +89,7 @@ export async function getBanners(locale: string): Promise<Banner[]> {
 
   let response: Response;
   try {
-    response = await fetch(url, {
+    response = await fetchWithRetry(url, {
       headers: {
         Accept: "application/json",
         "Accept-Language": locale,

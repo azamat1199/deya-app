@@ -1,4 +1,5 @@
 import { apiOrigin, mediaImageUrl, mediaUrl, readJson } from "@/lib/api";
+import { fetchWithRetry } from "@/lib/fetchWithRetry";
 
 /**
  * GET /api/v1/posts/           — PAGINATED { count, next, previous, results }
@@ -117,7 +118,7 @@ export async function getPosts({
   if (pageSize) query.set("page_size", String(pageSize));
   const url = `${origin}${POSTS_PATH}?${query.toString()}`;
 
-  const response = await fetch(url, localisedRequest(locale));
+  const response = await fetchWithRetry(url, localisedRequest(locale));
   if (!response.ok) {
     throw new Error(`GET ${url} failed with ${response.status}`);
   }
@@ -168,7 +169,11 @@ export async function getPost(
 
   let response: Response;
   try {
-    response = await fetch(url, localisedRequest(locale));
+    // retryOn5xx false: this backend answers 500 for an unknown slug (see
+    // above), so a 5xx here means "no such post", not a hiccup to retry.
+    response = await fetchWithRetry(url, localisedRequest(locale), {
+      retryOn5xx: false,
+    });
   } catch (error) {
     console.error(
       `[getPost] request for "${trimmed}" did not reach the server —`,

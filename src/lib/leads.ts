@@ -1,6 +1,6 @@
-import { isValidPhoneNumber } from "libphonenumber-js";
 
 import { apiOrigin } from "@/lib/api";
+import { loadPhone } from "@/lib/phoneLite";
 
 /**
  * POST /api/v1/leads/
@@ -57,27 +57,7 @@ export type LeadResult =
  */
 const LEADS_PATH = "/api/v1/leads/";
 
-/** The field names every lead form uses for its own state. */
-export type LeadFormField =
-  | "name"
-  | "email"
-  | "phone"
-  | "message"
-  | "consentPersonalData"
-  | "consentMarketing";
-
-/**
- * The API answers in its own snake_case names; this puts each error back on the
- * input that produced it. Shared by every lead form so the mapping exists once.
- */
-export const API_FIELD_TO_FORM: Record<string, LeadFormField> = {
-  name: "name",
-  email: "email",
-  phone: "phone",
-  message: "message",
-  consent_personal_data: "consentPersonalData",
-  consent_marketing: "consentMarketing",
-};
+export { API_FIELD_TO_FORM, type LeadFormField } from "./leadFields";
 
 /**
  * Reduces any typed or pasted value to E.164: a plus and digits, nothing else.
@@ -96,10 +76,15 @@ export function normalisePhone(raw: string): string {
  * number needs 9 digits after +998, a US one 10 after +1, German lengths vary —
  * none of that is expressed here on purpose.
  */
-export function isValidPhone(value: string): boolean {
+export async function isValidPhone(value: string): Promise<boolean> {
   const e164 = normalisePhone(value);
   if (!e164) return false;
-  return isValidPhoneNumber(e164);
+  // Loaded on submit rather than imported: libphonenumber-js is ~40 KB gzip
+  // and must not ride in the initial JS of every page with a form. Through
+  // the SAME loader the phone field uses, so the library is one chunk,
+  // fetched once (a separate import() here bundled a second copy).
+  const { isValidE164 } = await loadPhone();
+  return isValidE164(e164);
 }
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

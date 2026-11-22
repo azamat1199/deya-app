@@ -1,11 +1,5 @@
 import { IMAGES } from "./images";
 
-export const certificatesContent = {
-  heading: "Сертификаты и награды",
-  description:
-    "Наша продукция проходит строгий контроль и соответствует самым высоким международным стандартам качества — это подтверждают полученные сертификаты.",
-} as const;
-
 export interface Certificate {
   slug: string;
   title: string;

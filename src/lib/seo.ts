@@ -20,7 +20,7 @@ export const SITE_URL = normaliseOrigin(
 export const SITE_NAME = "DEYA";
 
 /** og:locale wants language_TERRITORY. */
-export const OG_LOCALE: Record<Locale, string> = {
+const OG_LOCALE: Record<Locale, string> = {
   uz: "uz_UZ",
   ru: "ru_RU",
   en: "en_US",
@@ -30,7 +30,7 @@ export const OG_LOCALE: Record<Locale, string> = {
  * A locale-less path ("" for the locale home, else "/catalog", "/blog/x") as
  * it appears under each locale prefix.
  */
-export function localizedPath(locale: Locale, path: string): string {
+function localizedPath(locale: Locale, path: string): string {
   return `/${locale}${path}`;
 }
 
@@ -40,7 +40,7 @@ export function localizedPath(locale: Locale, path: string): string {
  * the proxy sends a locale-less visit anyway. Relative URLs are resolved
  * against `metadataBase` (set in the locale layout).
  */
-export function localeAlternates(
+function localeAlternates(
   locale: Locale,
   path: string,
 ): NonNullable<Metadata["alternates"]> {

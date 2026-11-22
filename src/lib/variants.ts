@@ -114,7 +114,7 @@ function unitRank(unit: string): number {
   return UNIT_ORDER[unit.toLowerCase()] ?? Number.MAX_SAFE_INTEGER;
 }
 
-export function compareWeights(a: VariantWeight, b: VariantWeight): number {
+function compareWeights(a: VariantWeight, b: VariantWeight): number {
   return (
     unitRank(a.unit) - unitRank(b.unit) ||
     Number(a.value) - Number(b.value) ||

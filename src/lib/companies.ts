@@ -1,4 +1,10 @@
-import { apiOrigin, listRows, localizedRequest, mediaImageUrl, readJson } from "@/lib/api";
+import {
+  apiOrigin,
+  fetchRows,
+  localizedRequest,
+  mediaImageUrl,
+} from "@/lib/api";
+import { keepValidRows } from "@/lib/rows";
 
 /**
  * GET /api/v1/companies/
@@ -44,28 +50,23 @@ function isCompany(value: unknown): value is Company {
  */
 export async function getCompanies(locale: string): Promise<Company[]> {
   const origin = apiOrigin();
-  const { url, headers } = localizedRequest(`${origin}${COMPANIES_PATH}`, locale);
+  const { url, headers } = localizedRequest(
+    `${origin}${COMPANIES_PATH}`,
+    locale,
+  );
 
-  const response = await fetch(url, {
-    headers,
-    // Marketing copy, not per-request data: revalidating on an interval keeps
-    // the page fast while still picking up edits.
-    next: { revalidate: 300 },
-  });
+  const rows = keepValidRows(
+    await fetchRows(url, {
+      headers,
+      // Marketing copy, not per-request data: revalidating on an interval keeps
+      // the page fast while still picking up edits.
+      next: { revalidate: 300 },
+    }),
+    isCompany,
+    "getCompanies",
+  );
 
-  if (!response.ok) {
-    throw new Error(`GET ${url} failed with ${response.status}`);
-  }
-
-  const body: unknown = await readJson(response, url);
-  // Bare array OR a DRF `results` envelope — see listRows().
-  const rows = listRows(body, url);
-  if (rows === null) {
-    throw new Error(`GET ${url} did not return an array or a results envelope`);
-  }
-  // mediaUrl, not a bare passthrough: the payload's absolute URLs arrive over
-  // http:// and the component must never see one.
-  return rows.filter(isCompany).map((company) => ({
+  return rows.map((company) => ({
     ...company,
     image: mediaImageUrl(company.image, origin),
   }));

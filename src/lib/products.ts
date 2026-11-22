@@ -9,6 +9,7 @@ import {
 import { isCategory, type Category } from "@/lib/categories";
 import { parseBoxQuantity, type BoxQuantityUnit } from "@/lib/boxQuantity";
 import { CACHE_TAGS } from "@/lib/cacheTags";
+import { fetchWithRetry } from "@/lib/fetchWithRetry";
 
 /**
  * GET /api/v1/products/
@@ -280,7 +281,7 @@ export async function getProducts(locale: string): Promise<Product[]> {
   while (url && requests < MAX_PAGES) {
     requests += 1;
 
-    const response: Response = await fetch(url, {
+    const response: Response = await fetchWithRetry(url, {
       headers: first.headers,
       // EXPLICIT, never the default: leaving it unset freezes the build-time
       // result into static HTML, so CMS edits would never appear. Tagged so
@@ -338,7 +339,7 @@ export async function getRelatedProducts(
     locale,
   );
 
-  const response = await fetch(url, {
+  const response = await fetchWithRetry(url, {
     headers,
     // EXPLICIT, never the default.
     next: {
@@ -387,7 +388,7 @@ export async function getProduct(
     locale,
   );
 
-  const response = await fetch(url, {
+  const response = await fetchWithRetry(url, {
     headers,
     // EXPLICIT, never the default.
     next: {

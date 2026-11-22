@@ -7,10 +7,11 @@ import { useForm, useWatch } from "react-hook-form";
 import Button from "@/components/ui/Button";
 import Checkbox from "@/components/ui/Checkbox";
 import FormField from "@/components/ui/FormField";
+import { usePhoneField } from "@/components/forms/usePhoneField";
 import PhoneInput from "@/components/ui/PhoneInput";
 import { useTranslation } from "@/lib/i18n/useTranslation";
+import { applyFieldErrors } from "@/lib/leadFields";
 import {
-  API_FIELD_TO_FORM,
   isValidEmail,
   isValidPhone,
   normalisePhone,
@@ -73,16 +74,8 @@ export default function PartnerForm({
   const { t, locale } = useTranslation();
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [formError, setFormError] = useState<string | null>(null);
-  // Phone lives outside react-hook-form: PhoneInput owns two representations
-  // (a spaced display string and the E.164 the API gets) plus its country.
-  const [phoneDisplay, setPhoneDisplay] = useState("");
-  const [phoneE164, setPhoneE164] = useState("");
-  const [phoneValid, setPhoneValid] = useState(false);
-  const [phoneTouched, setPhoneTouched] = useState(false);
-  // The phone field is not registered with react-hook-form any more, so a DRF
-  // error naming `phone` would have nowhere to land. It is held here and passed
-  // straight to PhoneInput's own error slot.
-  const [phoneApiError, setPhoneApiError] = useState<string | null>(null);
+  // Phone lives outside react-hook-form — see usePhoneField.
+  const phone = usePhoneField(t("form.phoneInvalid"));
   // Epoch ms when a 429 cooldown ends, or null when not rate-limited. Set from
   // the response's own Retry-After when present, else DEFAULT_COOLDOWN_MS.
   const [rateLimitedUntil, setRateLimitedUntil] = useState<number | null>(null);
@@ -127,7 +120,7 @@ export default function PartnerForm({
     if (rateLimitedUntil !== null) return;
 
     setFormError(null);
-    setPhoneApiError(null);
+    phone.setApiError(null);
 
     // Validated BEFORE the request, not after. FormField already enforces
     // required-ness and the e-mail shape through its own register options;
@@ -141,9 +134,9 @@ export default function PartnerForm({
 
     // PhoneInput already produced E.164; normalisePhone is the last guard that
     // no space, dash or bracket can reach the API.
-    const phone = normalisePhone(phoneE164);
-    if (!isValidPhone(phone)) {
-      setPhoneTouched(true);
+    const phoneNumber = normalisePhone(phone.e164);
+    if (!(await isValidPhone(phoneNumber))) {
+      phone.markTouched();
       return;
     }
 
@@ -153,7 +146,7 @@ export default function PartnerForm({
       type,
       name: values.name.trim(),
       email,
-      phone,
+      phone: phoneNumber,
       message: (values.message ?? "").trim(),
       consent_personal_data: Boolean(values.consentPersonalData),
       consent_marketing: Boolean(values.consentMarketing),
@@ -164,11 +157,7 @@ export default function PartnerForm({
       setStatus("success");
       // Cleared only on success, so a failure never costs the user their typing.
       reset();
-      setPhoneDisplay("");
-      setPhoneE164("");
-      setPhoneValid(false);
-      setPhoneTouched(false);
-      setPhoneApiError(null);
+      phone.reset();
       return;
     }
 
@@ -191,17 +180,11 @@ export default function PartnerForm({
 
     // Field-specific rejections land on their inputs; whatever is left over
     // becomes the form-level message.
-    let matched = false;
-    for (const [apiField, message] of Object.entries(result.fieldErrors)) {
-      const formField = API_FIELD_TO_FORM[apiField];
-      if (formField === "phone") {
-        setPhoneApiError(message);
-        matched = true;
-      } else if (formField) {
-        setError(formField, { message });
-        matched = true;
-      }
-    }
+    const matched = applyFieldErrors(result.fieldErrors, (field, message) =>
+      field === "phone"
+        ? phone.setApiError(message)
+        : setError(field, { message }),
+    );
 
     setFormError(result.detail ?? (matched ? null : t("form.error")));
   });
@@ -231,20 +214,7 @@ export default function PartnerForm({
       <div>
         <PhoneInput
           locale={locale}
-          value={phoneDisplay}
-          onChange={({ display, e164, isValid }) => {
-            setPhoneDisplay(display);
-            setPhoneE164(e164);
-            setPhoneValid(isValid);
-          }}
-          onBlur={() => setPhoneTouched(true)}
-          ariaInvalid={phoneTouched && !phoneValid}
-          error={
-            phoneApiError ??
-            (phoneTouched && !phoneValid && phoneDisplay
-              ? t("form.phoneInvalid")
-              : undefined)
-          }
+          {...phone.inputProps}
           rowClassName="flex items-center rounded-md border border-line-200 bg-white transition-colors duration-200 ease-in-out focus-within:border-ink-900 focus-within:ring-1 focus-within:ring-ink-900"
           prefixClassName="shrink-0 border-r border-line-200 px-3.5 py-2.5 text-sm text-ink-700"
           inputClassName="w-full bg-transparent px-3.5 py-2.5 text-sm text-ink-900 outline-none placeholder:text-ink-500"
@@ -310,7 +280,7 @@ export default function PartnerForm({
         fullWidth
         loading={isSubmitting}
         disabled={
-          !consentGiven || !phoneValid || isSubmitting || rateLimitedUntil !== null
+          !consentGiven || !phone.valid || isSubmitting || rateLimitedUntil !== null
         }
       >
         {t("buttons.sendRequest")}

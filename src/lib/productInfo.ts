@@ -1,4 +1,5 @@
-import { apiOrigin, listRows, mediaUrl, readJson } from "@/lib/api";
+import { apiOrigin, fetchRows, mediaUrl } from "@/lib/api";
+import { keepValidRows } from "@/lib/rows";
 
 /**
  * GET /api/v1/product-info/
@@ -48,49 +49,27 @@ function isProductInfoItem(value: unknown): value is ProductInfoItem {
  * is not a reliable part of Next's Data Cache key, so the locale also rides in
  * the query string, which the backend ignores.
  */
-export async function getProductInfo(locale: string): Promise<ProductInfoItem[]> {
+export async function getProductInfo(
+  locale: string,
+): Promise<ProductInfoItem[]> {
   const origin = apiOrigin();
   const url = `${origin}${PRODUCT_INFO_PATH}?lang=${encodeURIComponent(locale)}`;
 
-  const response = await fetch(url, {
-    headers: {
-      Accept: "application/json",
-      "Accept-Language": locale,
-    },
-    // EXPLICIT, never the default: leaving it unset freezes the build-time
-    // result into static HTML, so CMS edits would never appear.
-    next: { revalidate: 300 },
-  });
-
-  if (!response.ok) {
-    throw new Error(`GET ${url} failed with ${response.status}`);
-  }
-
-  const body: unknown = await readJson(response, url);
-  // Bare array OR a DRF `results` envelope — see listRows().
-  const rows = listRows(body, url);
-  if (rows === null) {
-    throw new Error(`GET ${url} did not return an array or a results envelope`);
-  }
-  // A row without a usable id would produce a duplicate React key downstream,
-  // so it is reported loudly rather than silently dropped. Logged once with the
-  // first offender, not once per row.
-  const rejected = rows.filter((row) => !isProductInfoItem(row));
-  if (rejected.length) {
-    const missingId = rejected.filter(
-      (row) =>
-        typeof row !== "object" ||
-        row === null ||
-        typeof (row as Record<string, unknown>).id !== "number",
-    );
-    console.error(
-      `[getProductInfo] dropped ${rejected.length} unusable row(s), ${missingId.length} of them lacking a numeric id — first offender:`,
-      JSON.stringify(rejected[0]),
-    );
-  }
+  const rows = keepValidRows(
+    await fetchRows(url, {
+      headers: {
+        Accept: "application/json",
+        "Accept-Language": locale,
+      },
+      // EXPLICIT, never the default: leaving it unset freezes the build-time
+      // result into static HTML, so CMS edits would never appear.
+      next: { revalidate: 300 },
+    }),
+    isProductInfoItem,
+    "getProductInfo",
+  );
 
   return rows
-    .filter(isProductInfoItem)
     .map((item) => ({
       ...item,
       // Shared helper, never a local copy: these arrive over http:// and a

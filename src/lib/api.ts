@@ -6,6 +6,7 @@
  */
 
 import { IMAGES } from "@/content/images";
+import { fetchWithRetry } from "./fetchWithRetry";
 
 /** Strips trailing slashes so a path constant can be concatenated directly. */
 export function normaliseOrigin(base: string): string {
@@ -191,6 +192,28 @@ export function listRows(body: unknown, url: string): unknown[] | null {
   }
 
   return null;
+}
+
+/**
+ * GET a list endpoint and return its rows: throws on a non-2xx status, an
+ * unparseable body, or a body that is neither a bare array nor a DRF
+ * `results` envelope (see listRows). The caller filters the rows itself —
+ * usually with keepValidRows from lib/rows.ts — and decides any fallback.
+ */
+export async function fetchRows(
+  url: string,
+  init: RequestInit & { next?: { revalidate?: number; tags?: string[] } },
+): Promise<unknown[]> {
+  const response = await fetchWithRetry(url, init);
+  if (!response.ok) {
+    throw new Error(`GET ${url} failed with ${response.status}`);
+  }
+  const body: unknown = await readJson(response, url);
+  const rows = listRows(body, url);
+  if (rows === null) {
+    throw new Error(`GET ${url} did not return an array or a results envelope`);
+  }
+  return rows;
 }
 
 /**
