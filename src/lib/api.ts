@@ -6,6 +6,7 @@
  */
 
 import { IMAGES } from "@/content/images";
+import { fetchWithRetry } from "./fetchWithRetry";
 
 /** Strips trailing slashes so a path constant can be concatenated directly. */
 export function normaliseOrigin(base: string): string {
@@ -203,7 +204,7 @@ export async function fetchRows(
   url: string,
   init: RequestInit & { next?: { revalidate?: number; tags?: string[] } },
 ): Promise<unknown[]> {
-  const response = await fetch(url, init);
+  const response = await fetchWithRetry(url, init);
   if (!response.ok) {
     throw new Error(`GET ${url} failed with ${response.status}`);
   }

@@ -1,6 +1,7 @@
 import { IMAGES } from "@/content/images";
 import { apiOrigin, mediaImageUrl, mediaUrl } from "@/lib/api";
 import { CACHE_TAGS } from "@/lib/cacheTags";
+import { fetchWithRetry } from "@/lib/fetchWithRetry";
 
 /**
  * GET /api/v1/home/
@@ -284,7 +285,7 @@ export async function getHome(locale: string): Promise<HomeData | null> {
 
   let response: Response;
   try {
-    response = await fetch(url, {
+    response = await fetchWithRetry(url, {
       headers: {
         Accept: "application/json",
         "Accept-Language": locale,

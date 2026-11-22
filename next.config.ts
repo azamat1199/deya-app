@@ -5,6 +5,17 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.join(__dirname),
   },
+  experimental: {
+    // Prerendering fetches every page's data from the live API. With the
+    // defaults (one worker per core, 8 pages each) a build put ~50 requests
+    // in flight at once, and the API intermittently refused connections,
+    // failing deploys. 2 workers x 4 pages keeps the peak at ~16 concurrent
+    // requests with no measurable change in build time (~22-29 s either way,
+    // measured through a counting proxy). lib/fetchWithRetry handles the
+    // occasional failure that remains.
+    cpus: 2,
+    staticGenerationMaxConcurrency: 4,
+  },
   images: {
     // Local placeholder illustrations (authored by us, not user-uploaded)
     // until real product/factory photography is supplied.

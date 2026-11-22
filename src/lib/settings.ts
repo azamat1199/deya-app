@@ -1,4 +1,5 @@
 import { apiOrigin, mediaUrl } from "@/lib/api";
+import { fetchWithRetry } from "@/lib/fetchWithRetry";
 
 /**
  * GET /api/v1/settings/
@@ -54,7 +55,7 @@ export async function getSettings(locale: string): Promise<Settings | null> {
 
   let response: Response;
   try {
-    response = await fetch(url, {
+    response = await fetchWithRetry(url, {
       headers: {
         Accept: "application/json",
         "Accept-Language": locale,

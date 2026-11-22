@@ -48,27 +48,24 @@ type ProductPageProps = {
  * Every product is prerendered at build time, per locale, and then revalidated
  * (ISR) on the fetches' 300s window. A product added in the CMS after the
  * build is rendered on its first visit and cached from then on
- * (dynamicParams defaults to true). If the list request fails at build time
- * the build still succeeds — every product then renders on first visit.
+ * (dynamicParams defaults to true).
+ *
+ * If the product list still cannot be fetched after fetchWithRetry's retries,
+ * the BUILD FAILS — deliberately. Returning [] here used to "succeed" with no
+ * product page built, leaving every product to be rendered against an API
+ * that had just proved unreachable. A failed deploy keeps the previous version
+ * live instead.
  */
 export async function generateStaticParams({
   params,
 }: {
   params: { locale: string };
 }): Promise<{ category: string; product: string }[]> {
-  try {
-    const products = await getProducts(params.locale);
-    return products.map((item) => ({
-      category: item.category.slug,
-      product: item.slug,
-    }));
-  } catch (error) {
-    console.error(
-      `[ProductPage] generateStaticParams(${params.locale}) failed, products will render on first visit —`,
-      error instanceof Error ? error.message : String(error),
-    );
-    return [];
-  }
+  const products = await getProducts(params.locale);
+  return products.map((item) => ({
+    category: item.category.slug,
+    product: item.slug,
+  }));
 }
 
 /** The product's one true URL path (without the locale): the category

@@ -1,5 +1,6 @@
 import { apiOrigin, readJson } from "@/lib/api";
 import { sanitizeRichText } from "@/lib/sanitizeRichText";
+import { fetchWithRetry } from "@/lib/fetchWithRetry";
 
 /**
  * GET /api/v1/privacy-policy/{slug}/
@@ -76,7 +77,7 @@ export async function getLegalDocument(
 
   let response: Response;
   try {
-    response = await fetch(url, {
+    response = await fetchWithRetry(url, {
       headers: {
         Accept: "application/json",
         "Accept-Language": locale,

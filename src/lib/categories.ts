@@ -1,5 +1,6 @@
 import { apiOrigin, listRows, mediaImageUrl, readJson } from "@/lib/api";
 import { CACHE_TAGS } from "@/lib/cacheTags";
+import { fetchWithRetry } from "@/lib/fetchWithRetry";
 
 /**
  * GET /api/v1/categories/
@@ -68,7 +69,7 @@ export async function getCategories(locale?: string): Promise<Category[]> {
   const headers: Record<string, string> = { Accept: "application/json" };
   if (locale) headers["Accept-Language"] = locale;
 
-  const response = await fetch(url, {
+  const response = await fetchWithRetry(url, {
     headers,
     // EXPLICIT, never the default: leaving it unset freezes the build-time
     // result into static HTML, so CMS edits would never appear.
