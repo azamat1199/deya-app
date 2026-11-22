@@ -112,6 +112,8 @@
      redeclared in :root — that would shadow the self-hosted family with a
      bare "Roboto" lookup and reintroduce the fallback flash. */
   --font-sans: var(--font-roboto);
+  /* The separately loaded italic faces (see the locale layout). */
+  --font-italic: var(--font-roboto-italic), var(--font-roboto);
 
   /* Figma breakpoints: mobile 360, tablet 768 (nav collapse), desktop 1200, wide 1600. */
   --breakpoint-sm: 360px;
@@ -226,7 +228,15 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   font-optical-sizing: auto;
-  font-variation-settings: "wdth" 100;
+}
+
+/* Italic text must name the italic family: it is loaded under its own family
+   name (only on pages that use it), so `font-style: italic` alone would get a
+   synthesised oblique of the upright face. Unlayered, like the rules above. */
+.italic,
+em,
+i {
+  font-family: var(--font-italic);
 }
 
 @layer base {

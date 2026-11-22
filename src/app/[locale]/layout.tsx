@@ -25,35 +25,38 @@ import "../globals.css";
  * /ru/..., so Next's built-in global 404 is effectively never reached.
  */
 
-// Self-hosted by next/font: no render-blocking request to Google and no
-// layout shift. The cyrillic subset is required — the whole site is Russian.
-// `weight` is omitted on purpose: next/font rejects `axes` alongside a static
-// weight list, and the variable face already covers the 300/400/500 the design
-// uses. The italic style is loaded for real — the founder quote is set in it,
-// and a synthesised oblique of Cyrillic looks wrong.
+// Self-hosted by next/font: no request to Google, no layout shift. Latin +
+// cyrillic only (the site is uz/ru/en). No `weight` list: the variable face
+// covers the 300/400/500 the design uses in one file per subset.
+//
+// Two calls on purpose. next/font preloads every style declared in a call,
+// and the italic faces are used only by the /about founder quote and <em>/<i>
+// in CMS rich text. In one call, italic was either preloaded on every page
+// (~105 KB wasted) or — as before this split — nothing was preloaded at all,
+// so even the upright faces were discovered only after the CSS was parsed.
+// Now the upright faces are preloaded everywhere and the italic ones load
+// only on pages that actually render italic text.
+//
+// The italic family has its own name, so italic text must ask for it
+// explicitly — `font-style: italic` alone would synthesise an oblique from the
+// upright family. globals.css does that for .italic, <em> and <i>, and
+// `font-italic` (theme --font-italic) covers the rest.
+//
+// The variable `wdth` axis is gone: nothing used a width other than the
+// default, and it made every font file substantially larger.
 const roboto = Roboto({
   subsets: ["latin", "cyrillic"],
-  style: ["normal", "italic"],
-  axes: ["wdth"],
+  style: ["normal"],
   display: "swap",
-  // The italic faces are only used by the founder quote on /about and by
-  // [&_em]:italic on the legal pages, but next/font preloads every declared
-  // style on every page — measured at 104.7KB of italic (latin 68.8 + cyrillic
-  // 35.9) on routes with no italic text at all.
-  //
-  // This does NOT drop the italic faces: `style` still declares them, the
-  // @font-face rules are still emitted, and /about still renders a real italic
-  // rather than a synthesised oblique. It only stops them being PRELOADED, so
-  // the browser fetches an italic file when it actually meets italic text.
-  //
-  // The flag is per font call, not per style, so the upright faces lose their
-  // preload too and are discovered after the CSS is parsed. `display: swap`
-  // means no invisible text, at the cost of a possible brief fallback flash on
-  // a cold cache. Splitting italic into a second Roboto() call would give it a
-  // different family name, and `font-style: italic` on the base family would
-  // then synthesise an oblique — which is why it is not done that way.
-  preload: false,
   variable: "--font-roboto",
+});
+
+const robotoItalic = Roboto({
+  subsets: ["latin", "cyrillic"],
+  style: ["italic"],
+  display: "swap",
+  preload: false,
+  variable: "--font-roboto-italic",
 });
 
 export function generateStaticParams() {
@@ -135,7 +138,7 @@ export default async function LocaleLayout({
     // attributes only, not to the tree below.
     <html
       lang={locale}
-      className={`${roboto.variable} h-full antialiased`}
+      className={`${roboto.variable} ${robotoItalic.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
