@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import { useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/cn";
 import { useTranslation } from "@/lib/i18n/useTranslation";
+import { usePrefersReducedMotion } from "@/lib/usePrefersReducedMotion";
 
 export type SliderPaginationStyle = "dots" | "progress";
 
@@ -124,7 +124,7 @@ export default function Slider<T>({
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
   const [isHovering, setIsHovering] = useState(false);
   const [isTabHidden, setIsTabHidden] = useState(false);
-  const prefersReducedMotion = useReducedMotion();
+  const prefersReducedMotion = usePrefersReducedMotion();
   const isAutoplayPaused =
     isHovering || isTabHidden || Boolean(prefersReducedMotion);
 

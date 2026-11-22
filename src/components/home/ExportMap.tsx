@@ -18,7 +18,7 @@ import {
 } from "framer-motion";
 
 import Button from "@/components/ui/Button";
-import Modal from "@/components/ui/Modal";
+import Modal from "@/components/ui/LazyModal";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import {
   EXPORT_REGION_API_IDS,

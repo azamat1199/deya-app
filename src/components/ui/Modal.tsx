@@ -31,7 +31,11 @@ export default function Modal({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
-  useFocusTrap(isOpen, panelRef, onClose);
+  // `&& mounted`: until the portal exists there is no panel to trap focus in.
+  // A modal that is already open on its first render (ui/LazyModal mounts it
+  // at the moment of opening) would otherwise run the trap against a null ref
+  // once and never again — no initial focus, no Escape, no scroll lock.
+  useFocusTrap(isOpen && mounted, panelRef, onClose);
 
   if (!mounted) return null;
 

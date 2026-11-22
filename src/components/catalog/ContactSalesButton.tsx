@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
 import Button from "@/components/ui/Button";
-import Modal from "@/components/ui/Modal";
+import Modal from "@/components/ui/LazyModal";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 
 // Loaded on demand: this form lives inside a Modal that only mounts when the

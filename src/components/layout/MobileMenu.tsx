@@ -27,7 +27,13 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
 
   useFocusTrap(open, panelRef, onClose);
 
+  // Close after a navigation — on an actual pathname CHANGE only. The menu is
+  // now mounted lazily, at the moment it is first opened, so an effect that
+  // also ran on mount would shut it again immediately.
+  const lastPathname = useRef(pathname);
   useEffect(() => {
+    if (lastPathname.current === pathname) return;
+    lastPathname.current = pathname;
     onClose();
   }, [pathname, onClose]);
 
