@@ -6,11 +6,12 @@ import { useForm, useWatch } from "react-hook-form";
 
 import Button from "@/components/ui/Button";
 import Checkbox from "@/components/ui/Checkbox";
+import { usePhoneField } from "@/components/forms/usePhoneField";
 import PhoneInput from "@/components/ui/PhoneInput";
 import { cn } from "@/lib/cn";
 import { useTranslation } from "@/lib/i18n/useTranslation";
+import { applyFieldErrors } from "@/lib/leadFields";
 import {
-  API_FIELD_TO_FORM,
   isValidEmail,
   isValidPhone,
   normalisePhone,
@@ -32,13 +33,9 @@ const INPUT_ERROR_CLASSES = "ring-1 ring-brand-600";
 
 export default function ContactForm() {
   const { t, locale } = useTranslation();
+  const phone = usePhoneField(t("form.phoneInvalid"));
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [formError, setFormError] = useState<string | null>(null);
-  const [phoneDisplay, setPhoneDisplay] = useState("");
-  const [phoneE164, setPhoneE164] = useState("");
-  const [phoneValid, setPhoneValid] = useState(false);
-  const [phoneTouched, setPhoneTouched] = useState(false);
-  const [phoneApiError, setPhoneApiError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -54,7 +51,7 @@ export default function ContactForm() {
 
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
-    setPhoneApiError(null);
+    phone.setApiError(null);
 
     const email = values.email.trim();
     if (!isValidEmail(email)) {
@@ -62,9 +59,9 @@ export default function ContactForm() {
       return;
     }
 
-    const phone = normalisePhone(phoneE164);
-    if (!(await isValidPhone(phone))) {
-      setPhoneTouched(true);
+    const phoneNumber = normalisePhone(phone.e164);
+    if (!(await isValidPhone(phoneNumber))) {
+      phone.markTouched();
       return;
     }
 
@@ -72,7 +69,7 @@ export default function ContactForm() {
       type: "contact",
       name: values.name.trim(),
       email,
-      phone,
+      phone: phoneNumber,
       message: (values.message ?? "").trim(),
       consent_personal_data: Boolean(values.consentPersonalData),
       consent_marketing: Boolean(values.consentMarketing),
@@ -82,27 +79,17 @@ export default function ContactForm() {
       setStatus("success");
       // Cleared only on success, so a failure never costs the user their typing.
       reset();
-      setPhoneDisplay("");
-      setPhoneE164("");
-      setPhoneValid(false);
-      setPhoneTouched(false);
-      setPhoneApiError(null);
+      phone.reset();
       return;
     }
 
     setStatus("error");
 
-    let matched = false;
-    for (const [apiField, message] of Object.entries(result.fieldErrors)) {
-      const formField = API_FIELD_TO_FORM[apiField];
-      if (formField === "phone") {
-        setPhoneApiError(message);
-        matched = true;
-      } else if (formField) {
-        setError(formField, { message });
-        matched = true;
-      }
-    }
+    const matched = applyFieldErrors(result.fieldErrors, (field, message) =>
+      field === "phone"
+        ? phone.setApiError(message)
+        : setError(field, { message }),
+    );
 
     setFormError(result.detail ?? (matched ? null : t("form.error")));
   });
@@ -149,23 +136,10 @@ export default function ContactForm() {
             "🇺🇿 +998" span became a combobox trigger. */}
         <PhoneInput
           locale={locale}
-          value={phoneDisplay}
-          onChange={({ display, e164, isValid }) => {
-            setPhoneDisplay(display);
-            setPhoneE164(e164);
-            setPhoneValid(isValid);
-          }}
-          onBlur={() => setPhoneTouched(true)}
-          ariaInvalid={phoneTouched && !phoneValid}
-          error={
-            phoneApiError ??
-            (phoneTouched && !phoneValid && phoneDisplay
-              ? t("form.phoneInvalid")
-              : undefined)
-          }
+          {...phone.inputProps}
           rowClassName={cn(
             "flex items-center rounded-md bg-white transition-colors duration-200 ease-in-out focus-within:ring-1 focus-within:ring-ink-900",
-            phoneTouched && !phoneValid && phoneDisplay && INPUT_ERROR_CLASSES,
+            phone.showInvalid && INPUT_ERROR_CLASSES,
           )}
           prefixClassName="shrink-0 py-3.5 pl-4 text-sm text-ink-700"
           inputClassName="w-full bg-transparent py-3.5 pr-4 pl-2 text-sm text-ink-900 outline-none placeholder:text-ink-500"
@@ -233,7 +207,7 @@ export default function ContactForm() {
         size="lg"
         fullWidth
         loading={isSubmitting}
-        disabled={!consentGiven || !phoneValid || isSubmitting}
+        disabled={!consentGiven || !phone.valid || isSubmitting}
         className="mt-6"
       >
         {t("buttons.sendRequest")}

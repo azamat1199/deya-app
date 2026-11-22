@@ -56,27 +56,7 @@ export type LeadResult =
  */
 const LEADS_PATH = "/api/v1/leads/";
 
-/** The field names every lead form uses for its own state. */
-export type LeadFormField =
-  | "name"
-  | "email"
-  | "phone"
-  | "message"
-  | "consentPersonalData"
-  | "consentMarketing";
-
-/**
- * The API answers in its own snake_case names; this puts each error back on the
- * input that produced it. Shared by every lead form so the mapping exists once.
- */
-export const API_FIELD_TO_FORM: Record<string, LeadFormField> = {
-  name: "name",
-  email: "email",
-  phone: "phone",
-  message: "message",
-  consent_personal_data: "consentPersonalData",
-  consent_marketing: "consentMarketing",
-};
+export { API_FIELD_TO_FORM, type LeadFormField } from "./leadFields";
 
 /**
  * Reduces any typed or pasted value to E.164: a plus and digits, nothing else.
